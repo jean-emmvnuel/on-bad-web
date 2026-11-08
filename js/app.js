@@ -2,15 +2,17 @@ import * as S from './store.js';
 import { $, esc, icon, logo, avatar, reduceMotion, closeSheet } from './ui.js';
 import { project, spring, velocityTracker } from './motion.js';
 import { registerSW, consumeLaunchParams, canInstall, install, onInstallChange, isStandalone } from './pwa.js';
-import { onboardingView } from './views/onboarding.js';
-import { signupView, pseudoView } from './views/auth.js';
-import { feedView } from './views/feed.js';
-import { badingView } from './views/bading.js';
-import { composeView } from './views/compose.js';
+import { onboardingView } from './views/onboarding/index.js';
+import { signupView } from './views/auth/signup.js';
+import { pseudoView } from './views/auth/pseudo.js';
+import { feedView } from './views/feed/index.js';
+import { badingView } from './views/bading/index.js';
+import { composeView } from './views/compose/index.js';
 import { profileView } from './views/profile.js';
 import { notificationsView } from './views/notifications.js';
-import { settingsView } from './views/settings.js';
+import { settingsView } from './views/settings/index.js';
 import { privacyView } from './views/privacy.js';
+import { logOut } from './services/auth.js';
 
 // ─── Routes (hash) ────────────────────────────────────────
 const routes = [
@@ -271,5 +273,11 @@ if (isStandalone()) document.documentElement.classList.add('standalone');
 consumeLaunchParams();
 registerSW();
 window.addEventListener('hashchange', () => { depth += 1; render(); });
+// Session refusée par le serveur (jeton expiré ou révoqué, voir api.js) : retour à la connexion.
+window.addEventListener('onbade:unauthorized', () => {
+  if (!S.get().session) return;
+  logOut();
+  go('/auth/signup?mode=login', { replace: true });
+});
 render();
 splash();

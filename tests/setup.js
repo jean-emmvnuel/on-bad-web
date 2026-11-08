@@ -11,4 +11,4 @@ HTMLCanvasElement.prototype.getContext = function () {
   };
 };
 window.matchMedia ??= () => ({ matches: false, addEventListener() {}, removeEventListener() {} });
-globalThis.gsap ??= { to() {}, from() {}, fromTo() {}, set() {}, timeline: () => ({ to() { return this; } }) };
+globalThis.gsap ??= { to() {}, from() {}, fromTo() {}, set() {}, killTweensOf() {}, timeline: () => ({ to() { return this; } }) };

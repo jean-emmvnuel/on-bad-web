@@ -54,7 +54,7 @@ python3 -m http.server 5173
 
 Puis ouvre <http://localhost:5173>. Crée un compte avec n'importe quel e-mail : les comptes de démo sont gardés dans le navigateur (mot de passe haché).
 
-Les données sont simulées et gardées dans le navigateur (`localStorage`), comme sur mobile, en attendant le backend (voir `BACKEND.md` du dépôt mobile). Pour repartir de zéro : `localStorage.removeItem('jebade-web-v1')` dans la console.
+Avec `USE_BACKEND = true` (`js/api.js`), les données viennent du backend décrit dans [`API.md`](API.md). Avec `false`, elles sont simulées et gardées dans le navigateur (`localStorage`), comme avant. Pour repartir de zéro : `localStorage.removeItem('jebade-web-v1')` dans la console.
 
 ## 🗂️ Structure
 
@@ -67,11 +67,13 @@ js/stickers.js        ← bibliothèque de stickers (F8)
 js/pwa.js             ← service worker, installation, liens dynamiques, partage vers l'app
 sw.js                 ← service worker (cache hors ligne, notifications)
 manifest.webmanifest  ← manifeste de la PWA
-js/store.js           ← état + règles métier V1 + données simulées (→ API plus tard)
+js/api.js             ← client HTTP du backend (URL, jeton, erreurs) — USE_BACKEND = mode backend ou démo
+js/services/*.js      ← lien API ↔ store : appelle le backend et range les réponses dans le cache
+js/store.js           ← état local (cache des données du serveur) + règles métier + données de démo
 js/components.js      ← carte de bading, actions, rebade, partage (image canvas), menus
 js/ui.js              ← icônes, avatars, feuilles, toasts, confettis GSAP
 js/notify.js          ← notifications du navigateur + activité simulée
-js/views/*.js         ← onboarding, auth, fil, bading, publier, profil, notifications, paramètres, confidentialité
+js/views/             ← écrans (un dossier par écran complexe) ; views/shared/remote.js = chargement, erreurs, boutons en attente
 data/privacy.json     ← politique de confidentialité (même source que l'app)
 ```
 

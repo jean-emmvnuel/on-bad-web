@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const KEY = 'jebade-web-v1';
-const load = async () => { vi.resetModules(); return import('../js/store.js'); };
+const load = async () => { vi.resetModules(); return import('../src/lib/store.js'); };
 
 beforeEach(() => localStorage.clear());
 

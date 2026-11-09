@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { MiniPdf, toWin } from '../js/pdf.js';
-import * as S from '../js/store.js';
-import { buildMyDataPdf } from '../js/export.js';
+import { MiniPdf, toWin } from '../src/lib/pdf.js';
+import * as S from '../src/lib/store.js';
+import { buildMyDataPdf } from '../src/lib/export.js';
 
 // jsdom n'a pas Blob.arrayBuffer : on passe par FileReader, comme un vieux navigateur.
 const text = (blob) => new Promise((ok) => { const r = new FileReader(); r.onload = () => ok(new TextDecoder('latin1').decode(r.result)); r.readAsArrayBuffer(blob); });

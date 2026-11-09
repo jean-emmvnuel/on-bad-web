@@ -2,13 +2,23 @@
   "name": "on-bade-web",
   "private": true,
   "type": "module",
-  "description": "On Bade — site web (PWA). Pas de build : le site est servi tel quel ; ce fichier ne sert qu'aux tests.",
+  "description": "On Bade — site web (PWA) en React. `npm run dev` pour développer, `npm run build` pour produire le dossier dist/ à mettre en ligne.",
   "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest"
   },
   "devDependencies": {
+    "@vitejs/plugin-react": "^4.7.0",
     "jsdom": "^25.0.1",
+    "vite": "^5.4.21",
     "vitest": "^2.1.8"
+  },
+  "dependencies": {
+    "gsap": "^3.13.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
   }
 }

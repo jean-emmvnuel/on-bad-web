@@ -1,17 +1,32 @@
 # API On Bade — contrat attendu par le site web
 
 Ce document décrit ce que le site web envoie au backend et ce qu'il attend en retour.
-Les appels sont faits par `js/api.js` ; les réponses sont rangées dans le store par `js/services/`.
+Les appels sont faits par `src/lib/api.js` ; les réponses sont rangées dans le store par `src/services/`.
 
-> Seule la route `POST /register` existait avant ce document. Les autres sont **proposées** à partir des
-> besoins des écrans : à valider (ou adapter) avec le backend. Une route manquante ne casse pas l'app :
-> l'écran concerné affiche une erreur avec un bouton « Réessayer ».
+> **Ce qui existe aujourd'hui** dans `onbad-backend` : `POST /api/login` et `POST /api/register` (voir ci-dessous).
+> Tout le reste de ce document est **proposé** à partir des besoins des écrans. Tant que ces routes n'existent pas,
+> le contenu reste simulé dans le navigateur (`VITE_BACKEND_CONTENT=false`).
+
+### Ce que le site attend de /login et /register (format actuel du backend)
+
+Réponses enveloppées, que le site déballe (`src/lib/api.js`) :
+
+```json
+{ "success": true, "message": "…", "data": { "user": { "id", "username", "firstName", "lastName", "email" }, "token": "<JWT>" } }
+```
+
+| Route | Corps envoyé | Erreurs comprises |
+|---|---|---|
+| `POST /register` | `{ firstname, lastname, username, email, password }` | 400 données invalides, 409 e-mail ou pseudo déjà pris |
+| `POST /login` | `{ email, password }` | 400 données invalides, 404 e-mail inconnu, 401 mauvais mot de passe |
+
+Le site traduit `username` → pseudo, `avatarUrl` → photo, `createdAt` → date d'inscription, et ne garde aucun autre champ.
 
 ## Conventions
 
 | Sujet | Règle |
 |---|---|
-| Adresse | `API_URL` dans `js/api.js` (actuellement `https://127.0.0.1:3000/api`) |
+| Adresse | `VITE_API_URL` dans `.env` (par défaut `http://localhost:3000/api`) |
 | Format | JSON en entrée et en sortie (sauf `POST /me/badge-request` : `multipart/form-data`) |
 | Session | `/login` et `/register` renvoient un `token`, renvoyé ensuite dans `Authorization: Bearer <token>` |
 | Session expirée | Répondre **401** : le site efface le jeton et renvoie vers la connexion |
@@ -40,7 +55,7 @@ Codes métier reconnus par les écrans :
 
 ## Objets
 
-Les objets ont **la même forme que dans `js/store.js`**, pour que les écrans les affichent sans conversion.
+Les objets ont **la même forme que dans `src/lib/store.js`**, pour que les écrans les affichent sans conversion.
 
 ```js
 User         { id, pseudo, verified, hue, photo?, joinedAt? }
@@ -64,7 +79,7 @@ Deletion     { status: 'none'|'pending', requestedAt?, reason? }
 
 | Méthode et chemin | Corps | Réponse |
 |---|---|---|
-| `POST /register` | `{ email, password, pseudo }` | `{ token, user }` |
+| `POST /register` | `{ firstname, lastname, username, email, password }` | `{ token, user }` |
 | `POST /login` | `{ email, password }` | `{ token, user }` |
 | `POST /logout` | — | 204 |
 | `GET /email-available?email=` | — | `{ available }` |
@@ -80,6 +95,11 @@ Deletion     { status: 'none'|'pending', requestedAt?, reason? }
 | `GET /badings/:id` | — | `{ bading, users, comments, rebades }` ou **404** |
 | `POST /badings` | `{ text, anonymous, image: { dataUrl, ratio } \| null }` | `{ bading }` |
 | `POST /badings/:id/views` | — | 204 |
+| `POST /badings/:id/like` | — | `{ likes, likedByMe }` (bascule) |
+| `POST /badings/:id/rebades` | `{ text, anonymous }` (`text` vide = rebade directe) | `{ bading, rebades }` (`rebades` = nouveau compteur de l'original) |
+| `POST /badings/:id/shares` | — | 204 |
+| `POST /badings/:id/report` | `{ reason }` | 204 |
+| `DELETE /badings/:id` | — | 204 (seulement mes badings) |
 
 `users` contient les auteurs cités par les badings et commentaires renvoyés.
 `rebades` = les rebades **avec avis** de ce bading.
@@ -111,7 +131,10 @@ Deletion     { status: 'none'|'pending', requestedAt?, reason? }
 | `PUT /me/photo` | `{ image: <data URL> \| null }` | `{ user }` |
 | `GET /me/settings` | — | `{ mentionPolicy, blocked: User[], badge, deletion }` |
 | `PATCH /me/settings` | `{ mentionPolicy: 'everyone' \| 'nobody' }` | 204 |
-| `DELETE /me/blocked/:userId` | — | 204 |
+| `PUT /me/blocked/:userId` | — | 204 (bloquer) |
+| `DELETE /me/blocked/:userId` | — | 204 (débloquer) |
+| `PUT /me/favorites/:badingId` | — | 204 |
+| `DELETE /me/favorites/:badingId` | — | 204 |
 | `POST /me/badge-request` | form-data : `links` (répété), `document` (fichier) | `{ badge }` |
 | `POST /me/deletion` | `{ reason \| null }` | `{ deletion }` |
 | `DELETE /me/deletion` | — | 204 |
@@ -123,11 +146,11 @@ Deletion     { status: 'none'|'pending', requestedAt?, reason? }
 | `GET /notifications` | — | `{ notifications, users, badings }` |
 | `POST /notifications/read` | — | 204 |
 
-## Pas encore branché
+## Reste dans le navigateur
 
-Ces actions passent encore par le store local, même avec `USE_BACKEND = true` :
-
-- **Actions des cartes de bading** (`js/components.js`) : rire, rebade, partage, favori, bloquer, supprimer un bading.
-- **Copie de mes données (PDF)** (`js/export.js`) : construite à partir du cache local, donc incomplète
+- **Copie de mes données (PDF)** (`src/lib/export.js`) : construite à partir du cache local, donc incomplète
   avec le backend. Prévoir une route `GET /me/export`.
 - **Brouillon** et **fin de l'onboarding** : restent volontairement dans le navigateur.
+
+Les actions des cartes (rire, rebade, partage, favori, signalement, blocage, suppression) passent par le backend
+depuis la version React : l'écran change tout de suite, puis revient en arrière si le serveur refuse.

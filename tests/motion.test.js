@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { project, rubberband, spring, velocityTracker } from '../js/motion.js';
+import { project, rubberband, spring, velocityTracker } from '../src/lib/motion.js';
 
 // Horloge d'images simulée : 60 images par seconde.
 let now = 0;

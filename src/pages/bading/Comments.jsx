@@ -1,6 +1,7 @@
 // Fils de commentaires : rendu, repli des réponses, lignes de rattachement et actions.
 import { useLayoutEffect, useRef } from 'react';
 import { gsap } from 'gsap';
+import { requireSession } from '../../lib/access.js';
 import * as S from '../../lib/store.js';
 import { reduceMotion } from '../../lib/motion.js';
 import * as comments from '../../services/comments.js';
@@ -16,6 +17,7 @@ const PREVIEW_REPLIES = 2; // réponses visibles d'office quand le fil n'est ni 
 // ─── Actions ──────────────────────────────────────────────
 
 function reportComment(comment) {
+  if (!requireSession()) return;
   openSheet(
     <>
       {REPORT_REASONS.map((reason) => (
@@ -34,6 +36,7 @@ function reportComment(comment) {
 const likesInFlight = new Set();
 
 async function likeComment(comment) {
+  if (!requireSession()) return;
   if (likesInFlight.has(comment.id)) return;
   likesInFlight.add(comment.id);
   try {
@@ -46,6 +49,7 @@ async function likeComment(comment) {
 }
 
 function deleteComment(comment, element) {
+  if (!requireSession()) return;
   const hasReplies = !comment.parentId && S.threads(comment.badingId).some((t) => t.root.id === comment.id && t.replies.length);
   const warning = `${hasReplies ? 'Les réponses à ce commentaire seront aussi supprimées. ' : ''}C'est définitif.`;
 
@@ -91,7 +95,7 @@ function Comment({ c, isReply, onReply, onSticker }) {
         ) : (
           <p style={{ overflowWrap: 'anywhere' }}><Rich text={c.text} /></p>
         )}
-        <div className="c-actions">
+        {S.get().session ? <div className="c-actions">
           <button className={c.likedByMe ? 'on' : ''} aria-label={c.likedByMe ? 'Retirer mon rire' : 'Rire à ce commentaire'} onClick={() => likeComment(c)}>
             <Icon name="laugh" />{c.likes ? c.likes : ''}
           </button>
@@ -101,7 +105,7 @@ function Comment({ c, isReply, onReply, onSticker }) {
           ) : (
             <button aria-label="Signaler ce commentaire" onClick={() => reportComment(c)}><Icon name="flag" /></button>
           )}
-        </div>
+        </div> : null}
       </div>
     </div>
   );

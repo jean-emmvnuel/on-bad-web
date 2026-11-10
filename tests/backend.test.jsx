@@ -78,13 +78,36 @@ beforeAll(async () => {
 afterAll(() => { act(() => root.unmount()); vi.unstubAllEnvs(); });
 
 describe('App React branchée sur le backend', () => {
+  it('visiteur : lit le fil et un bading sans session, mais doit se connecter pour agir', async () => {
+    await act(async () => { location.hash = '#/'; });
+    await until(() => text().includes('Bading venu du serveur'));
+    const feedCall = calls.find((c) => c.key === 'GET /feed');
+    expect(feedCall.auth).toBeUndefined();
+    expect(text()).toContain('Inscription');
+
+    await click($('.card-row [aria-label^="Rire"]'));
+    await until(() => location.hash === '#/auth/login');
+    expect(calls.some((c) => c.key === 'POST /badings/s1/like')).toBe(false);
+
+    await act(async () => { location.hash = '#/bading/s1'; });
+    await until(() => text().includes('Bading venu du serveur'));
+    await until(() => calls.some((c) => c.key === 'GET /badings/s1'));
+    const detailCall = calls.find((c) => c.key === 'GET /badings/s1');
+    expect(detailCall.auth).toBeUndefined();
+    expect($('.composer textarea')).toBeNull();
+    expect(text()).toContain('Connecte-toi pour commenter');
+
+    await act(async () => { location.hash = '#/auth/login'; });
+    await until(() => $('#email'));
+  });
+
   it('connexion, puis fil chargé depuis le serveur', async () => {
     await type($('#email'), 'moi@test.ci');
     await type($('#pw'), 'motdepasse1');
     await click(byText('Se connecter'));
     await until(() => text().includes('Bading venu du serveur'));
     expect(calls.map((c) => c.key)).toEqual(expect.arrayContaining(['POST /login', 'GET /feed']));
-    expect(calls.find((c) => c.key === 'GET /feed').auth).toBe('Bearer tok');
+    expect(calls.some((c) => c.key === 'GET /feed' && c.auth === 'Bearer tok')).toBe(true);
     expect(S.me().pseudo).toBe('MoiServeur');
   });
 

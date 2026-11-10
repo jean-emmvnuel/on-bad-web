@@ -19,11 +19,12 @@ const HEADER_HIDE_AFTER = 60;
 const isDesktop = () => matchMedia('(min-width: 900px)').matches;
 
 function EmptyFeed() {
+  const authenticated = !!S.get().session;
   return (
     <div className="empty">
       <h2 className="t-title">Le fil est calme… trop calme.</h2>
-      <p className="muted">Sois le premier à raconter ta galère du jour.</p>
-      <a className="btn btn-primary" href="#/compose">Écrire un bading</a>
+      <p className="muted">{authenticated ? 'Sois le premier à raconter ta galère du jour.' : 'Connecte-toi pour participer au fil.'}</p>
+      <a className="btn btn-primary" href={authenticated ? '#/compose' : '#/auth/login'}>{authenticated ? 'Écrire un bading' : 'Se connecter pour participer'}</a>
     </div>
   );
 }
@@ -105,9 +106,9 @@ export default function Feed() {
         <h1 className="t-heading" style={{ flex: 1 }} hidden={!desktop}>Fil d'actualité</h1>
         <button className="icon-btn only-mobile" aria-label="Installer l'app" hidden={!showInstall} onClick={install}><Icon name="download" /></button>
       </header>
-      <a className="prompt-card desk-only" href="#/compose">
+      <a className="prompt-card desk-only" href={S.get().session ? '#/compose' : '#/auth/login'}>
         <Avatar user={S.me()} size={44} />
-        <span className="ph">Qu'est-ce qui t'est arrivé aujourd'hui ?</span>
+        <span className="ph">{S.get().session ? "Qu'est-ce qui t'est arrivé aujourd'hui ?" : 'Connecte-toi pour raconter ta galère'}</span>
         <Icon name="image" />
       </a>
       <PullToRefresh onRefreshed={onRefreshed} />

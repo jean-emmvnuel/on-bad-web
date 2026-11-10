@@ -4,6 +4,7 @@ import { gsap } from 'gsap';
 import * as S from '../lib/store.js';
 import { haptic, reduceMotion } from '../lib/motion.js';
 import { go, goOnClick, goOnEnter } from '../lib/router.js';
+import { requireSession } from '../lib/access.js';
 import * as badings from '../services/badings.js';
 import { Avatar, Icon, Rich, Verified } from '../ui/icons.jsx';
 import { confetti } from '../ui/effects.js';
@@ -63,6 +64,7 @@ export function ActionsRow({ t, onComment }) {
 
   const laugh = async (e) => {
     e.stopPropagation();
+    if (!requireSession()) return;
     const turningOn = !t.likedByMe;
     const button = laughRef.current;
     const promise = badings.toggleLike(t.id);
@@ -76,6 +78,7 @@ export function ActionsRow({ t, onComment }) {
 
   const favorite = async (e) => {
     e.stopPropagation();
+    if (!requireSession()) return;
     if (!reduceMotion()) gsap.fromTo(favRef.current.querySelector('svg'), { scale: 0.6 }, { scale: 1, duration: 0.5, ease: 'back.out(3)' });
     try {
       const on = await badings.toggleFavorite(t.id);
@@ -87,11 +90,12 @@ export function ActionsRow({ t, onComment }) {
 
   const comment = (e) => {
     e.stopPropagation();
+    if (!requireSession()) return;
     if (onComment) onComment();
     else go(`/bading/${t.id}?focus=comment`);
   };
 
-  const stop = (fn) => (e) => { e.stopPropagation(); fn(); };
+  const stop = (fn) => (e) => { e.stopPropagation(); if (requireSession()) fn(); };
 
   return (
     <div className="actions">

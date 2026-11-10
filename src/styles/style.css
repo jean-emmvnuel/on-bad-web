@@ -55,7 +55,7 @@ svg.i { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-widt
 .shell { min-height: 100dvh; }
 .webbar, .left, .aside, .desk-only { display: none; }
 .layout { display: block; }
-.main { min-width: 0; padding-bottom: 84px; }
+.main { min-width: 0; padding-bottom: calc(84px + env(safe-area-inset-bottom)); }
 
 @media (min-width: 900px) {
   :root { --webbar: 64px; }
@@ -295,7 +295,7 @@ textarea.plain { width: 100%; background: none; border: 0; outline: 0; resize: n
 
 /* ───────────── Composer, commentaires ───────────── */
 .composer { position: sticky; bottom: 0; background: var(--bg); border-top: 1px solid var(--line); padding: 8px 12px 12px; display: flex; flex-direction: column; gap: 6px; }
-@media (max-width: 899px) { .composer { bottom: 68px; } }
+@media (max-width: 899px) { .composer { bottom: calc(68px + env(safe-area-inset-bottom)); } }
 .composer .row { display: flex; align-items: flex-end; gap: 8px; }
 .composer textarea { flex: 1; min-height: 42px; max-height: 120px; border-radius: var(--r-lg); background: var(--surface); border: 0; outline: 0; padding: 10px 14px; resize: none; font-size: 16px; }
 .thread { position: relative; display: flex; flex-direction: column; gap: 12px; }
@@ -312,7 +312,7 @@ textarea.plain { width: 100%; background: none; border: 0; outline: 0; resize: n
 .link-btn { font-size: 13px; color: var(--brand-ink); padding-left: 52px; min-height: 28px; text-align: left; }
 
 /* ───────────── Barre d'onglets mobile ───────────── */
-.tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 15; height: 68px; padding: 6px 12px max(8px, env(safe-area-inset-bottom)); display: flex; align-items: center; background: var(--bg); border-top: 1px solid var(--line); }
+.tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 15; height: calc(68px + env(safe-area-inset-bottom)); padding: 6px 12px max(8px, env(safe-area-inset-bottom)); display: flex; align-items: center; background: var(--bg); border-top: 1px solid var(--line); }
 .tabbar a { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; color: var(--text-3); text-decoration: none; font-size: 13px; font-weight: 500; }
 .tabbar a[aria-current="page"] { color: var(--text); }
 .tabbar a[aria-current="page"] svg { stroke-width: 2.4; }

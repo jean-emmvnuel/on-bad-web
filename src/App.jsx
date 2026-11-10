@@ -21,6 +21,7 @@ const LOADERS = {
   signup: () => import('./pages/auth/Signup.jsx'),
   login: () => import('./pages/auth/Login.jsx'),
   pseudo: () => import('./pages/auth/Pseudo.jsx'),
+  resetPassword: () => import('./pages/auth/ResetPassword.jsx'),
   privacy: () => import('./pages/Privacy.jsx'),
   bading: () => import('./pages/bading/BadingPage.jsx'),
   compose: () => import('./pages/compose/Compose.jsx'),
@@ -44,9 +45,10 @@ const ROUTES = [
   { path: /^\/auth\/signup$/, page: 'signup', bare: true, public: true },
   { path: /^\/auth\/login$/, page: 'login', bare: true, public: true },
   { path: /^\/auth\/pseudo$/, page: 'pseudo', bare: true, public: true },
+  { path: /^\/reset-password$/, page: 'resetPassword', bare: true, public: true },
   { path: /^\/privacy$/, page: 'privacy', public: true, level: 2 },
-  { path: /^\/$/, page: 'feed', nav: 'feed' },
-  { path: /^\/bading\/([\w-]+)$/, page: 'bading', keys: ['id'], level: 2 },
+  { path: /^\/$/, page: 'feed', nav: 'feed', public: true },
+  { path: /^\/bading\/([\w-]+)$/, page: 'bading', keys: ['id'], level: 2, public: true },
   { path: /^\/compose$/, page: 'compose', nav: 'compose', modal: true },
   { path: /^\/profile$/, page: 'profile', nav: 'profile' },
   { path: /^\/notifications$/, page: 'notifications', nav: 'notifications' },
@@ -57,9 +59,9 @@ const ROUTES = [
 function resolve({ path }, { session, onboarded, pendingLink }) {
   const entry = onboarded ? '/auth/signup' : '/onboarding';
 
-  // Liens partagés : /b/<id> → le bading (après inscription si besoin).
+  // Les liens partagés ouvrent directement la lecture publique du bading.
   const shared = path.match(/^\/b\/([\w-]+)$/);
-  if (shared) return session ? { redirect: `/bading/${shared[1]}` } : { redirect: entry, pendingLink: shared[1] };
+  if (shared) return { redirect: `/bading/${shared[1]}` };
 
   for (const route of ROUTES) {
     const match = path.match(route.path);
@@ -220,12 +222,12 @@ export function App() {
   );
 
   let layout;
-  if (route.bare || (!access.session && route.public)) {
+  if (route.bare || (!access.session && route.public && !['feed', 'bading'].includes(route.page))) {
     layout = location.path.startsWith('/auth/')
       ? <div className="auth-split"><AuthBrand /><main id="view" ref={viewRef}>{page}</main></div>
       : <main id="view" ref={viewRef}>{page}</main>;
   } else {
-    layout = <Shell nav={route.nav} viewRef={viewRef}>{page}</Shell>;
+    layout = <Shell nav={route.nav} guest={!access.session} viewRef={viewRef}>{page}</Shell>;
   }
 
   return <>{layout}<Hosts /></>;

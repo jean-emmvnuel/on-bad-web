@@ -6,6 +6,7 @@ import { useStore } from '../../lib/useStore.js';
 import { reduceMotion } from '../../lib/motion.js';
 import { USE_BACKEND } from '../../services/mode.js';
 import { back, go } from '../../lib/router.js';
+import { requireSession } from '../../lib/access.js';
 import * as badings from '../../services/badings.js';
 import { ActionsRow, BadingCard, BadingImage } from '../../components/BadingCard.jsx';
 import { openMore } from '../../components/badingSheets.jsx';
@@ -170,8 +171,10 @@ function BadingContent({ id, focusComment }) {
           <p className="muted" style={{ padding: 16 }}>Pas encore de rebade avec avis. Sois le premier à donner le tien.</p>
         )}
       </div>
-      <Composer badingId={id} parent={replyTo} onCancelReply={() => setReplyTo(null)} textareaRef={textareaRef}
-        onPosted={(comment) => { setTab('comments'); setHighlightId(comment.id); }} />
+      {S.get().session
+        ? <Composer badingId={id} parent={replyTo} onCancelReply={() => setReplyTo(null)} textareaRef={textareaRef}
+          onPosted={(comment) => { setTab('comments'); setHighlightId(comment.id); }} />
+        : <div className="composer"><button className="btn btn-primary btn-block" onClick={requireSession}>Connecte-toi pour commenter</button></div>}
     </>
   );
 }

@@ -53,8 +53,11 @@ export async function loadBading(badingId) {
 
 /** Compte une ouverture du bading (sans bloquer l'affichage si le serveur ne répond pas). */
 export function recordView(badingId) {
-  if (USE_BACKEND) fireAndForget(api.addBadingView(badingId));
-  else S.addView(badingId);
+  if (USE_BACKEND) {
+    if (S.get().session) fireAndForget(api.addBadingView(badingId));
+    return;
+  }
+  S.addView(badingId);
 }
 
 /**

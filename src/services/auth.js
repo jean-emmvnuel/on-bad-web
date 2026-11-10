@@ -121,6 +121,12 @@ export async function requestPasswordReset(email) {
   await api.requestPasswordReset(email);
 }
 
+/** Définit un nouveau mot de passe à partir du jeton reçu par e-mail. */
+export async function confirmPasswordReset(token, password) {
+  if (!USE_AUTH_BACKEND) fail('not_available', 501);
+  await api.confirmPasswordReset(token, password);
+}
+
 /** Déconnexion : le serveur révoque le jeton (sans attendre sa réponse), puis on l'oublie. */
 export function logOut() {
   forgetAll();

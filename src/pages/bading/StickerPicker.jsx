@@ -4,6 +4,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 import * as S from '../../lib/store.js';
 import { useStore } from '../../lib/useStore.js';
+import { requireSession } from '../../lib/access.js';
 import { reduceMotion } from '../../lib/motion.js';
 import { STICKERS, THEMES, sticker as builtinSticker } from '../../lib/stickers.js';
 import * as stickers from '../../services/stickers.js';
@@ -23,6 +24,7 @@ const stickerErrors = () => ({
 // Comme sur TikTok : toucher un sticker dans un commentaire pour l'ajouter à sa collection.
 
 export function openStickerSheet(stickerId) {
+  if (!requireSession()) return;
   const custom = S.customSticker(stickerId);
   const owner = custom ? S.user(custom.ownerId) : null;
   const alreadyMine = S.get().myStickers.includes(stickerId);

@@ -1,6 +1,7 @@
 // Feuilles ouvertes depuis un bading : menu « … », rebade, partage.
 import { useState } from 'react';
 import * as S from '../lib/store.js';
+import { requireSession } from '../lib/access.js';
 import { badingUrl } from '../lib/pwa.js';
 import * as badings from '../services/badings.js';
 import { Avatar, Icon, Logo } from '../ui/icons.jsx';
@@ -27,6 +28,7 @@ const copyText = (text) => navigator.clipboard?.writeText(text).catch(() => {});
 
 /** `onRemoved` : appelé après suppression du bading ou blocage de son auteur (ex. quitter la page du bading). */
 export function openMore(b, onRemoved) {
+  if (!requireSession()) return;
   const mine = b.authorId === S.ME;
   const pseudo = !b.anonymous ? S.user(b.authorId)?.pseudo : null;
 
@@ -141,6 +143,7 @@ function RebadeSheet({ originId }) {
 }
 
 export function openRebade(b) {
+  if (!requireSession()) return;
   openSheet(<RebadeSheet originId={b.rebadeOf ?? b.id} />, { title: 'Rebade' });
 }
 
@@ -223,6 +226,7 @@ function ShareSheet({ b }) {
 }
 
 export function openShare(target) {
+  if (!requireSession()) return;
   const b = target.rebadeOf ? S.bading(target.rebadeOf) ?? target : target;
   openSheet(<ShareSheet b={b} />, { title: 'Partager ce bading' });
 }

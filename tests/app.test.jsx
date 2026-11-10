@@ -67,9 +67,15 @@ beforeAll(async () => {
 afterAll(() => { act(() => root.unmount()); });
 
 describe('App React (mode démo)', () => {
-  it('sans compte : accueil, puis connexion et inscription', async () => {
-    expect(location.hash).toBe('#/onboarding');
-    expect(text()).toContain("Raconte ce qui t'est arrivé.");
+  it('sans compte : fil public, action protégée, puis connexion et inscription', async () => {
+    expect(location.hash).toBe('#/');
+    expect(text()).toContain('Coupure de courant');
+    expect(text()).toContain('Se connecter');
+
+    await click($('.card-row [aria-label^="Rire"]'));
+    await until(() => location.hash === '#/onboarding');
+    await until(() => text().includes("Raconte ce qui t'est arrivé."));
+    expect(S.bading('b4').likedByMe).toBe(false);
 
     await click(byText("J'ai déjà un compte"));
     await until(() => text().includes('Content de te revoir'));

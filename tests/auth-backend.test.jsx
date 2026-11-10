@@ -22,6 +22,7 @@ const routes = {
   'POST /register': () => (registerStatus === 409
     ? json(409, { success: false, code: 'email_taken', message: 'Cette adresse e-mail a déjà un compte' })
     : json(201, { message: 'Compte créé', success: true, data: { user: { ...serverUser, passwordHash: undefined }, token: 'jwt-2' } })),
+  'POST /password-reset/confirm': () => new Response(null, { status: 204 }),
   'GET /email-available': (_body, u) => json(200, { success: true, data: { available: !takenEmails.has(u.searchParams.get('email')) } }),
   'GET /pseudo-available': () => json(200, { success: true, data: { available: true } }),
   'POST /logout': () => new Response(null, { status: 204 }),
@@ -87,7 +88,28 @@ async function logIn(email, password) {
   await click(byText('Se connecter'));
 }
 
-describe('Backend Next.js (connexion et inscription seulement)', () => {
+describe('Authentification avec le backend Next.js', () => {
+  it('réinitialise le mot de passe depuis le lien du backend puis revient à la connexion', async () => {
+    await goTo('#/reset-password?token=reset-token');
+    await until(() => $('#password'));
+    await type($('#password'), 'nouveaumdp1');
+    await type($('#confirmation'), 'nouveaumdp1');
+    await click(byText('Enregistrer le mot de passe'));
+    await until(() => location.hash === '#/auth/login' && $('#email'));
+    expect(calls.find((c) => c.key === 'POST /password-reset/confirm').body).toEqual({
+      token: 'reset-token',
+      password: 'nouveaumdp1',
+    });
+  });
+
+  it('explique qu’un lien sans jeton est incomplet', async () => {
+    await goTo('#/reset-password');
+    await until(() => text().includes('Lien de réinitialisation incomplet'));
+    expect($('#password')).toBeNull();
+    await click(byText('Retour à la connexion'));
+    await until(() => location.hash === '#/auth/login' && $('#email'));
+  });
+
   it('e-mail inconnu (404) : message en français', async () => {
     await logIn('inconnu@test.ci', 'motdepasse1');
     await until(() => text().includes("Aucun compte n'utilise cet e-mail"));

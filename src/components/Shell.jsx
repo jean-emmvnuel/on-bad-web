@@ -51,7 +51,7 @@ function Trends() {
   });
 }
 
-export function Shell({ nav, viewRef, children }) {
+export function Shell({ nav, guest = false, viewRef, children }) {
   useStore(); // pastilles, tendances et carte « moi » suivent les données
   const showInstall = useCanInstall();
   const unread = S.unread();
@@ -63,21 +63,43 @@ export function Shell({ nav, viewRef, children }) {
           <a className="brand" href="#/"><Logo size={32} /><span>on bade</span></a>
           <nav className="webnav" aria-label="Navigation principale">
             <a href="#/" aria-current={current(nav, 'feed')}><Icon name="house" /><span>Fil</span></a>
-            <a href="#/notifications" aria-current={current(nav, 'notifications')}><Icon name="bell" /><span>Notifications</span><UnreadDot count={unread} /></a>
-            <a href="#/profile" aria-current={current(nav, 'profile')}><Icon name="user" /><span>Profil</span></a>
+            {guest ? (
+              <>
+                <a href="#/auth/login"><Icon name="user" /><span>Connexion</span></a>
+                <a href="#/auth/signup"><Icon name="plus" /><span>Inscription</span></a>
+              </>
+            ) : (
+              <>
+                <a href="#/notifications" aria-current={current(nav, 'notifications')}><Icon name="bell" /><span>Notifications</span><UnreadDot count={unread} /></a>
+                <a href="#/profile" aria-current={current(nav, 'profile')}><Icon name="user" /><span>Profil</span></a>
+              </>
+            )}
           </nav>
           <div className="webbar-actions">
-            <a className="btn btn-primary btn-sm" href="#/compose"><Icon name="plus" /> Bader</a>
+            {guest
+              ? <a className="btn btn-primary btn-sm" href="#/auth/signup"><Icon name="plus" /> S'inscrire</a>
+              : <a className="btn btn-primary btn-sm" href="#/compose"><Icon name="plus" /> Bader</a>}
           </div>
         </div>
       </header>
       <div className="layout">
         <aside className="left" aria-label="Mon compte">
-          <div className="card me-card"><MeCard /></div>
-          <nav className="card side-links" aria-label="Raccourcis">
-            <a href="#/settings" aria-current={current(nav, 'settings')}><Icon name="settings" /><span>Paramètres</span></a>
-            <a href="#/privacy"><Icon name="lock" /><span>Confidentialité</span></a>
-          </nav>
+          {guest ? (
+            <div className="card me-card">
+              <h2 className="t-heading">Bienvenue sur On Bade</h2>
+              <p className="muted">Lis le fil librement. Connecte-toi pour participer.</p>
+              <a className="btn btn-primary btn-sm" href="#/auth/login">Se connecter</a>
+              <a className="btn btn-secondary btn-sm" href="#/auth/signup">Créer un compte</a>
+            </div>
+          ) : (
+            <>
+              <div className="card me-card"><MeCard /></div>
+              <nav className="card side-links" aria-label="Raccourcis">
+                <a href="#/settings" aria-current={current(nav, 'settings')}><Icon name="settings" /><span>Paramètres</span></a>
+                <a href="#/privacy"><Icon name="lock" /><span>Confidentialité</span></a>
+              </nav>
+            </>
+          )}
         </aside>
         <main className="main" id="view" ref={viewRef}>{children}</main>
         <aside className="aside" aria-label="Suggestions">
@@ -95,9 +117,17 @@ export function Shell({ nav, viewRef, children }) {
       </div>
       <nav className="tabbar" aria-label="Onglets">
         <a href="#/" aria-current={current(nav, 'feed')}><Icon name="house" /><span>Fil</span></a>
-        <a href="#/notifications" aria-current={current(nav, 'notifications')}><span className="tb-ic"><Icon name="bell" /><UnreadDot count={unread} /></span><span>Notifs</span></a>
-        <div className="bader"><a href="#/compose"><Icon name="plus" />Bader</a></div>
-        <a href="#/profile" aria-current={current(nav, 'profile')}><Icon name="user" /><span>Profil</span></a>
+        {guest
+          ? <a href="#/auth/login"><Icon name="user" /><span>Connexion</span></a>
+          : <a href="#/notifications" aria-current={current(nav, 'notifications')}><span className="tb-ic"><Icon name="bell" /><UnreadDot count={unread} /></span><span>Notifs</span></a>}
+        <div className="bader">
+          {guest
+            ? <a href="#/auth/signup"><Icon name="plus" />S'inscrire</a>
+            : <a href="#/compose"><Icon name="plus" />Bader</a>}
+        </div>
+        {guest
+          ? <a href="#/auth/signup"><Icon name="user" /><span>Profil</span></a>
+          : <a href="#/profile" aria-current={current(nav, 'profile')}><Icon name="user" /><span>Profil</span></a>}
       </nav>
     </div>
   );

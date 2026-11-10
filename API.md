@@ -87,10 +87,15 @@ Deletion     { status: 'none'|'pending', requestedAt?, reason? }
 | `POST /logout` | — | 204 |
 | `GET /email-available?email=` | — | `{ available }` |
 | `GET /pseudo-available?pseudo=` | — | `{ available }` |
-| `POST /password-reset` | `{ email }` | 204 (même si l'e-mail est inconnu) ; le lien est envoyé par e-mail |
-| `POST /password-reset/confirm` | `{ token, password }` | 204 ; 400 `invalid_token` |
+| `POST /password-reset` | `{ email }` | 204 (même si l'e-mail est inconnu) ; le lien ouvre `/#/reset-password?token=…` |
+| `POST /password-reset/confirm` | `{ token, password }` | 204 ; 400 `invalid_token` ou `weak_password` |
+
+Le jeton de réinitialisation expire après une heure et ne peut être utilisé qu'une fois.
+Le backend actuel journalise le lien côté serveur ; l'envoi d'e-mail doit être configuré côté backend.
 
 ### Badings
+
+`GET /feed` et `GET /badings/:id` sont publics. Les publications, vues et autres interactions restent réservées aux utilisateurs connectés.
 
 | Méthode et chemin | Corps | Réponse |
 |---|---|---|

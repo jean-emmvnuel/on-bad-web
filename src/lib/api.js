@@ -4,13 +4,13 @@
 
 // ─── Configuration ────────────────────────────────────────
 // Réglables sans toucher au code, dans un fichier .env (voir .env.example) :
-//   VITE_API_URL=https://api.jebade.app/api
+//   VITE_API_URL=https://api.jebade.app/api   (seules les variables VITE_* sont visibles dans le navigateur)
 //   VITE_USE_BACKEND=false       (mode démo : rien n'est envoyé au serveur)
-//   VITE_BACKEND_CONTENT=true    (fil, commentaires, profil… viennent aussi du serveur)
+//   VITE_BACKEND_CONTENT=false   (seule la connexion passe par le serveur, le contenu reste simulé)
 
 const env = import.meta.env ?? {};
 
-export const API_URL = env.API_URL || 'http://localhost:3000/api';
+export const API_URL = (env.VITE_API_URL || 'http://localhost:3000/api').replace(/\/$/, '');
 
 /**
  * true  : l'app parle au backend (API_URL).
@@ -19,11 +19,10 @@ export const API_URL = env.API_URL || 'http://localhost:3000/api';
 export const USE_BACKEND = env.VITE_USE_BACKEND !== 'false';
 
 /**
- * Le backend ne fournit pour l'instant que l'authentification (/login, /register).
- * Tant que les routes du contenu (fil, badings, commentaires, profil, notifications…) n'existent pas,
- * ce contenu reste simulé dans le navigateur. Passer VITE_BACKEND_CONTENT=true quand elles seront prêtes.
+ * Fil, badings, commentaires, profil, notifications, stickers… servis par le backend (toutes les routes
+ * de API.md existent). VITE_BACKEND_CONTENT=false garde ce contenu simulé dans le navigateur (démo).
  */
-export const BACKEND_CONTENT = USE_BACKEND && env.VITE_BACKEND_CONTENT === 'true';
+export const BACKEND_CONTENT = USE_BACKEND && env.VITE_BACKEND_CONTENT !== 'false';
 
 const TIMEOUT_MS = 15_000;
 const TOKEN_KEY = 'onbade-token';
@@ -39,6 +38,26 @@ export function setToken(token) {
     if (token) localStorage.setItem(TOKEN_KEY, token);
     else localStorage.removeItem(TOKEN_KEY);
   } catch { /* stockage indisponible (navigation privée) : la session ne survivra pas au rechargement */ }
+}
+
+/**
+ * Date d'expiration (ms) du jeton, lue dans le JWT lui-même (champ `exp`), ou null si illisible.
+ * Le serveur reste seul juge : ceci sert juste à ne pas afficher l'app avec une session déjà morte.
+ */
+export function tokenExpiresAt(token = getToken()) {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+    return typeof payload.exp === 'number' ? payload.exp * 1000 : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Le jeton a-t-il expiré (ou n'y en a-t-il pas) ? */
+export function tokenExpired(token = getToken()) {
+  if (!token) return true;
+  const expiresAt = tokenExpiresAt(token);
+  return expiresAt !== null && expiresAt <= Date.now();
 }
 
 // ─── Erreurs ──────────────────────────────────────────────
@@ -154,13 +173,16 @@ const id = encodeURIComponent;
 export const register = (userData) => post('/register', userData); // { firstname, lastname, username, email, password } → { token, user }
 export const login = (credentials) => post('/login', credentials); // { email, password } → { token, user }
 export const logout = () => post('/logout');
+export const getMe = () => get('/me'); // → { user }
 export const isEmailAvailable = (email) => get('/email-available', { email }); // → { available }
 export const isPseudoAvailable = (pseudo) => get('/pseudo-available', { pseudo }); // → { available }
 export const requestPasswordReset = (email) => post('/password-reset', { email });
+export const confirmPasswordReset = (token, password) => post('/password-reset/confirm', { token, password });
 
 // Badings
-export const getFeed = (since) => get('/feed', { since }); // → { badings, users }
-export const getBading = (badingId) => get(`/badings/${id(badingId)}`); // → { bading, users, comments, rebades }
+export const FEED_PAGE_SIZE = 50;
+export const getFeed = (since) => get('/feed', { since, limit: FEED_PAGE_SIZE }); // → { badings, origins, users }
+export const getBading = (badingId) => get(`/badings/${id(badingId)}`); // → { bading, origins, users, comments, rebades, stickers }
 export const createBading = (payload) => post('/badings', payload); // { text, anonymous, image } → { bading }
 export const addBadingView = (badingId) => post(`/badings/${id(badingId)}/views`);
 export const toggleBadingLike = (badingId) => post(`/badings/${id(badingId)}/like`); // → { likes, likedByMe }
@@ -170,7 +192,7 @@ export const deleteBading = (badingId) => del(`/badings/${id(badingId)}`);
 export const reportBading = (badingId, reason) => post(`/badings/${id(badingId)}/report`, { reason });
 
 // Commentaires
-export const createComment = (badingId, payload) => post(`/badings/${id(badingId)}/comments`, payload); // { text, parentId, stickerId } → { comment }
+export const createComment = (badingId, payload) => post(`/badings/${id(badingId)}/comments`, payload); // { text, parentId, replyToId, stickerId } → { comment }
 export const deleteComment = (commentId) => del(`/comments/${id(commentId)}`);
 export const toggleCommentLike = (commentId) => post(`/comments/${id(commentId)}/like`); // → { likes, likedByMe }
 export const reportComment = (commentId, reason) => post(`/comments/${id(commentId)}/report`, { reason });
@@ -180,11 +202,13 @@ export const searchUsers = (q) => get('/users/search', { q }); // → { users }
 
 // Stickers
 export const createSticker = (image) => post('/stickers', { image }); // → { sticker }
+export const getMyStickers = () => get('/me/stickers'); // → { stickers }
 export const saveSticker = (stickerId) => put(`/me/stickers/${id(stickerId)}`);
 export const unsaveSticker = (stickerId) => del(`/me/stickers/${id(stickerId)}`);
 
 // Mon compte
-export const getProfile = () => get('/me/profile'); // → { user, badings, favorites, users }
+export const getProfile = () => get('/me/profile'); // → { user, badings, favorites, origins, users }
+export const getExport = () => get('/me/export'); // → { user, badings, liked, favorites, origins, comments, users }
 export const updateMe = (changes) => patch('/me', changes); // { pseudo } → { user }
 export const updatePhoto = (image) => put('/me/photo', { image }); // image = data URL ou null → { user }
 export const getSettings = () => get('/me/settings'); // → { mentionPolicy, blocked, badge, deletion }
@@ -198,5 +222,5 @@ export const requestDeletion = (reason) => post('/me/deletion', { reason }); // 
 export const cancelDeletion = () => del('/me/deletion');
 
 // Notifications
-export const getNotifications = () => get('/notifications'); // → { notifications, users, badings }
+export const getNotifications = () => get('/notifications'); // → { notifications, users, badings, origins }
 export const markNotificationsRead = () => post('/notifications/read');

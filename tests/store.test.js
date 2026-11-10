@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import * as S from '../src/lib/store.js';
+import { loadFixtures } from './fixtures.js';
 
-const login = () => { S.resetAll(); S.finishOnboarding(); S.signIn('awa@test.ci', 'AwaLaGo225'); };
+const login = () => { loadFixtures(); S.finishOnboarding(); S.signIn('awa@test.ci', 'AwaLaGo225'); };
 const mine = () => S.get().badings.filter((b) => b.authorId === S.ME && !b.deleted);
 
 beforeEach(login);

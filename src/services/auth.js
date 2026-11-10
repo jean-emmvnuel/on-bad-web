@@ -1,12 +1,15 @@
-// Authentification : inscription en deux étapes, connexion, déconnexion.
+// Authentification : inscription en deux étapes, connexion, déconnexion, mot de passe oublié.
 //
-// Backend Next.js (onbad-backend) :
-//   POST /api/register { firstname, lastname, username, email, password } → 201 { data: { user, token } } ; 409 si déjà pris
-//   POST /api/login    { email, password }                                → 200 { data: { user, token } } ; 404 e-mail inconnu, 401 mauvais mot de passe
-// Les erreurs n'ont pas de code métier : on le déduit du statut HTTP.
+// Backend Next.js (onbad-backend) — erreurs { code, message } :
+//   POST /api/register { firstname, lastname, username, email, password } → 201 { user, token }
+//        409 email_taken / pseudo_taken · 400 invalid_pseudo / invalid_email / weak_password / invalid_name
+//   POST /api/login    { email, password } → 200 { user, token }
+//        404 unknown · 401 wrong_password · 403 account_blocked
+//   GET  /api/email-available?email=   GET /api/pseudo-available?pseudo=   → { available }
+//   POST /api/password-reset { email } → 204      POST /api/logout → 204 (le jeton est révoqué)
 import * as S from '../lib/store.js';
 import * as api from '../lib/api.js';
-import { USE_AUTH_BACKEND, fail } from './mode.js';
+import { USE_AUTH_BACKEND, fail, fireAndForget } from './mode.js';
 import { clearSession, save, storeSession } from './cache.js';
 import { forgetAll } from './freshness.js';
 
@@ -16,10 +19,15 @@ let pendingSignup = null;
 
 export const hasPendingSignup = () => pendingSignup !== null;
 
-/** Relance l'erreur du serveur avec un code métier tiré de son statut HTTP. */
-function withCode(error, codesByStatus) {
-  const code = codesByStatus[error?.status];
-  if (code) fail(code, error.status);
+/**
+ * Relance l'erreur du serveur avec un code compris par les écrans.
+ * Le code envoyé par le serveur est gardé ; `renames` traduit ceux que les écrans nomment autrement,
+ * `codesByStatus` sert de secours si le serveur n'a pas envoyé de code.
+ */
+function withCode(error, { renames = {}, codesByStatus = {} } = {}) {
+  const serverCode = error?.code && !String(error.code).startsWith('http_') ? error.code : null;
+  const code = renames[serverCode] ?? serverCode ?? codesByStatus[error?.status];
+  if (code) error.code = code;
   throw error;
 }
 
@@ -33,27 +41,31 @@ function openSession(email, { token, user }) {
 
 /**
  * Étape 1 de l'inscription : prénom, nom, e-mail, mot de passe.
- * Le backend n'a pas de route pour vérifier l'e-mail à l'avance : il est vérifié à la création du compte.
- * En mode démo, lève 'taken' si l'e-mail est déjà utilisé.
+ * Lève 'taken' si l'e-mail a déjà un compte.
  */
 export async function startSignup({ firstname, lastname, email, password }) {
-  if (!USE_AUTH_BACKEND && (await S.checkEmailFree(email)) === 'taken') fail('taken', 409);
+  if (USE_AUTH_BACKEND) {
+    const { available } = await api.isEmailAvailable(email);
+    if (available === false) fail('taken', 409);
+  } else if ((await S.checkEmailFree(email)) === 'taken') {
+    fail('taken', 409);
+  }
   pendingSignup = { firstname, lastname, email, password };
 }
 
-/**
- * Le pseudo est-il libre ? Renvoie true / false, ou null si on ne peut pas le savoir avant la création
- * du compte (le backend n'a pas encore de route pour ça).
- */
+/** Le pseudo est-il libre ? Renvoie true / false. */
 export async function isPseudoAvailable(pseudo) {
-  if (USE_AUTH_BACKEND) return null;
+  if (USE_AUTH_BACKEND) {
+    const { available } = await api.isPseudoAvailable(pseudo);
+    return !!available;
+  }
   const wanted = pseudo.toLowerCase();
   return !Object.values(S.get().users).some((u) => u.pseudo.toLowerCase() === wanted);
 }
 
 /**
  * Étape 2 : crée le compte et ouvre la session.
- * Lève 'account_exists' si l'e-mail ou le pseudo est déjà utilisé (le backend ne dit pas lequel).
+ * Lève 'taken' (pseudo pris), 'account_exists' (e-mail déjà utilisé entre-temps) ou 'invalid_signup'.
  */
 export async function completeSignup(pseudo) {
   if (!pendingSignup) fail('no_pending_signup', 400);
@@ -64,7 +76,16 @@ export async function completeSignup(pseudo) {
     try {
       response = await api.register({ firstname, lastname, username: pseudo, email, password });
     } catch (error) {
-      withCode(error, { 409: 'account_exists', 400: 'invalid_signup' });
+      withCode(error, {
+        renames: {
+          pseudo_taken: 'taken',
+          email_taken: 'account_exists',
+          invalid_email: 'invalid_signup',
+          weak_password: 'invalid_signup',
+          invalid_name: 'invalid_signup',
+        },
+        codesByStatus: { 409: 'account_exists', 400: 'invalid_signup' },
+      });
     }
     openSession(email, response);
   } else {
@@ -74,14 +95,14 @@ export async function completeSignup(pseudo) {
   pendingSignup = null;
 }
 
-/** Connexion. Lève 'unknown' (pas de compte), 'wrong_password' ou 'invalid_credentials'. */
+/** Connexion. Lève 'unknown' (pas de compte), 'wrong_password', 'invalid_credentials' ou 'account_blocked'. */
 export async function logIn(email, password) {
   if (USE_AUTH_BACKEND) {
     let response;
     try {
       response = await api.login({ email, password });
     } catch (error) {
-      withCode(error, { 404: 'unknown', 401: 'wrong_password', 400: 'invalid_credentials' });
+      withCode(error, { codesByStatus: { 404: 'unknown', 401: 'wrong_password', 400: 'invalid_credentials', 403: 'account_blocked' } });
     }
     openSession(email, response);
     return;
@@ -91,18 +112,20 @@ export async function logIn(email, password) {
   if (result === 'wrong_password') fail('wrong_password', 401);
 }
 
-/** Lève 'not_available' tant que le backend n'a pas de route de réinitialisation. */
-export async function requestPasswordReset() {
-  if (USE_AUTH_BACKEND) fail('not_available', 501);
+/**
+ * Mot de passe oublié : le serveur envoie un lien par e-mail (même réponse que le compte existe ou non).
+ * En mode démo, lève 'not_available'.
+ */
+export async function requestPasswordReset(email) {
+  if (!USE_AUTH_BACKEND) fail('not_available', 501);
+  await api.requestPasswordReset(email);
 }
 
-/**
- * Déconnexion. Le jeton (JWT, valable 1 h) n'est pas gardé côté serveur : l'oublier suffit,
- * il n'y a pas de route /logout à appeler.
- */
+/** Déconnexion : le serveur révoque le jeton (sans attendre sa réponse), puis on l'oublie. */
 export function logOut() {
   forgetAll();
   if (USE_AUTH_BACKEND) {
+    if (api.getToken()) fireAndForget(api.logout()); // le jeton est lu avant d'être effacé juste en dessous
     api.setToken(null);
     clearSession();
     save();

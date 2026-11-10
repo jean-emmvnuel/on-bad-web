@@ -1,18 +1,16 @@
 // Badings : fil, page d'un bading, publication, recherche de pseudos pour les mentions.
 import * as S from '../lib/store.js';
 import * as api from '../lib/api.js';
-import { simulateEngagement } from '../lib/notify.js';
 import { USE_BACKEND, fail, fireAndForget } from './mode.js';
-import { save, storeBadings, storeCommentsOf, storeUsers, toLocalId, toServerId } from './cache.js';
-
-const DEMO_ENGAGEMENT_DELAY = 1500;
+import { save, storeBadings, storeCommentsOf, storeStickers, storeUsers, syncCommentCount, toLocalId, toServerId, pruneFeed } from './cache.js';
 
 /** Charge le fil. */
 export async function loadFeed() {
   if (!USE_BACKEND) return;
-  const { badings, users } = await api.getFeed();
+  const { badings, origins = [], users } = await api.getFeed();
   storeUsers(users);
-  storeBadings(badings);
+  pruneFeed(badings, api.FEED_PAGE_SIZE);
+  storeBadings([...badings, ...origins]);
   save();
 }
 
@@ -21,10 +19,10 @@ export async function refreshFeed() {
   if (!USE_BACKEND) return S.refreshFeed();
 
   const newest = S.feed()[0]?.createdAt;
-  const { badings, users } = await api.getFeed(newest);
+  const { badings, origins = [], users } = await api.getFeed(newest);
   const fresh = badings.filter((b) => !S.bading(b.id));
   storeUsers(users);
-  storeBadings(badings);
+  storeBadings([...badings, ...origins]);
   save();
   return fresh.length;
 }
@@ -36,14 +34,19 @@ export async function refreshFeed() {
 export async function loadBading(badingId) {
   if (!USE_BACKEND) return true;
   try {
-    const { bading, users, comments, rebades = [] } = await api.getBading(badingId);
+    const { bading, users, comments, rebades = [], origins = [], stickers = [] } = await api.getBading(badingId);
     storeUsers(users);
-    storeBadings([bading, ...rebades]);
+    storeBadings([bading, ...rebades, ...origins]);
+    storeStickers(stickers);
     storeCommentsOf(badingId, comments);
+    syncCommentCount(badingId);
     save();
     return true;
   } catch (error) {
-    if (error.status === 404) return false;
+    if (error.status === 404) {
+      S.forgetBadings([badingId]); // n'existe plus : il disparaît aussi du fil et du profil
+      return false;
+    }
     throw error;
   }
 }
@@ -65,7 +68,6 @@ export async function publish(text, anonymous, image) {
 
   if (!USE_BACKEND) {
     const { id } = S.publish(text, anonymous, image);
-    setTimeout(() => simulateEngagement(id), DEMO_ENGAGEMENT_DELAY); // démo : des rires arrivent tout seuls
     return id;
   }
 
@@ -128,7 +130,8 @@ export async function rebade(badingId, text, anonymous) {
   if (!USE_BACKEND) return S.rebade(badingId, text, anonymous);
   const { bading, rebades } = await api.createRebade(badingId, { text: text.trim().slice(0, S.RULES.opinionMax), anonymous });
   storeBadings([bading]);
-  const origin = S.bading(badingId);
+  // Rebader une rebade rebade le bading d'origine : c'est son compteur que le serveur renvoie.
+  const origin = S.bading(bading.rebadeOf ?? badingId);
   if (origin && typeof rebades === 'number') origin.rebades = rebades;
   save();
 }

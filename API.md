@@ -3,30 +3,24 @@
 Ce document décrit ce que le site web envoie au backend et ce qu'il attend en retour.
 Les appels sont faits par `src/lib/api.js` ; les réponses sont rangées dans le store par `src/services/`.
 
-> **Ce qui existe aujourd'hui** dans `onbad-backend` : `POST /api/login` et `POST /api/register` (voir ci-dessous).
-> Tout le reste de ce document est **proposé** à partir des besoins des écrans. Tant que ces routes n'existent pas,
-> le contenu reste simulé dans le navigateur (`VITE_BACKEND_CONTENT=false`).
-
-### Ce que le site attend de /login et /register (format actuel du backend)
+> **Toutes les routes de ce document existent** dans `onbad-backend` (voir son README pour les routes d'administration).
+> Le contenu vient du backend par défaut ; `VITE_BACKEND_CONTENT=false` le garde simulé dans le navigateur.
 
 Réponses enveloppées, que le site déballe (`src/lib/api.js`) :
 
 ```json
-{ "success": true, "message": "…", "data": { "user": { "id", "username", "firstName", "lastName", "email" }, "token": "<JWT>" } }
+{ "success": true, "message": "…", "data": { … } }
+{ "success": false, "code": "taken", "message": "Ce pseudo est déjà pris" }
 ```
 
-| Route | Corps envoyé | Erreurs comprises |
-|---|---|---|
-| `POST /register` | `{ firstname, lastname, username, email, password }` | 400 données invalides, 409 e-mail ou pseudo déjà pris |
-| `POST /login` | `{ email, password }` | 400 données invalides, 404 e-mail inconnu, 401 mauvais mot de passe |
-
-Le site traduit `username` → pseudo, `avatarUrl` → photo, `createdAt` → date d'inscription, et ne garde aucun autre champ.
+`/login` et `/register` renvoient `{ user, token }` ; `user` est mon profil complet
+(`id, username, pseudo, verified, photo, joinedAt, email, firstName, lastName, bio, points, mentionPolicy, badges`).
 
 ## Conventions
 
 | Sujet | Règle |
 |---|---|
-| Adresse | `VITE_API_URL` dans `.env` (par défaut `http://localhost:3000/api`) |
+| Adresse | `VITE_API_URL` dans `.env` (par défaut `http://localhost:3000/api`) — seules les variables `VITE_*` sont lues |
 | Format | JSON en entrée et en sortie (sauf `POST /me/badge-request` : `multipart/form-data`) |
 | Session | `/login` et `/register` renvoient un `token`, renvoyé ensuite dans `Authorization: Bearer <token>` |
 | Session expirée | Répondre **401** : le site efface le jeton et renvoie vers la connexion |
@@ -48,10 +42,17 @@ Codes métier reconnus par les écrans :
 |---|---|---|
 | `unknown` | 404 | Connexion : aucun compte pour cet e-mail |
 | `wrong_password` | 401 | Connexion |
-| `taken` | 409 | Inscription (e-mail ou pseudo), changement de pseudo |
+| `account_blocked` | 403 | Connexion et toute route : compte suspendu par l'équipe (motif dans `message`) |
+| `email_taken`, `pseudo_taken` | 409 | Inscription (le site les traduit en `account_exists` / `taken`) |
+| `taken` | 409 | Changement de pseudo |
+| `invalid_pseudo`, `invalid_email`, `weak_password`, `invalid_name` | 400 | Inscription |
+| `session_expired`, `invalid_token`, `unauthorized` | 401 | Toute route connectée |
 | `too_short`, `too_long`, `caption_too_long`, `too_many_mentions`, `blocked_word`, `daily_limit` | 422 | Publication d'un bading |
 | `blocked_word` | 422 | Commentaire |
 | `full` | 422 | Stickers : collection pleine |
+| `not_eligible`, `too_soon`, `invalid_links`, `missing_document` | 422 | Demande de badge vérifié |
+| `already_pending`, `already_verified` | 409 | Demande de badge vérifié |
+| `not_found` | 404 | Bading, commentaire ou sticker introuvable (ou bloqué) |
 
 ## Objets
 
@@ -60,7 +61,7 @@ Les objets ont **la même forme que dans `src/lib/store.js`**, pour que les écr
 ```js
 User         { id, pseudo, verified, hue, photo?, joinedAt? }
 Bading       { id, authorId, anonymous, text, image?: { src, ratio }, rebadeOf?, createdAt,
-               likes, likedByMe, rebades, shares, views, deleted? }
+               likes, likedByMe, rebades, shares, views, commentCount, deleted? }
 Comment      { id, badingId, authorId, text, sticker?, parentId, replyTo?, createdAt, likes, likedByMe }
 Notification { id, kind: 'like'|'rebade'|'mention'|'comment'|'reply'|'badge', actorId?, others?,
                badingId?, badgeStatus?, createdAt, read }
@@ -71,6 +72,8 @@ Deletion     { status: 'none'|'pending', requestedAt?, reason? }
 
 - Un bading **anonyme** ne doit jamais exposer son vrai auteur aux autres (le serveur peut renvoyer `authorId: null`).
   Seul son auteur le voit avec son propre `authorId`.
+- `origins` (renvoyé avec `badings`) : badings d'origine des rebades qui ne sont pas dans la liste, à ranger aussi.
+- Les URL d'images (`image.src`, `photo`, `Sticker.src`) sont absolues : `…/api/uploads/<id>`.
 - `authorId` de l'utilisateur connecté : le site le reconnaît en le comparant à l'`id` reçu à la connexion.
 
 ## Routes
@@ -84,15 +87,16 @@ Deletion     { status: 'none'|'pending', requestedAt?, reason? }
 | `POST /logout` | — | 204 |
 | `GET /email-available?email=` | — | `{ available }` |
 | `GET /pseudo-available?pseudo=` | — | `{ available }` |
-| `POST /password-reset` | `{ email }` | 204 (même si l'e-mail est inconnu) |
+| `POST /password-reset` | `{ email }` | 204 (même si l'e-mail est inconnu) ; le lien est envoyé par e-mail |
+| `POST /password-reset/confirm` | `{ token, password }` | 204 ; 400 `invalid_token` |
 
 ### Badings
 
 | Méthode et chemin | Corps | Réponse |
 |---|---|---|
-| `GET /feed` | — | `{ badings, users }` |
-| `GET /feed?since=<ms>` | — | `{ badings, users }` : seulement ceux publiés après `since` |
-| `GET /badings/:id` | — | `{ bading, users, comments, rebades }` ou **404** |
+| `GET /feed` | — | `{ badings, origins, users }` (50 plus récents) |
+| `GET /feed?since=<ms>` | — | `{ badings, origins, users }` : seulement ceux publiés après `since` (`before=<ms>` : page suivante) |
+| `GET /badings/:id` | — | `{ bading, origins, users, comments, rebades, stickers }` ou **404** |
 | `POST /badings` | `{ text, anonymous, image: { dataUrl, ratio } \| null }` | `{ bading }` |
 | `POST /badings/:id/views` | — | 204 |
 | `POST /badings/:id/like` | — | `{ likes, likedByMe }` (bascule) |
@@ -108,7 +112,7 @@ Deletion     { status: 'none'|'pending', requestedAt?, reason? }
 
 | Méthode et chemin | Corps | Réponse |
 |---|---|---|
-| `POST /badings/:id/comments` | `{ text, stickerId \| null, parentId \| null }` | `{ comment }` |
+| `POST /badings/:id/comments` | `{ text, stickerId \| null, parentId \| null, replyToId? }` | `{ comment }` (`replyToId` : commentaire auquel on répond) |
 | `DELETE /comments/:id` | — | 204 (supprime aussi les réponses) |
 | `POST /comments/:id/like` | — | `{ likes, likedByMe }` (bascule) |
 | `POST /comments/:id/report` | `{ reason }` | 204 |
@@ -119,6 +123,7 @@ Deletion     { status: 'none'|'pending', requestedAt?, reason? }
 |---|---|---|
 | `GET /users/search?q=` | — | `{ users }` (pseudos qui commencent par `q`, sans les comptes bloqués) |
 | `POST /stickers` | `{ image: <data URL> }` | `{ sticker }` |
+| `GET /me/stickers` | — | `{ stickers }` (ma collection) |
 | `PUT /me/stickers/:id` | — | 204 |
 | `DELETE /me/stickers/:id` | — | 204 |
 
@@ -126,8 +131,9 @@ Deletion     { status: 'none'|'pending', requestedAt?, reason? }
 
 | Méthode et chemin | Corps | Réponse |
 |---|---|---|
-| `GET /me/profile` | — | `{ user, badings, favorites, users }` (`badings` = les miens, anonymes compris) |
-| `PATCH /me` | `{ pseudo }` | `{ user }` (le badge vérifié est retiré) |
+| `GET /me` | — | `{ user }` |
+| `GET /me/profile` | — | `{ user, badings, favorites, origins, users }` (`badings` = les miens, anonymes compris) |
+| `PATCH /me` | `{ pseudo?, firstName?, lastName?, bio? }` | `{ user }` (changer de pseudo retire le badge vérifié) |
 | `PUT /me/photo` | `{ image: <data URL> \| null }` | `{ user }` |
 | `GET /me/settings` | — | `{ mentionPolicy, blocked: User[], badge, deletion }` |
 | `PATCH /me/settings` | `{ mentionPolicy: 'everyone' \| 'nobody' }` | 204 |
@@ -138,18 +144,18 @@ Deletion     { status: 'none'|'pending', requestedAt?, reason? }
 | `POST /me/badge-request` | form-data : `links` (répété), `document` (fichier) | `{ badge }` |
 | `POST /me/deletion` | `{ reason \| null }` | `{ deletion }` |
 | `DELETE /me/deletion` | — | 204 |
+| `GET /me/export` | — | `{ user, badings, liked, favorites, origins, comments, users }` (PDF « copie de mes données ») |
 
 ### Notifications
 
 | Méthode et chemin | Corps | Réponse |
 |---|---|---|
-| `GET /notifications` | — | `{ notifications, users, badings }` |
+| `GET /notifications` | — | `{ notifications, users, badings, origins }` |
 | `POST /notifications/read` | — | 204 |
 
 ## Reste dans le navigateur
 
-- **Copie de mes données (PDF)** (`src/lib/export.js`) : construite à partir du cache local, donc incomplète
-  avec le backend. Prévoir une route `GET /me/export`.
+- **Copie de mes données (PDF)** (`src/lib/export.js`) : générée dans le navigateur, après avoir chargé `GET /me/export`.
 - **Brouillon** et **fin de l'onboarding** : restent volontairement dans le navigateur.
 
 Les actions des cartes (rire, rebade, partage, favori, signalement, blocage, suppression) passent par le backend

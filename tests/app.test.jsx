@@ -3,6 +3,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import * as S from '../src/lib/store.js';
+import { loadFixtures } from './fixtures.js';
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -55,7 +56,7 @@ beforeAll(async () => {
   }))));
 
   document.body.innerHTML = '<div id="app"></div><div id="toast"></div><div id="sheet-root"></div>';
-  S.resetAll();
+  loadFixtures();
   location.hash = '#/';
   const { App } = await import('../src/App.jsx');
   root = createRoot($('#app'));

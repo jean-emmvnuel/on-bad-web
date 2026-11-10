@@ -92,6 +92,7 @@ function SettingsContent() {
 
   const exportData = async () => {
     try {
+      await account.loadExport(); // avec le backend : toutes mes données, pas seulement celles déjà en cache
       const { downloadMyData } = await import('../../lib/export.js'); // générateur PDF chargé seulement ici
       downloadMyData();
       toast('Ta copie (PDF) est téléchargée');
@@ -174,9 +175,9 @@ function SettingsContent() {
           <SettingRow icon="logOut" label="Se déconnecter" onClick={logOut} />
         </Section>
 
-        <a className="credit" href={PORTFOLIO_URL} target="_blank" rel="noopener" aria-label="Créé par Jean Emmanuel Ahossi, ouvrir son portfolio">
+        <a className="credit" href={PORTFOLIO_URL} target="_blank" rel="noopener" aria-label="Créé par Jean Emmanuel Ahossi et Marc-Aurel Brouzro">
           <Logo size={28} /><span className="t-small" style={{ color: 'var(--text-3)' }}>On Bade · ORIVERSE</span>
-          <span>Créé par <b style={{ color: 'var(--text)' }}>Jean Emmanuel Ahossi</b></span>
+          <span>Créé par Marc-Aurel Brouzro et Jean Emmanuel Ahossi</span>
           <span className="t-small" style={{ color: 'var(--brand-ink)', textDecoration: 'underline' }}>jeanemmanuel-portfolio-gamma.vercel.app</span>
         </a>
       </div>

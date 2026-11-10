@@ -5,6 +5,7 @@ import { STICKERS, sticker } from '../src/lib/stickers.js';
 import { Avatar, Rich } from '../src/ui/icons.jsx';
 import { Sticker } from '../src/ui/Sticker.jsx';
 import * as S from '../src/lib/store.js';
+import { loadFixtures } from './fixtures.js';
 
 const html = (element) => renderToStaticMarkup(element);
 const stickerHtml = (id) => html(<Sticker id={id} />);
@@ -30,7 +31,7 @@ describe('Stickers', () => {
     expect(new Set(STICKERS.map((s) => s.theme))).toEqual(new Set(['reactions', 'nouchi']));
   });
   it('un sticker retiré par la modération s’affiche comme tel', () => {
-    S.resetAll(); S.customSticker('us1').removed = true;
+    loadFixtures(); S.customSticker('us1').removed = true;
     expect(stickerHtml('us1')).toContain('retiré par la modération');
   });
   it('un sticker inconnu ne casse pas l’affichage', () => { expect(sticker('nope')).toBeUndefined(); expect(stickerHtml('nope')).toBe(''); });

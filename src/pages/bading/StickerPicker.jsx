@@ -1,6 +1,6 @@
 // Stickers dans les commentaires (F8) : sélecteur (un toucher = envoi direct), création, collection,
 // et fiche d'un sticker touché dans un commentaire.
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 import * as S from '../../lib/store.js';
 import { useStore } from '../../lib/useStore.js';
@@ -76,6 +76,11 @@ export function StickerPicker({ onPick }) {
 
   useLayoutEffect(() => {
     if (!reduceMotion()) gsap.from(ref.current, { y: 12, opacity: 0, duration: 0.25, ease: 'expo.out' });
+  }, []);
+
+  // Ma collection vient du serveur (créée ou enregistrée depuis un autre appareil) : mise à jour discrète.
+  useEffect(() => {
+    stickers.load().catch((error) => console.warn('[stickers]', error));
   }, []);
 
   const createFromPhoto = async (e) => {

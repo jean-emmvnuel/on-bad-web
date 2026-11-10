@@ -31,7 +31,11 @@ export default function Login() {
     try {
       await auth.logIn(email, form.values.pw);
     } catch (error) {
-      form.setError(ERROR_FIELDS[error.code] ?? 'form', errorMessage(error, SERVER_MESSAGES));
+      // Compte suspendu par l'équipe : le serveur envoie le motif et la date de fin, on l'affiche tel quel.
+      const message = error.code === 'account_blocked' && error.message !== error.code
+        ? error.message
+        : errorMessage(error, SERVER_MESSAGES);
+      form.setError(ERROR_FIELDS[error.code] ?? 'form', message);
       return;
     }
     // Arrivé par un lien partagé : on ouvre le bading attendu.

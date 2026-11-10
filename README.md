@@ -58,7 +58,7 @@ Réglages dans un fichier `.env` (copie de [`.env.example`](.env.example)) :
 |---|---|
 | `VITE_API_URL` | Adresse du backend (par défaut `http://localhost:3000/api`) |
 | `VITE_USE_BACKEND` | `true` : connexion et inscription par le backend Next.js ; `false` : mode démo, tout est simulé dans le navigateur (`localStorage`) |
-| `VITE_BACKEND_CONTENT` | `true` : le fil, les commentaires, le profil… viennent aussi du backend (routes décrites dans [`API.md`](API.md)) ; `false` par défaut tant qu'elles n'existent pas |
+| `VITE_BACKEND_CONTENT` | `true` (par défaut) : le fil, les commentaires, le profil… viennent aussi du backend (routes décrites dans [`API.md`](API.md)) ; `false` : seule la connexion passe par le backend |
 
 En mode démo, crée un compte avec n'importe quel e-mail. Pour repartir de zéro : `localStorage.removeItem('jebade-web-v1')` dans la console.
 
@@ -74,7 +74,7 @@ src/components/            ← coquille web, carte de bading et ses feuilles (me
 src/ui/                    ← briques d'affichage : icônes, avatar, feuilles, toasts, recadrage, visionneuse, chargement/erreurs
 src/services/              ← lien API ↔ store : appellent le backend et rangent les réponses dans le cache
 src/lib/api.js             ← client HTTP du backend (URL, jeton, erreurs, requêtes identiques regroupées)
-src/lib/store.js           ← état local (cache des données du serveur) + règles métier + données de démo
+src/lib/store.js           ← état local (cache des données du serveur) + règles métier ; démarre vide
 src/lib/router.js          ← routeur par hash (#/chemin) : useLocation, go, back
 src/lib/                   ← mouvement (ressorts), PWA, notifications, stickers, PDF « copie de mes données »
 src/styles/style.css       ← tokens (identiques au mobile), mise en page, composants

@@ -7,9 +7,9 @@ import { save, storeBadings, storeNotifications, storeUsers } from './cache.js';
 /** Charge mes notifications, avec les Badeurs et les badings dont elles parlent. */
 export async function load() {
   if (!USE_BACKEND) return;
-  const { notifications, users = [], badings = [] } = await api.getNotifications();
+  const { notifications, users = [], badings = [], origins = [] } = await api.getNotifications();
   storeUsers(users);
-  storeBadings(badings);
+  storeBadings([...badings, ...origins]);
   storeNotifications(notifications);
   save();
 }

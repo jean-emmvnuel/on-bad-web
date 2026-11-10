@@ -1,5 +1,6 @@
-// L'app React face au backend Next.js tel qu'il existe (seulement /api/login et /api/register),
-// avec ses vraies réponses : enveloppe { success, message, data }, erreurs sans code métier.
+// L'app React en mode « connexion seule » (VITE_BACKEND_CONTENT=false) : l'authentification passe par le
+// backend Next.js, le contenu reste simulé. Réponses au format du backend : enveloppe { success, message, data },
+// erreurs { success: false, code, message }.
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
@@ -10,6 +11,7 @@ const calls = [];
 const json = (status, body) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
 const serverUser = { id: '7f3c-uuid', firstName: 'Awa', lastName: 'Koné', username: 'AwaK', email: 'awa@test.ci', passwordHash: '$argon2id$secret' };
 let registerStatus = 409;
+const takenEmails = new Set();
 
 const routes = {
   'POST /login': (body) => {
@@ -18,8 +20,11 @@ const routes = {
     return json(200, { message: 'User logged in successfully', success: true, data: { user: serverUser, token: 'jwt-1' } });
   },
   'POST /register': () => (registerStatus === 409
-    ? json(409, { message: 'This email is already registered', success: false })
-    : json(201, { message: 'User created successfully', success: true, data: { user: { ...serverUser, passwordHash: undefined }, token: 'jwt-2' } })),
+    ? json(409, { success: false, code: 'email_taken', message: 'Cette adresse e-mail a déjà un compte' })
+    : json(201, { message: 'Compte créé', success: true, data: { user: { ...serverUser, passwordHash: undefined }, token: 'jwt-2' } })),
+  'GET /email-available': (_body, u) => json(200, { success: true, data: { available: !takenEmails.has(u.searchParams.get('email')) } }),
+  'GET /pseudo-available': () => json(200, { success: true, data: { available: true } }),
+  'POST /logout': () => new Response(null, { status: 204 }),
 };
 
 const wait = (ms = 0) => act(() => new Promise((r) => setTimeout(r, ms)));
@@ -49,6 +54,7 @@ let api;
 
 beforeAll(async () => {
   vi.stubEnv('VITE_USE_BACKEND', 'true');
+  vi.stubEnv('VITE_BACKEND_CONTENT', 'false');
   vi.resetModules();
   window.scrollTo = () => {};
   vi.stubGlobal('fetch', vi.fn(async (url, init = {}) => {
@@ -58,7 +64,7 @@ beforeAll(async () => {
     calls.push({ key, body, headers: init.headers });
     const handler = routes[key];
     if (!handler) return json(404, { message: 'Not found' }); // comme Next.js pour une route absente
-    return handler(body);
+    return handler(body, u);
   }));
 
   S = await import('../src/lib/store.js');
@@ -95,23 +101,40 @@ describe('Backend Next.js (connexion et inscription seulement)', () => {
 
   it('connexion : enveloppe lue, jeton gardé, utilisateur converti, aucun hash stocké', async () => {
     await logIn('awa@test.ci', 'motdepasse1');
-    await until(() => location.hash === '#/' && text().includes('Coupure de courant'));
+    await until(() => location.hash === '#/' && text().includes("Qu'est-ce qui t'est arrivé aujourd'hui"));
     expect(api.getToken()).toBe('jwt-1');
     expect(S.me()).toMatchObject({ pseudo: 'AwaK', firstName: 'Awa', lastName: 'Koné' });
     expect(JSON.stringify(S.get())).not.toContain('argon2');
-    // Le contenu reste local tant que le backend n'a pas ses routes : aucun appel à /feed.
+    // VITE_BACKEND_CONTENT=false : le contenu reste local, aucun appel à /feed.
     expect(calls.map((c) => c.key)).not.toContain('GET /feed');
     // Aucun en-tête inventé (il ferait échouer le contrôle CORS du navigateur).
     expect(Object.keys(calls.at(-1).headers).sort()).toEqual(['Accept', 'Content-Type']);
   });
 
-  it('déconnexion : jeton oublié, pas d’appel à /logout', async () => {
+  it('déconnexion : jeton révoqué côté serveur (/logout avec le jeton) puis oublié', async () => {
     await goTo('#/settings');
     await until(() => byText('Se déconnecter'));
     await click(byText('Se déconnecter'));
     await until(() => text().includes('Content de te revoir'));
     expect(api.getToken()).toBeNull();
-    expect(calls.map((c) => c.key)).not.toContain('POST /logout');
+    const logout = calls.find((c) => c.key === 'POST /logout');
+    expect(logout?.headers.Authorization).toBe('Bearer jwt-1');
+  });
+
+  it('inscription : e-mail déjà utilisé repéré dès la première étape', async () => {
+    takenEmails.add('deja@test.ci');
+    await goTo('#/auth/signup');
+    await until(() => $('#firstname'));
+    await type($('#firstname'), 'Awa');
+    await type($('#lastname'), 'Koné');
+    await type($('#email'), 'deja@test.ci');
+    await type($('#pw'), 'motdepasse1');
+    await type($('#pw2'), 'motdepasse1');
+    await click(byText('Continuer'));
+    await until(() => text().includes('Un compte existe déjà avec cet e-mail'));
+    expect($('#pseudo')).toBeNull();
+    await goTo('#/auth/login');
+    await until(() => $('#email'));
   });
 
   it('inscription : prénom et nom envoyés, pseudo dans « username », compte existant (409) signalé', async () => {
@@ -126,7 +149,7 @@ describe('Backend Next.js (connexion et inscription seulement)', () => {
     await until(() => $('#pseudo'));
 
     await type($('#pseudo'), 'AwaK');
-    await until(() => text().includes('vérifiée à la création du compte'));
+    await until(() => text().includes('Disponible'));
     await click($('[role="checkbox"]'));
     await click(byText('Entrer dans On Bade'));
     await until(() => text().includes('Cet e-mail ou ce pseudo est déjà utilisé'));

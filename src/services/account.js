@@ -2,17 +2,17 @@
 import * as S from '../lib/store.js';
 import * as api from '../lib/api.js';
 import { USE_BACKEND } from './mode.js';
-import { save, storeBadings, storeMe, storeUsers, toLocalId, toServerId } from './cache.js';
+import { save, storeBadings, storeComment, storeMe, storeUsers, toLocalId, toServerId } from './cache.js';
 
 // ─── Profil ───────────────────────────────────────────────
 
 /** Charge mon profil, mes badings (signés et anonymes) et mes favoris. */
 export async function loadProfile() {
   if (!USE_BACKEND) return;
-  const { user, badings, favorites, users } = await api.getProfile();
+  const { user, badings, favorites, origins = [], users } = await api.getProfile();
   storeUsers(users);
   storeMe(user);
-  storeBadings([...badings, ...favorites]);
+  storeBadings([...badings, ...favorites, ...origins]);
   S.get().favorites = favorites.map((b) => b.id);
   save();
 }
@@ -30,6 +30,23 @@ export async function changePseudo(pseudo) {
   if (!USE_BACKEND) return S.changePseudo(pseudo);
   const { user } = await api.updateMe({ pseudo });
   storeMe(user);
+  save();
+}
+
+/**
+ * Copie de mes données : charge depuis le serveur tout ce qui concerne mon compte (mes badings, ceux qui
+ * m'ont fait rire, mes favoris, mes commentaires et ceux reçus) pour que le PDF soit complet.
+ */
+export async function loadExport() {
+  if (!USE_BACKEND) return;
+  const { user, badings, liked, favorites, origins, comments, users } = await api.getExport();
+  storeUsers(users);
+  storeMe(user);
+  storeBadings([...badings, ...liked, ...favorites, ...origins]);
+  // On ajoute sans écraser : un bading déjà ouvert garde aussi les commentaires des autres Badeurs.
+  const known = new Set(S.get().comments.map((c) => c.id));
+  comments.filter((c) => !known.has(c.id)).forEach(storeComment);
+  S.get().favorites = favorites.map((b) => b.id);
   save();
 }
 

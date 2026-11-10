@@ -1,7 +1,7 @@
 // État de l'app + règles métier V1 (portage du store mobile).
-// Les actions correspondent aux routes de BACKEND.md : remplacer leur corps par des appels API.
+// Sert de cache aux données du serveur ; en mode démo (sans serveur), garde les données dans le navigateur.
 
-const min = 60_000, h = 60 * min, d = 24 * h;
+const d = 86_400_000;
 export const ME = 'me';
 
 export const RULES = { minLength: 10, maxLength: 1000, captionMax: 280, myStickersMax: 1000, opinionMax: 280, commentMax: 500, dailyLimit: 20, maxMentions: 5, badge: { activeDays: 30, minLaughs: 1000 }, badgeRetryDays: 30, deletionDays: 30 };
@@ -10,83 +10,54 @@ let seq = 0;
 export const uid = (prefix) => `${prefix}${Date.now().toString(36)}${(seq++).toString(36)}`;
 const BANNED = ['connard', 'pute', 'nègre', 'tuer'];
 
-function seed() {
-  const now = Date.now();
-  const users = {
-    u1: { id: 'u1', pseudo: 'Koffi225', verified: false, hue: 28 },
-    u2: { id: 'u2', pseudo: 'AwaLaGo', verified: false, hue: 330 },
-    u3: { id: 'u3', pseudo: 'LeVraiZoba', verified: true, hue: 200 },
-    u4: { id: 'u4', pseudo: 'Tantie_Brou', verified: false, hue: 140 },
-    u5: { id: 'u5', pseudo: 'Djidji_Kpakpato', verified: false, hue: 52 },
-    u6: { id: 'u6', pseudo: 'YopougonFM', verified: true, hue: 265 },
-  };
-  // Vues de démo proportionnelles aux rires (un bading est lu bien plus souvent qu'il ne fait rire).
-  const B = (o) => ({ likedByMe: false, rebades: 0, shares: 0, views: Math.round((o.likes ?? 0) * 6.3 + 41), ...o });
-  const badings = [
-    B({ id: 'm1', authorId: ME, anonymous: false, text: "J'ai dit à mon patron que j'étais malade. Il m'a vu au match le soir à la télé, au premier rang, en train de danser. Lundi il m'a demandé si le docteur était bon.", createdAt: now - 3 * h, likes: 13, rebades: 2, shares: 1 }),
-    B({ id: 'm2', authorId: ME, anonymous: true, text: "J'ai fait semblant de comprendre l'anglais pendant toute une réunion. À la fin on m'a demandé de faire le résumé.", createdAt: now - 2 * d, likes: 64, rebades: 5, shares: 9 }),
-    B({ id: 'b1', authorId: 'u1', anonymous: false, text: "Gbaka m'a déposé devant la maison, j'ai dit merci au chauffeur comme si c'était un taxi privé. Tout le gbaka a applaudi. Je suis descendu en marchant comme ministre 😭", createdAt: now - 12 * min, likes: 248, rebades: 31, shares: 54 }),
-    B({ id: 'b2', authorId: 'u2', anonymous: true, text: "J'ai envoyé « ma chérie tu me manques » dans le groupe de la famille au lieu de l'envoyer à mon gars. Papa a répondu « moi aussi ». Depuis on ne parle plus de ça.", createdAt: now - 47 * min, likes: 1032, likedByMe: true, rebades: 120, shares: 410 }),
-    B({ id: 'b3', authorId: 'u4', anonymous: false, rebadeOf: 'b2', text: "Le « moi aussi » de papa là, c'est la phrase la plus dangereuse de 2026 💀", createdAt: now - 30 * min, likes: 87, shares: 4 }),
-    B({ id: 'b4', authorId: 'u3', anonymous: false, text: "Coupure de courant à 21h. Tout le quartier sort. Courant revient. Tout le monde crie « ÉHHH » comme si la Côte d'Ivoire venait de marquer. On est un peuple simple.", createdAt: now - 2 * h, likes: 3410, rebades: 402, shares: 1290 }),
-    B({ id: 'b5', authorId: 'u5', anonymous: false, text: "Au maquis j'ai commandé « comme d'habitude ». La serveuse m'a regardé. C'était ma première fois là-bas. Elle m'a amené attiéké poisson quand même. Elle me connaît mieux que moi.", createdAt: now - 5 * h, likes: 512, rebades: 18, shares: 77 }),
-    B({ id: 'b6', authorId: 'u6', anonymous: false, rebadeOf: 'b4', text: '', createdAt: now - 6 * h, likes: 40, shares: 2 }),
-    B({ id: 'b7', authorId: 'u1', anonymous: true, text: "Ma mère m'a demandé de « regarder » la sauce sur le feu. J'ai regardé. Littéralement. Elle a brûlé pendant que je regardais. Elle a dit que je suis intelligent pour rien.", createdAt: now - d, likes: 2201, rebades: 260, shares: 640 }),
-  ];
-  const C = (o) => ({ likes: 0, likedByMe: false, parentId: null, ...o });
-  const comments = [
-    C({ id: 'c1', badingId: 'b4', authorId: 'u2', text: "Le « ÉHHH » collectif c'est notre hymne national bis 😭", createdAt: now - 90 * min, likes: 42 }),
-    C({ id: 'c2', badingId: 'b4', authorId: 'u1', text: 'Et après tout le monde rentre comme si de rien était', createdAt: now - 70 * min, parentId: 'c1', replyTo: 'AwaLaGo', likes: 8 }),
-    C({ id: 'c3', badingId: 'b4', authorId: 'u5', text: 'Chez nous on applaudit même le frigo quand il redémarre', createdAt: now - 40 * min, likes: 17 }),
-    C({ id: 'c4', badingId: 'b1', authorId: 'u4', text: 'Ministre de la gbaka 😂', createdAt: now - 8 * min, likes: 5 }),
-    C({ id: 'c5', badingId: 'b2', authorId: 'u3', text: 'Papa a vu, papa a compris, papa a validé.', createdAt: now - 30 * min, likes: 64 }),
-    C({ id: 'c6', badingId: 'b2', authorId: 'u6', text: 'On veut la suite de cette histoire', createdAt: now - 20 * min, parentId: 'c5', replyTo: 'LeVraiZoba', likes: 3 }),
-    C({ id: 'c7', badingId: 'm1', authorId: 'u3', text: 'Le docteur était bon ou pas finalement ? 😭', createdAt: now - 2 * h, likes: 11 }),
-    C({ id: 'c8', badingId: 'b4', authorId: 'u6', text: '', sticker: 'ehhh', createdAt: now - 55 * min, likes: 23 }),
-    C({ id: 'c9', badingId: 'b4', authorId: 'u4', text: '', sticker: 'mort', createdAt: now - 50 * min, parentId: 'c1', replyTo: 'AwaLaGo', likes: 6 }),
-    C({ id: 'c10', badingId: 'b2', authorId: 'u1', text: '', sticker: 'gate', createdAt: now - 25 * min, likes: 14 }),
-    C({ id: 'c11', badingId: 'b1', authorId: 'u2', text: '', sticker: 'us2', createdAt: now - 6 * min, likes: 14 }),
-    C({ id: 'c12', badingId: 'b1', authorId: 'u6', text: '', sticker: 'us3', createdAt: now - 4 * min, likes: 3 }),
-    C({ id: 'c13', badingId: 'b4', authorId: 'u1', text: '', sticker: 'us1', createdAt: now - 45 * min, parentId: 'c1', replyTo: 'AwaLaGo', likes: 6 }),
-  ];
-  // Stickers personnels de démo (créés par d'autres Badeurs) pour tester « Ajouter à mes stickers ».
-  const customStickers = {
-    us1: { id: 'us1', ownerId: 'u1', label: "Gbaka boss", createdAt: now - 3 * d, src: `data:image/svg+xml,${encodeURIComponent("<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 512 512\"><rect x=\"16\" y=\"16\" width=\"480\" height=\"480\" rx=\"96\" fill=\"#ffb547\"/><rect x=\"70\" y=\"150\" width=\"372\" height=\"190\" rx=\"40\" fill=\"#1a1919\"/><rect x=\"100\" y=\"180\" width=\"70\" height=\"60\" rx=\"10\" fill=\"#5ab0ff\"/><rect x=\"190\" y=\"180\" width=\"70\" height=\"60\" rx=\"10\" fill=\"#5ab0ff\"/><rect x=\"280\" y=\"180\" width=\"70\" height=\"60\" rx=\"10\" fill=\"#5ab0ff\"/><rect x=\"370\" y=\"180\" width=\"44\" height=\"60\" rx=\"10\" fill=\"#5ab0ff\"/><circle cx=\"150\" cy=\"345\" r=\"38\" fill=\"#1a1919\" stroke=\"#ffb547\" stroke-width=\"14\"/><circle cx=\"362\" cy=\"345\" r=\"38\" fill=\"#1a1919\" stroke=\"#ffb547\" stroke-width=\"14\"/><text x=\"256\" y=\"120\" text-anchor=\"middle\" font-family=\"Arial Black, Arial, sans-serif\" font-weight=\"900\" font-size=\"70\" fill=\"#1a1919\">GBAKA</text><text x=\"256\" y=\"455\" text-anchor=\"middle\" font-family=\"Arial Black, Arial, sans-serif\" font-weight=\"900\" font-size=\"64\" fill=\"#1a1919\">BOSS</text></svg>")}` },
-    us2: { id: 'us2', ownerId: 'u2', label: "Tantie a dit non", createdAt: now - 4 * d, src: `data:image/svg+xml,${encodeURIComponent("<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 512 512\"><rect x=\"16\" y=\"16\" width=\"480\" height=\"480\" rx=\"96\" fill=\"#ff6fa8\"/><circle cx=\"256\" cy=\"230\" r=\"140\" fill=\"#8a4b2a\"/><path d=\"M116 210 Q256 40 396 210 Q330 130 256 140 Q182 130 116 210Z\" fill=\"#1a1919\"/><path d=\"M180 205 l50 18 M332 205 l-50 18\" stroke=\"#1a1919\" stroke-width=\"14\" stroke-linecap=\"round\"/><circle cx=\"208\" cy=\"240\" r=\"14\" fill=\"#1a1919\"/><circle cx=\"304\" cy=\"240\" r=\"14\" fill=\"#1a1919\"/><path d=\"M206 305 Q256 280 306 305\" stroke=\"#1a1919\" stroke-width=\"14\" fill=\"none\" stroke-linecap=\"round\"/><text x=\"256\" y=\"455\" text-anchor=\"middle\" font-family=\"Arial Black, Arial, sans-serif\" font-weight=\"900\" font-size=\"72\" fill=\"#1a1919\">NON !</text></svg>")}` },
-    us3: { id: 'us3', ownerId: 'u6', label: "Yop City", createdAt: now - 5 * d, src: `data:image/svg+xml,${encodeURIComponent("<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 512 512\"><rect x=\"16\" y=\"16\" width=\"480\" height=\"480\" rx=\"96\" fill=\"#9810e6\"/><rect x=\"70\" y=\"250\" width=\"70\" height=\"170\" fill=\"#ede3fa\"/><rect x=\"155\" y=\"190\" width=\"80\" height=\"230\" fill=\"#ffffff\"/><rect x=\"250\" y=\"230\" width=\"70\" height=\"190\" fill=\"#ede3fa\"/><rect x=\"335\" y=\"170\" width=\"90\" height=\"250\" fill=\"#ffffff\"/><circle cx=\"390\" cy=\"105\" r=\"42\" fill=\"#ffb547\"/><text x=\"256\" y=\"130\" text-anchor=\"middle\" font-family=\"Arial Black, Arial, sans-serif\" font-weight=\"900\" font-size=\"74\" fill=\"#ffffff\">YOP</text><text x=\"256\" y=\"480\" text-anchor=\"middle\" font-family=\"Arial Black, Arial, sans-serif\" font-weight=\"900\" font-size=\"54\" fill=\"#ffffff\">CITY</text></svg>")}` },
-  };
-  const notifications = [
-    { id: 'n1', kind: 'like', actorId: 'u1', others: 12, badingId: 'm1', createdAt: now - 8 * min, read: false },
-    { id: 'n2', kind: 'mention', actorId: null, badingId: 'b5', createdAt: now - 40 * min, read: false },
-    { id: 'n3', kind: 'comment', actorId: 'u3', badingId: 'm1', createdAt: now - 2 * h, read: true },
-    { id: 'n4', kind: 'badge', actorId: null, badgeStatus: 'refused', createdAt: now - 3 * d, read: true },
-  ];
-  const incoming = [
-    B({ id: 'n-1', authorId: 'u2', anonymous: false, text: "Mon voisin a mis la musique à fond à 6h du matin. Je suis allé me plaindre. Il m'a donné une bière. Maintenant on danse ensemble à 6h.", likes: 3 }),
-    B({ id: 'n-2', authorId: 'u5', anonymous: true, text: "Le woro-woro m'a demandé la monnaie de 10 000. J'ai dit que j'ai pas. Il a sorti la monnaie de 10 000 de sa poche pour me montrer qu'il en a, lui.", likes: 9, rebades: 1 }),
-    B({ id: 'n-3', authorId: 'u3', anonymous: false, text: "Ma tante a envoyé un vocal de 7 minutes pour dire « ok ». Les 6 premières minutes c'était le bruit du marché.", likes: 21, rebades: 2, shares: 3 }),
-  ];
+/** État d'un navigateur qui arrive pour la première fois : aucune donnée. */
+function initialState() {
   return {
-    v: 5, onboarded: false, session: null, users, badings, comments, notifications, incoming,
-    draft: { text: '', anonymous: false, image: null }, recentStickers: [], customStickers, myStickers: [], mentionPolicy: 'everyone', favorites: [], blocked: [], postedToday: 0,
-    badge: { status: 'refused', reason: 'il faut au moins 1 000 rires reçus sur tes badings signés', decidedAt: now - 3 * d },
+    v: DATA_VERSION, onboarded: false, session: null, users: {}, badings: [], comments: [], notifications: [],
+    draft: { text: '', anonymous: false, image: null }, recentStickers: [], customStickers: {}, myStickers: [], mentionPolicy: 'everyone', favorites: [], blocked: [], postedToday: 0,
+    badge: { status: 'none' },
     deletion: { status: 'none' }, pendingLink: null, notifEnabled: false, accounts: {}, pendingSignup: null,
   };
 }
 
 const KEY = 'jebade-web-v1';
-let state;
-try { state = JSON.parse(localStorage.getItem(KEY)) || seed(); } catch { state = seed(); }
-// Migration v1 → v2 (images et stickers) sans perdre la session ni les badings de la démo.
-if (state.v === 1) { state.v = 2; state.recentStickers = []; state.draft = { ...state.draft, image: null }; state.comments.push(...seed().comments.filter((c) => c.sticker)); }
-if (state.v === 2) { const s = seed(); state.v = 3; state.customStickers = s.customStickers; state.myStickers = []; state.comments.push(...s.comments.filter((c) => ['c11', 'c12', 'c13'].includes(c.id))); }
-// v3 → v4 : les avatars générés sont remplacés par une vraie photo de profil.
-if (state.v === 3) { state.v = 4; Object.values(state.users).forEach((u) => delete u.avatar); if (state.session?.user) delete state.session.user.avatar; }
-// v4 → v5 : compteur de vues sur chaque bading.
-if (state.v === 4) { state.v = 5; state.badings.forEach((b) => { if (b.views == null) b.views = Math.round((b.likes || 0) * 6.3 + (b.authorId === ME ? 0 : 41)); }); }
-export const DATA_VERSION = 5;
-// Données trop anciennes ou abîmées : on repart de la démo.
-if (state.v !== DATA_VERSION) state = seed();
+export const DATA_VERSION = 6;
+
+// Anciennes versions du site : elles contenaient des données de démonstration (faux Badeurs, faux badings…).
+const DEMO_USERS = ['u1', 'u2', 'u3', 'u4', 'u5', 'u6'];
+const DEMO_BADINGS = ['m1', 'm2', 'b1', 'b2', 'b3', 'b4', 'b5', 'b6', 'b7', 'n-1', 'n-2', 'n-3'];
+const DEMO_STICKERS = ['us1', 'us2', 'us3'];
+const DEMO_BADGE_REASON = 'il faut au moins 1 000 rires reçus sur tes badings signés';
+
+/** Retire les données de démonstration en gardant le reste (session, comptes, brouillon, mes publications). */
+function withoutDemoData(old) {
+  const st = { ...initialState(), ...old, v: DATA_VERSION };
+  delete st.incoming;
+  DEMO_USERS.forEach((id) => delete st.users[id]);
+  DEMO_STICKERS.forEach((id) => delete st.customStickers[id]);
+  st.badings = (st.badings ?? []).filter((b) => !DEMO_BADINGS.includes(b.id) && !DEMO_USERS.includes(b.authorId));
+  const kept = new Set(st.badings.map((b) => b.id));
+  st.badings = st.badings.filter((b) => !b.rebadeOf || kept.has(b.rebadeOf));
+  st.comments = (st.comments ?? []).filter((c) => kept.has(c.badingId) && !DEMO_USERS.includes(c.authorId));
+  st.notifications = [];
+  st.favorites = (st.favorites ?? []).filter((id) => kept.has(id));
+  st.blocked = (st.blocked ?? []).filter((id) => !DEMO_USERS.includes(id));
+  st.myStickers = (st.myStickers ?? []).filter((id) => !DEMO_STICKERS.includes(id));
+  st.recentStickers = (st.recentStickers ?? []).filter((id) => !DEMO_STICKERS.includes(id));
+  if (st.badge?.reason === DEMO_BADGE_REASON) st.badge = { status: 'none' };
+  return st;
+}
+
+function load() {
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem(KEY)); } catch { /* données illisibles */ }
+  if (!saved || typeof saved !== 'object') return initialState();
+  if (saved.v === DATA_VERSION) return saved;
+  if (saved.v === 5) return withoutDemoData(saved);
+  return initialState(); // données trop anciennes ou abîmées : on repart de zéro
+}
+
+let state = load();
 
 const listeners = new Set();
 let saveTimer;
@@ -110,14 +81,39 @@ if (typeof addEventListener === 'function') addEventListener('pagehide', () => {
 export const subscribe = (fn) => (listeners.add(fn), () => listeners.delete(fn));
 export const getVersion = () => version;
 export const get = () => state;
-export function resetAll() { state = seed(); commit(); }
-/** Sauvegarde + notifie après une mutation directe (faux serveur). */
+export function resetAll() { state = initialState(); commit(); }
+/** Sauvegarde + notifie après une modification directe de l'état (services). */
 export function touch() { commit(); }
 
 /** Résultat de `compute()` gardé tant que la version du store ne change pas. */
 function memo(compute) {
   let at = -1, value;
   return () => { if (at !== version) { value = compute(); at = version; } return value; };
+}
+
+// ─── Nettoyage du cache ───────────────────────────────────
+
+/**
+ * Oublie tout le contenu gardé dans le navigateur (badings, commentaires, notifications, autres Badeurs…),
+ * sans toucher à la session, aux réglages ni au brouillon. `source` note d'où viendra le prochain contenu.
+ */
+export function clearContent(source) {
+  const me = state.users[ME];
+  Object.assign(state, {
+    users: me ? { [ME]: me } : {}, badings: [], comments: [], notifications: [],
+    customStickers: {}, myStickers: [], recentStickers: [], favorites: [], contentSource: source,
+  });
+  commit();
+}
+
+/** Retire du cache les badings dont l'identifiant est dans `ids`, avec leurs commentaires. */
+export function forgetBadings(ids) {
+  const gone = ids instanceof Set ? ids : new Set(ids);
+  if (!gone.size) return;
+  state.badings = state.badings.filter((b) => !gone.has(b.id));
+  state.comments = state.comments.filter((c) => !gone.has(c.badingId));
+  state.favorites = state.favorites.filter((id) => !gone.has(id));
+  commit();
 }
 
 // ─── Lecture ──────────────────────────────────────────────
@@ -154,7 +150,8 @@ const commentCounts = memo(() => {
   });
   return counts;
 });
-export const commentCount = (badingId) => commentCounts().get(badingId) ?? 0;
+// Avec le backend, chaque bading porte son `commentCount` (le fil n'a pas chargé les commentaires).
+export const commentCount = (badingId) => bading(badingId)?.commentCount ?? commentCounts().get(badingId) ?? 0;
 export function threads(badingId) {
   const live = liveComments(badingId);
   return live.filter((c) => !c.parentId).sort((a, b) => b.likes - a.likes || a.createdAt - b.createdAt)
@@ -203,7 +200,7 @@ export async function logIn(email, pw) {
   return 'ok';
 }
 export function signIn(identifier, pseudo) {
-  const u = { id: ME, pseudo, verified: false, hue: 280, joinedAt: Date.now() - 45 * d };
+  const u = { id: ME, pseudo, verified: false, hue: 280, joinedAt: state.users[ME]?.joinedAt ?? Date.now() };
   state.users[ME] = { ...u, ...(state.users[ME]?.photo ? { photo: state.users[ME].photo } : {}) };
   state.session = { email: identifier, user: state.users[ME] };
   commit();
@@ -301,13 +298,8 @@ export function toggleCommentLike(id) { const c = state.comments.find((x) => x.i
 export function setNotifEnabled(v) { state.notifEnabled = v; commit(); }
 export function pushNotification(n) { state.notifications.unshift({ ...n, id: uid('n'), createdAt: Date.now(), read: false }); commit(); }
 
-/** Faux serveur : nouveaux badings au pull-to-refresh. */
-export function refreshFeed() {
-  return new Promise((resolve) => setTimeout(() => {
-    const batch = state.incoming.splice(0, Math.random() < 0.5 ? 1 : 2).map((b) => ({ ...b, createdAt: Date.now() }));
-    state.badings.unshift(...batch); commit(); resolve(batch.length);
-  }, 1300));
-}
+/** Mode démo (sans serveur) : il n'y a personne d'autre, donc jamais de nouveau bading à récupérer. */
+export const refreshFeed = () => Promise.resolve(0);
 
 // ─── Formatage ────────────────────────────────────────────
 export function timeAgo(ts) {

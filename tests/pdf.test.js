@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { MiniPdf, toWin } from '../src/lib/pdf.js';
 import * as S from '../src/lib/store.js';
 import { buildMyDataPdf } from '../src/lib/export.js';
+import { loadFixtures } from './fixtures.js';
 
 // jsdom n'a pas Blob.arrayBuffer : on passe par FileReader, comme un vieux navigateur.
 const text = (blob) => new Promise((ok) => { const r = new FileReader(); r.onload = () => ok(new TextDecoder('latin1').decode(r.result)); r.readAsArrayBuffer(blob); });
@@ -46,7 +47,7 @@ describe('Générateur PDF', () => {
 
 describe('PDF « copie de mes données »', () => {
   it('contient le compte, les statistiques et les badings, sur plusieurs pages si besoin', async () => {
-    S.resetAll(); S.finishOnboarding(); S.signIn('awa@test.ci', 'AwaLaGo225');
+    loadFixtures(); S.finishOnboarding(); S.signIn('awa@test.ci', 'AwaLaGo225');
     for (let i = 0; i < 25; i++) S.get().postedToday = 0, S.publish(`Histoire numéro ${i} du quartier, encore une galère`, false);
     const blob = buildMyDataPdf();
     expect(blob.type).toBe('application/pdf');

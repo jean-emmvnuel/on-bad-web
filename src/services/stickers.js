@@ -2,9 +2,21 @@
 import * as S from '../lib/store.js';
 import * as api from '../lib/api.js';
 import { USE_BACKEND, fail } from './mode.js';
-import { save, toLocalId } from './cache.js';
+import { save, storeStickers } from './cache.js';
+import { isFresh, markFresh } from './freshness.js';
 
 const isCollectionFull = () => (S.get().myStickers || []).length >= S.RULES.myStickersMax;
+const RELOAD_AFTER = 5 * 60_000;
+
+/** Charge ma collection depuis le serveur (stickers créés et enregistrés), au plus toutes les 5 minutes. */
+export async function load() {
+  if (!USE_BACKEND || isFresh('stickers', RELOAD_AFTER)) return;
+  markFresh('stickers');
+  const { stickers } = await api.getMyStickers();
+  storeStickers(stickers);
+  S.get().myStickers = stickers.map((s) => s.id);
+  save();
+}
 
 /** Crée un sticker et l'ajoute à ma collection. Lève 'full' ou 'storage'. */
 export async function create(dataUrl) {
@@ -18,7 +30,7 @@ export async function create(dataUrl) {
 
   const { sticker } = await api.createSticker(dataUrl);
   const state = S.get();
-  state.customStickers[sticker.id] = { ...sticker, ownerId: toLocalId(sticker.ownerId) };
+  storeStickers([sticker]);
   state.myStickers = [sticker.id, ...(state.myStickers || [])];
   save();
   return sticker.id;

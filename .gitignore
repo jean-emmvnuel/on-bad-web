@@ -7,3 +7,4 @@ launch.json
 dist/
 .env
 .env.local
+.claude

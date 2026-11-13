@@ -10,14 +10,13 @@ import { toast } from '../ui/toast.js';
 import { toastError, usePending } from '../ui/remote.jsx';
 import { Quoted } from './BadingCard.jsx';
 
-const PUBLIC_HOST = 'https://jebade.app';
 const REPORT_REASONS = ['Haine', 'Harcèlement', 'Contenu choquant', 'Spam', 'Usurpation', 'Autre'];
 
 /**
  * Lien dynamique : `…/?b=<id>` reste dans la portée de la PWA, donc il s'ouvre dans l'app installée
- * (Android, ordinateur) et sinon sur le site, directement sur le bading. En prod → jebade.app/b/<id>.
+ * (Android, ordinateur) et sinon sur le site, directement sur le bading. En prod → onbade.oriverse-it.tech/?b=<id>.
  */
-export const badingLink = (id) => (location.hostname.endsWith('jebade.app') ? `${PUBLIC_HOST}/b/${id}` : badingUrl(id));
+export const badingLink = (id) => badingUrl(id);
 
 const teaser = (t) => (t.length > 140 ? `${t.slice(0, 140).trimEnd()}…` : t);
 const shareText = (b, url) => `${b.text ? `« ${teaser(b.text)} »\n\n` : b.image ? '📷 Un bading en image\n\n' : ''}😂 Lis la suite sur On Bade : ${url}`;
@@ -206,7 +205,7 @@ function ShareSheet({ b }) {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 4px 0', color: '#fff' }}>
           <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 17 }}><Logo size={22} color="#fff" /> on bade</span>
-          <span className="t-small" style={{ color: '#F1E4FF' }}>jebade.app</span>
+          <span className="t-small" style={{ color: '#F1E4FF' }}>onbade.oriverse-it.tech</span>
         </div>
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>

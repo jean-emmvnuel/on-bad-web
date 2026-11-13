@@ -17,7 +17,7 @@ const SERVER_MESSAGES = {
   bad_response: 'Le serveur a répondu de façon inattendue. Réessaie dans un instant.',
 };
 const ERROR_FIELDS = { unknown: 'form', wrong_password: 'pw', invalid_credentials: 'form' };
-const RESET_MESSAGES = { not_available: "Le changement de mot de passe n'est pas encore disponible. Contacte-nous à donnees@jebade.app." };
+const RESET_MESSAGES = { not_available: "Le changement de mot de passe n'est pas encore disponible. Contacte-nous à oriverseit@gmail.com." };
 
 export default function Login() {
   const form = useAuthForm(['email', 'pw']);

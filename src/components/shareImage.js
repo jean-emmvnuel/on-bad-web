@@ -44,6 +44,6 @@ export async function renderShareImage(b) {
   await logoImg.decode().catch(() => {});
   g.drawImage(logoImg, 70, H - 160, 90, 90);
   g.fillStyle = '#fff'; g.font = '800 64px "Bricolage Grotesque"'; g.fillText('on bade', 175, H - 95);
-  g.fillStyle = '#F1E4FF'; g.font = '500 40px Figtree'; g.textAlign = 'right'; g.fillText('jebade.app', W - 70, H - 100);
+  g.fillStyle = '#F1E4FF'; g.font = '500 40px Figtree'; g.textAlign = 'right'; g.fillText('onbade.oriverse-it.tech', W - 70, H - 100);
   return new Promise((resolve) => c.toBlob(resolve, 'image/png'));
 }

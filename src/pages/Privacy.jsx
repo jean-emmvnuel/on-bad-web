@@ -6,7 +6,7 @@ import { back } from '../lib/router.js';
 import { Icon } from '../ui/icons.jsx';
 
 const SOURCE = `${import.meta.env.BASE_URL}data/privacy.json`;
-const RIGHTS_MAILTO = 'mailto:donnees@jebade.app?subject=Mes%20donn%C3%A9es%20Je%20Bade';
+const RIGHTS_MAILTO = 'mailto:oriverseit@gmail.com?subject=Mes%20donn%C3%A9es%20Je%20Bade';
 
 // Le document ne change pas pendant la visite : chargé une seule fois.
 let cachedDoc = null;

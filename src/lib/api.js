@@ -4,7 +4,7 @@
 
 // ─── Configuration ────────────────────────────────────────
 // Réglables sans toucher au code, dans un fichier .env (voir .env.example) :
-//   VITE_API_URL=https://api.jebade.app/api   (seules les variables VITE_* sont visibles dans le navigateur)
+//   VITE_API_URL=https://backend-onbade.oriverse-it.tech/api   (seules les variables VITE_* sont visibles dans le navigateur)
 //   VITE_USE_BACKEND=false       (mode démo : rien n'est envoyé au serveur)
 //   VITE_BACKEND_CONTENT=false   (seule la connexion passe par le serveur, le contenu reste simulé)
 

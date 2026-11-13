@@ -79,7 +79,7 @@ function Hero({ b, commentCount, onComment }) {
       {b.text ? <p className="t-story" style={{ fontSize: 19 }}><Rich text={b.text} /></p> : null}
       {b.image ? (
         <button className="zoom-img" aria-label="Agrandir l'image" onClick={() => openLightbox(b.image.src)}>
-          <BadingImage b={b} className="full" />
+          <BadingImage b={b} className="b-img-hero" />
         </button>
       ) : null}
       <span className="t-meta">{date}</span>

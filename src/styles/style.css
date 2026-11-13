@@ -365,9 +365,11 @@ button.srow:hover { background: var(--surface-2); }
 
 /* ───────────── Images des badings (F1) ───────────── */
 .b-img { position: relative; width: 100%; max-width: 100%; min-width: 0; margin: 10px 0 4px; border-radius: var(--r-lg); overflow: hidden; background: var(--surface-2); border: 1px solid var(--line); aspect-ratio: var(--ratio); max-height: 520px; }
-.b-img img { display: block; width: 100%; max-width: 100%; height: 100%; object-fit: cover; }
+/* La photo est posée par-dessus le cadre : seul le ratio (aspect-ratio) fixe la taille, jamais la taille réelle du fichier. */
+.b-img img { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; }
 .b-img.small { max-height: 220px; margin-top: 8px; }
-.b-img.full { max-height: none; margin: 0; }
+/* Page d'un bading : image en entier (pas la classe utilitaire .full, réservée aux pages pleine hauteur). */
+.b-img.b-img-hero { max-height: none; margin: 0; }
 /* min-width: 0 : dans une colonne flex (page d'un bading), l'image ne doit pas imposer sa largeur naturelle. */
 .zoom-img { display: block; width: 100%; min-width: 0; max-width: 100%; padding: 0; text-align: left; cursor: zoom-in; border-radius: var(--r-lg); }
 .lightbox { position: fixed; inset: 0; z-index: 120; background: rgba(10, 9, 9, 0.94); display: grid; place-items: center; padding: 24px; cursor: zoom-out; }

@@ -45,6 +45,11 @@ svg.i { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-widt
 .t-small { font-size: 13px; font-weight: 500; }
 .muted { color: var(--text-2); }
 .mention { color: var(--brand-ink); }
+a.mention { text-decoration: none; }
+a.mention:hover, a.user-link:hover { text-decoration: underline; }
+.user-link { color: inherit; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; flex: none; border-radius: 50%; }
+.bub-who .user-link { align-self: flex-start; max-width: 100%; border-radius: 4px; }
+.comment .user-link { border-radius: 4px; }
 
 /* ───────────── Splash ───────────── */
 #splash { position: fixed; inset: 0; z-index: 100; background: var(--bg); display: grid; place-items: center; }

@@ -1,5 +1,6 @@
 // Icônes, logo, badge vérifié, avatar, texte avec @mentions : les briques d'affichage de toute l'app.
 import { ICONS } from '../lib/icons-data.js';
+import * as S from '../lib/store.js';
 
 /** Icône Lucide (tracés statiques de icons-data.js). */
 export function Icon({ name, className = '', style }) {
@@ -76,5 +77,11 @@ const MENTION = /(@[\w.]+)/g;
 
 /** Texte d'un utilisateur avec les @mentions colorées (React échappe tout le reste). */
 export function Rich({ text = '' }) {
-  return text.split(MENTION).map((part, i) => (i % 2 ? <span key={i} className="mention">{part}</span> : part));
+  return text.split(MENTION).map((part, i) => {
+    if (!(i % 2)) return part;
+    const u = S.userByPseudo(part.slice(1).replace(/\.+$/, ''));
+    return u
+      ? <a key={i} className="mention" href={`#${S.profilePath(u.id)}`}>{part}</a>
+      : <span key={i} className="mention">{part}</span>;
+  });
 }

@@ -199,6 +199,7 @@ export const reportComment = (commentId, reason) => post(`/comments/${id(comment
 
 // Utilisateurs
 export const searchUsers = (q) => get('/users/search', { q }); // → { users }
+export const getUser = (userId) => get(`/users/${id(userId)}`); // → { user, badings, origins, users } (badings signés seulement)
 
 // Stickers
 export const createSticker = (image) => post('/stickers', { image }); // → { sticker }

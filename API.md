@@ -127,10 +127,16 @@ Le backend actuel journalise le lien côté serveur ; l'envoi d'e-mail doit êtr
 | Méthode et chemin | Corps | Réponse |
 |---|---|---|
 | `GET /users/search?q=` | — | `{ users }` (pseudos qui commencent par `q`, sans les comptes bloqués) |
+| `GET /users/:id` | — | `{ user, badings, origins, users }` : profil public d'un Badeur ou **404** `not_found` |
 | `POST /stickers` | `{ image: <data URL> }` | `{ sticker }` |
 | `GET /me/stickers` | — | `{ stickers }` (ma collection) |
 | `PUT /me/stickers/:id` | — | 204 |
 | `DELETE /me/stickers/:id` | — | 204 |
+
+`GET /users/:id` est **public** (lisible sans être connecté), comme `GET /feed`. Il alimente la page `#/u/<id>` :
+- `user` : `{ id, pseudo, verified, photo?, joinedAt? }` — jamais l'e-mail, le nom ni les réglages ;
+- `badings` : ses badings **signés** seulement (rebades comprises), du plus récent au plus ancien.
+  Ses badings anonymes ne doivent **jamais** y figurer, même s'ils sont à lui.
 
 ### Mon compte
 

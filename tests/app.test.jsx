@@ -152,6 +152,17 @@ describe('App React (mode démo)', () => {
     await nav('/privacy', () => text().includes('Paragraphe'));
   });
 
+  it('profil d’un autre Badeur : ses badings signés, jamais ses anonymes', async () => {
+    await nav('/', () => document.querySelector('a.user-link[href="#/u/u1"]'));
+    await click(document.querySelector('a.name.user-link[href="#/u/u1"]'));
+    // Le fil contient aussi « Gbaka m… » : on attend que la page du profil ait remplacé le fil.
+    await until(() => location.hash === '#/u/u1' && $('#view .profile-hero') && $('#view').textContent.includes('Gbaka m'));
+    expect(text()).toContain('@Koffi225');
+    expect($('#view').textContent).not.toContain('regarder » la sauce'); // b7 est anonyme
+    await nav('/u/inconnu', () => text().includes('Ce Badeur est introuvable'));
+    await nav('/u/me', () => location.hash === '#/profile');
+  });
+
   it('se déconnecter renvoie à la connexion', async () => {
     await nav('/settings', () => byText('Se déconnecter'));
     await click(byText('Se déconnecter'));

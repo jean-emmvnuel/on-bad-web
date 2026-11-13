@@ -45,8 +45,8 @@ function badingsForTab(tab) {
   return mySignedBadings();
 }
 
-function publicStats() {
-  const signed = mySignedBadings();
+/** Statistiques publiques d'un profil, calculées sur ses badings signés. */
+export function statsOf(signed) {
   const sum = (field) => signed.reduce((total, b) => total + (b[field] || 0), 0);
   return [
     [signed.filter((b) => !b.rebadeOf).length, 'badings'],
@@ -66,7 +66,7 @@ const TopBar = () => (
 );
 
 /** Nombre qui monte de 0 à `value` à la première apparition, puis suit les changements. */
-function CountUp({ value }) {
+export function CountUp({ value }) {
   const ref = useRef(null);
   const first = useRef(true);
   useLayoutEffect(() => {
@@ -161,7 +161,7 @@ function ProfileContent() {
         <div className="pf-name"><span className="t-title">{me.pseudo}</span>{me.verified ? <Verified /> : null}</div>
         <span className="t-meta">@{me.pseudo} · Badeur depuis {joined}</span>
         <div className="pf-stats">
-          {publicStats().map(([value, label]) => <div key={label}><CountUp value={value} /><span>{label}</span></div>)}
+          {statsOf(mySignedBadings()).map(([value, label]) => <div key={label}><CountUp value={value} /><span>{label}</span></div>)}
         </div>
         <button className="btn btn-secondary btn-sm pf-btn" onClick={openPhotoMenu}><Icon name="image" /> {me.photo ? 'Changer ma photo' : 'Ajouter une photo'}</button>
         <input type="file" accept={ACCEPT} hidden ref={fileRef} onChange={onPhotoFile} />

@@ -40,7 +40,12 @@ describe('Stickers', () => {
 describe('Affichage sûr', () => {
   it('échappe le HTML des contenus des utilisateurs', () => {
     expect(html(<p><Rich text="<img src=x onerror=alert(1)>" /></p>)).toBe('<p>&lt;img src=x onerror=alert(1)&gt;</p>');
-    expect(html(<p><Rich text="<b>@Koffi225</b>" /></p>)).toBe('<p>&lt;b&gt;<span class="mention">@Koffi225</span>&lt;/b&gt;</p>');
+    expect(html(<p><Rich text="<b>@Inconnu</b>" /></p>)).toBe('<p>&lt;b&gt;<span class="mention">@Inconnu</span>&lt;/b&gt;</p>');
+  });
+  it('une @mention d’un Badeur connu mène à son profil', () => {
+    loadFixtures();
+    const koffi = Object.values(S.get().users).find((u) => u.pseudo === 'Koffi225');
+    expect(html(<Rich text="Merci @Koffi225." />)).toBe(`Merci <a class="mention" href="#/u/${koffi.id}">@Koffi225.</a>`);
   });
   it('avatar : masque pour l’anonyme, photo si elle existe, initiale sinon', () => {
     expect(html(<Avatar user={null} />)).toContain('Badeur anonyme');

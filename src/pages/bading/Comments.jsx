@@ -81,10 +81,12 @@ function Comment({ c, isReply, onReply, onSticker }) {
 
   return (
     <div className={`comment ${isReply ? 'reply' : ''}`} ref={ref} data-c={c.id}>
-      <Avatar user={author ?? null} size={isReply ? 28 : 36} />
+      {author
+        ? <a className="user-link" href={`#${S.profilePath(c.authorId)}`} aria-label={`Profil de @${author.pseudo}`} tabIndex={-1}><Avatar user={author} size={isReply ? 28 : 36} /></a>
+        : <Avatar user={null} size={isReply ? 28 : 36} />}
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 3 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <b style={{ fontSize: 14 }}>{author?.pseudo ?? 'Badeur'}</b>{author?.verified ? <Verified /> : null}
+          {author ? <a className="user-link" href={`#${S.profilePath(c.authorId)}`}><b style={{ fontSize: 14 }}>{author.pseudo}</b></a> : <b style={{ fontSize: 14 }}>Badeur</b>}{author?.verified ? <Verified /> : null}
           <span className="t-small" style={{ color: 'var(--text-3)' }}>· {S.timeAgo(c.createdAt)}</span>
         </div>
         {c.replyTo ? <span className="t-small" style={{ color: 'var(--text-3)' }}>en réponse à <span className="mention">@{c.replyTo}</span></span> : null}

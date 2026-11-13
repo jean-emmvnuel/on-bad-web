@@ -119,6 +119,13 @@ export function forgetBadings(ids) {
 // ─── Lecture ──────────────────────────────────────────────
 export const me = () => state.session?.user ?? null;
 export const user = (id) => state.users[id];
+/** Adresse du profil d'un Badeur (le mien : mon profil complet). */
+export const profilePath = (id) => (id === ME ? '/profile' : `/u/${id}`);
+/** Badeur connu dont le pseudo est `pseudo` (sans le @), pour relier les @mentions à son profil. */
+export const userByPseudo = (pseudo) => {
+  const p = pseudo.toLowerCase();
+  return Object.values(state.users).find((u) => u.pseudo?.toLowerCase() === p);
+};
 
 // Index id → position : retrouver un bading ne parcourt plus toute la liste à chaque appel.
 let byId = new Map(), indexed = null, indexedLength = -1;

@@ -156,11 +156,17 @@ export function BadingCard({ b }) {
     <article className={`card-row bub ${t.anonymous ? 'anon' : ''}`} data-go="" tabIndex={0} onClick={goOnClick(path)} onKeyDown={goOnEnter(path)}>
       {plain ? <div className="rebaded"><Icon name="repeat" /> {who} {mine ? 'as rebadé' : 'a rebadé'}</div> : null}
       <header className="bub-head">
-        <Avatar user={author} size={40} />
+        {author
+          ? <a className="user-link" href={`#${S.profilePath(t.authorId)}`} aria-label={`Profil de @${author.pseudo}`} tabIndex={-1}><Avatar user={author} size={40} /></a>
+          : <Avatar user={author} size={40} />}
         <div className="bub-who">
-          <span className="name" style={t.anonymous ? { color: 'var(--text-2)' } : undefined}>
-            {n.name}{author?.verified && !t.anonymous ? <Verified /> : null}
-          </span>
+          {author ? (
+            <a className="name user-link" href={`#${S.profilePath(t.authorId)}`}>
+              {n.name}{author.verified ? <Verified /> : null}
+            </a>
+          ) : (
+            <span className="name" style={t.anonymous ? { color: 'var(--text-2)' } : undefined}>{n.name}</span>
+          )}
           <span className="t-meta">{n.handle && !t.anonymous ? `${n.handle} · ` : ''}{S.timeAgo(t.createdAt)}</span>
         </div>
         <button className="icon-btn" style={{ width: 36, height: 36 }} aria-label="Plus d'options" onClick={(e) => { e.stopPropagation(); openMore(t); }}>

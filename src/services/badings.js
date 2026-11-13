@@ -168,3 +168,21 @@ export async function searchPseudos(query) {
   storeUsers(users);
   return users.slice(0, 5).map((u) => S.user(toLocalId(u.id)));
 }
+
+/**
+ * Profil public d'un autre Badeur : ses infos et ses badings signés (jamais ses anonymes).
+ * Renvoie false s'il n'existe pas (ou plus) côté serveur.
+ */
+export async function loadUser(userId) {
+  if (!USE_BACKEND) return !!S.user(userId);
+  try {
+    const { user, badings = [], origins = [], users = [] } = await api.getUser(toServerId(userId));
+    storeUsers([user, ...users]);
+    storeBadings([...badings, ...origins]);
+    save();
+    return true;
+  } catch (error) {
+    if (error.status === 404) return false;
+    throw error;
+  }
+}

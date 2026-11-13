@@ -5,7 +5,7 @@ import { back, go } from '../../lib/router.js';
 import * as auth from '../../services/auth.js';
 import { Icon } from '../../ui/icons.jsx';
 import { errorMessage, usePending } from '../../ui/remote.jsx';
-import { PSEUDO_FORMAT_ERROR, PSEUDO_PATTERN } from '../../ui/pseudo.js';
+import { PSEUDO_RULES, pseudoFormatError } from '../../ui/pseudo.js';
 import { AuthFrame } from './AuthFrame.jsx';
 
 const CHARTE = [
@@ -36,7 +36,8 @@ function usePseudoStatus(pseudo) {
 
   useEffect(() => {
     if (!pseudo) return setCheck({ status: 'idle', error: '' });
-    if (!PSEUDO_PATTERN.test(pseudo)) return setCheck({ status: 'invalid', error: PSEUDO_FORMAT_ERROR });
+    const formatError = pseudoFormatError(pseudo);
+    if (formatError) return setCheck({ status: 'invalid', error: formatError });
 
     setCheck({ status: 'checking', error: '' });
     let current = true;
@@ -89,7 +90,7 @@ export default function Pseudo() {
 
   const free = check.status === 'free';
   const usable = free || check.status === 'unchecked';
-  let hint = <p className="hint">{DEFAULT_HINT}</p>;
+  let hint = <p className="hint">{DEFAULT_HINT} {PSEUDO_RULES}</p>;
   if (check.error) hint = <p className="error">{check.error}</p>;
   else if (free) hint = <p className="hint" style={{ color: 'var(--success)' }}>Disponible</p>;
   else if (check.status === 'unchecked') hint = <p className="hint">{UNCHECKED_HINT}</p>;

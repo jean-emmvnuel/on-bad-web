@@ -7,7 +7,7 @@ import { Icon } from '../../ui/icons.jsx';
 import { closeSheet, openSheet } from '../../ui/sheet.jsx';
 import { toast } from '../../ui/toast.js';
 import { errorMessage, toastError, usePending } from '../../ui/remote.jsx';
-import { PSEUDO_FORMAT_ERROR, PSEUDO_PATTERN } from '../../ui/pseudo.js';
+import { PSEUDO_RULES, pseudoFormatError } from '../../ui/pseudo.js';
 
 export const DAY = 86_400_000;
 
@@ -25,7 +25,8 @@ function PseudoSheet() {
 
   // Le format se vérifie tout de suite ; la disponibilité est demandée au serveur après une courte pause.
   useEffect(() => {
-    if (!PSEUDO_PATTERN.test(pseudo)) return setCheck({ ok: false, message: PSEUDO_FORMAT_ERROR, error: true });
+    const formatError = pseudoFormatError(pseudo);
+    if (formatError) return setCheck({ ok: false, message: formatError, error: true });
     if (pseudo === me.pseudo) return setCheck({ ok: false, message: '', error: false });
     // Changer seulement la casse de mon propre pseudo ne demande pas de vérification.
     if (pseudo.toLowerCase() === me.pseudo.toLowerCase()) return setCheck({ ok: true, message: '', error: false });
@@ -65,6 +66,7 @@ function PseudoSheet() {
           <input id="np" maxLength={20} autoCapitalize="off" value={value} onChange={(e) => setValue(e.target.value)} />
         </div>
         <p className={check.error ? 'error' : 'hint'}>{check.message}</p>
+        {check.error ? null : <p className="hint">{PSEUDO_RULES}</p>}
       </div>
       {me.verified ? <p className="error">Ton badge vérifié sera retiré : il faudra le redemander.</p> : null}
       <button className="btn btn-primary btn-block" disabled={!check.ok || pending} aria-busy={pending || undefined} onClick={save}>

@@ -7,7 +7,6 @@ import { canInstall, install, onInstallChange } from '../lib/pwa.js';
 import { goOnClick, goOnEnter } from '../lib/router.js';
 import { Avatar, Icon, Logo } from '../ui/icons.jsx';
 
-const PORTFOLIO_URL = 'https://jeanemmanuel-portfolio-gamma.vercel.app/';
 
 /** Le bouton « Installer » a-t-il un sens ici ? (suit l'invite d'installation du navigateur) */
 export const useCanInstall = () => useSyncExternalStore(onInstallChange, canInstall);
@@ -112,7 +111,7 @@ export function Shell({ nav, guest = false, viewRef, children }) {
             <p className="muted">Une vraie app sur ton téléphone ou ton ordinateur : ouverture instantanée, notifications, et les liens partagés s'ouvrent directement dedans.</p>
             <button className="btn btn-primary btn-sm" onClick={install}><Icon name="download" /> Installer</button>
           </div>
-          <footer>On Bade · une app ORIVERSE<br />Créé par <a href={PORTFOLIO_URL} target="_blank" rel="noopener">Jean Emmanuel Ahossi</a></footer>
+          <footer>On Bade · une app ORIVERSE<br />Créé par la team Oriverse-IT</footer>
         </aside>
       </div>
       <nav className="tabbar" aria-label="Onglets">

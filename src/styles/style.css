@@ -358,7 +358,6 @@ button.srow:hover { background: var(--surface-2); }
 
 .empty { padding: 32px; display: flex; flex-direction: column; gap: 14px; align-items: flex-start; }
 .credit { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 32px 16px; text-decoration: none; color: var(--text-2); }
-.credit:hover { opacity: 0.8; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }

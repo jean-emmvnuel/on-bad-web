@@ -12,7 +12,6 @@ import { toast } from '../../ui/toast.js';
 import { ErrorState, LoadingState, errorMessage, toastError, useRemote } from '../../ui/remote.jsx';
 import { DAY, openBadgeSheet, openDeletionSheet, openPseudoSheet } from './sheets.jsx';
 
-const PORTFOLIO_URL = 'https://jeanemmanuel-portfolio-gamma.vercel.app/';
 
 const BADGE_STATUS_LABELS = {
   none: () => 'Pas encore demandé',
@@ -175,11 +174,10 @@ function SettingsContent() {
           <SettingRow icon="logOut" label="Se déconnecter" onClick={logOut} />
         </Section>
 
-        <a className="credit" href={PORTFOLIO_URL} target="_blank" rel="noopener" aria-label="Créé par Jean Emmanuel Ahossi et Marc-Aurel Brouzro">
+        <div className="credit">
           <Logo size={28} /><span className="t-small" style={{ color: 'var(--text-3)' }}>On Bade · ORIVERSE</span>
-          <span>Créé par Marc-Aurel Brouzro et Jean Emmanuel Ahossi</span>
-          <span className="t-small" style={{ color: 'var(--brand-ink)', textDecoration: 'underline' }}>jeanemmanuel-portfolio-gamma.vercel.app</span>
-        </a>
+          <span>Créé par la team Oriverse-IT</span>
+        </div>
       </div>
     </>
   );

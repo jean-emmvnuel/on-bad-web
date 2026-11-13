@@ -95,7 +95,7 @@ Les liens partagés ont la forme `…/?b=<id>` (l'ancienne forme `…/#/b/<id>` 
 
 <div align="center">
 
-**On Bade** · une app **ORIVERSE** · Créée par **Jean Emmanuel Ahossi** — [portfolio](https://jeanemmanuel-portfolio-gamma.vercel.app/)
+**On Bade** · une app **ORIVERSE** · Créée par la team **Oriverse-IT**
 
 </div>
 

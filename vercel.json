@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/", "has": [{ "type": "query", "key": "b" }], "destination": "/api/share" }
+  ]
+}

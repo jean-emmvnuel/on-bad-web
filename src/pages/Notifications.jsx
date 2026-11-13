@@ -77,7 +77,7 @@ function NotificationList() {
   const [unreadAtOpen] = useState(() => new Set(list.filter((n) => !n.read).map((n) => n.id)));
 
   useLayoutEffect(() => {
-    if (!reduceMotion()) gsap.from(ref.current.querySelectorAll('.card-row'), { y: 12, opacity: 0, duration: 0.35, stagger: 0.04, ease: 'expo.out', clearProps: 'all' });
+    if (!reduceMotion()) gsap.from(ref.current.querySelectorAll('.card-row'), { y: 12, opacity: 0, duration: 0.35, stagger: 0.04, ease: 'expo.out', clearProps: 'transform,opacity' });
   }, []);
 
   useEffect(() => {

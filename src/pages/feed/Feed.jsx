@@ -49,7 +49,7 @@ function Skeleton() {
 /** Les cartes arrivent l'une après l'autre. */
 function animateCards(list) {
   if (!list || reduceMotion()) return;
-  gsap.from(list.querySelectorAll('.card-row'), { y: 14, opacity: 0, duration: 0.45, stagger: 0.045, ease: 'expo.out', clearProps: 'all' });
+  gsap.from(list.querySelectorAll('.card-row'), { y: 14, opacity: 0, duration: 0.45, stagger: 0.045, ease: 'expo.out', clearProps: 'transform,opacity' });
 }
 
 /** En-tête façon X sur mobile : disparaît en descendant, revient au moindre retour vers le haut. */

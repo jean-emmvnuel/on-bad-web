@@ -86,7 +86,7 @@ function BadingList({ tab }) {
   const items = badingsForTab(tab);
 
   useLayoutEffect(() => {
-    if (!reduceMotion()) gsap.from(ref.current.querySelectorAll('.card-row'), { y: 10, opacity: 0, duration: 0.35, stagger: 0.04, ease: 'expo.out', clearProps: 'all' });
+    if (!reduceMotion()) gsap.from(ref.current.querySelectorAll('.card-row'), { y: 10, opacity: 0, duration: 0.35, stagger: 0.04, ease: 'expo.out', clearProps: 'transform,opacity' });
   }, [tab]);
 
   const empty = EMPTY_STATES[tab];

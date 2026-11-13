@@ -1,5 +1,6 @@
 {
   "routes": [
+    { "src": "/b/([^/]+)/?", "status": 302, "headers": { "Location": "/?b=$1" } },
     { "src": "/", "has": [{ "type": "query", "key": "b" }], "dest": "/api/share" },
     { "handle": "filesystem" }
   ]

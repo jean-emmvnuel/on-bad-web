@@ -1,5 +1,6 @@
 {
-  "rewrites": [
-    { "source": "/", "has": [{ "type": "query", "key": "b" }], "destination": "/api/share" }
+  "routes": [
+    { "src": "/", "has": [{ "type": "query", "key": "b" }], "dest": "/api/share" },
+    { "handle": "filesystem" }
   ]
 }

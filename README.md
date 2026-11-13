@@ -52,7 +52,7 @@ npm run build     # site prêt à mettre en ligne dans dist/
 npm run preview   # sert dist/ pour le vérifier avant la mise en ligne
 ```
 
-Réglages dans un fichier `.env` (copie de [`.env.example`](.env.example)) :
+Réglages dans un fichier `.env` (copie de [`.env.example`](.env.example)) ; `npm run build` utilise [`.env.production`](.env.production), qui pointe vers l'API en production (`https://backend-onbade.oriverse-it.tech/api`) :
 
 | Variable | Rôle |
 |---|---|

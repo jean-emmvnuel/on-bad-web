@@ -43,7 +43,7 @@ function card(b) {
     h('div', { flex: 1, alignItems: 'center', padding: '0 70px', gap: 16 },
       img(LOGO, { width: 90, height: 90 }),
       h('div', { color: '#fff', fontSize: 64, fontWeight: 800, fontFamily: 'Bricolage Grotesque', flex: 1 }, 'on bade'),
-      h('div', { color: '#F1E4FF', fontSize: 40, fontWeight: 500 }, 'onbade.oriverse-it.tech')));
+      h('div', { color: '#F1E4FF', fontSize: 40, fontWeight: 500 }, 'onbade.com')));
 }
 
 export default async function handler(request) {

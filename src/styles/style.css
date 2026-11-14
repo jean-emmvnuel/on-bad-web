@@ -591,3 +591,9 @@ body.scrolled .topbar { border-bottom-color: rgba(255, 255, 255, 0.06); box-shad
 .lightbox:active { cursor: grabbing; }
 .lightbox img { will-change: transform; user-select: none; -webkit-user-drag: none; }
 #view { will-change: auto; }
+
+/* ───────────── Partage en story ───────────── */
+.story-preview { display: grid; place-items: center; margin: 0 auto; height: min(46vh, 430px); aspect-ratio: 9 / 16; max-width: 100%; border-radius: var(--r-lg); overflow: hidden; background: var(--surface-2); }
+.story-preview img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.story-preview .sk { width: 100%; height: 100%; }
+.story-preview p { padding: 16px; text-align: center; }

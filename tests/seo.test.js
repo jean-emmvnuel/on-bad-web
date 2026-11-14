@@ -62,6 +62,13 @@ describe('Page publique d’un bading', () => {
     expect(notFoundPage(INDEX)).toContain('<meta name="robots" content="noindex" />');
   });
 
+  it('charset reste la première balise du head', () => {
+    const html = renderPage('<html><head>\n  <meta charset="utf-8" />\n  <title>x</title>\n</head><body><div id="app"></div></body></html>',
+      { title: 't', description: 'd', canonical: 'c', image: 'i', body: '' });
+    expect(html.indexOf('<meta charset')).toBeLessThan(html.indexOf('<base'));
+    expect(html.indexOf('<meta charset')).toBeLessThan(80);
+  });
+
   it('le JSON-LD ne peut pas fermer la balise script', () => {
     const html = renderPage(INDEX, { title: 't', description: 'd', canonical: 'c', image: 'i', ld: { text: '</script><script>alert(1)</script>' }, body: '' });
     expect(html).not.toContain('</script><script>alert(1)');
@@ -72,9 +79,12 @@ describe('Page publique d’un profil', () => {
   it('aperçu du lien : la photo de profil quand il en a une', async () => {
     const page = await loadUserPage('zero', reply({ user: { ...zero, photo: 'https://api/uploads/p1' }, badings: [] }));
     const html = userPage(INDEX, page);
-    expect(html).toContain('<meta property="og:image" content="https://api/uploads/p1" />');
-    expect(html).toContain('<meta name="twitter:image" content="https://api/uploads/p1" />');
-    expect(ld(html).mainEntity.image).toBe('https://api/uploads/p1');
+    // Servie par onbade.com en PNG carré, dimensions déclarées ; la version suit la photo (cache des applis).
+    expect(html).toContain('<meta property="og:image" content="https://www.onbade.com/api/og?avatar=zero&amp;v=p1" />');
+    expect(html).toContain('<meta property="og:image:type" content="image/png" />');
+    expect(html).toContain('<meta property="og:image:height" content="600" />');
+    expect(html).toContain('<meta name="twitter:card" content="summary" />');
+    expect(ld(html).mainEntity.image).toBe('https://www.onbade.com/api/og?avatar=zero&v=p1');
   });
 
   it('pseudo ou identifiant acceptés, le reste refusé', async () => {
@@ -88,7 +98,8 @@ describe('Page publique d’un profil', () => {
     expect(html).toContain('<title>Zero (@zero) sur On Bade</title>');
     expect(html).toContain('<a href="/b/b1">Coupure de courant</a>');
     expect(html).toContain('<link rel="canonical" href="https://www.onbade.com/@zero" />');
-    expect(html).toContain('<meta property="og:image" content="https://www.onbade.com/api/og?avatar=zero" />');
+    expect(html).toContain('<meta property="og:image" content="https://www.onbade.com/api/og?avatar=zero&amp;v=i" />');
+    expect(html).toContain('<meta property="og:image:width" content="600" />');
     expect(html).toContain('<meta name="twitter:card" content="summary" />');
     expect(ld(html)).toMatchObject({ '@type': 'ProfilePage', mainEntity: { name: 'Zero', alternateName: '@zero' } });
   });

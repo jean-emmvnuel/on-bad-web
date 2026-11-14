@@ -1,9 +1,9 @@
 // Image de partage d'un bading (1080×1350), générée côté serveur pour les aperçus de lien.
-// `?avatar=<pseudo>` : avatar d'un Badeur sans photo (aperçu de son profil), 600×600.
+// `?avatar=<pseudo>` : aperçu d'un profil (sa photo recadrée en carré, sinon son initiale), 600×600 PNG.
 // Même mise en page que src/components/shareImage.js (l'image téléchargée depuis l'app).
 import { ImageResponse } from '@vercel/og';
 import { loadBading } from './_lib/bading.js';
-import { SITE_URL, hueFrom, loadUserPage } from './_lib/seo.js';
+import { AVATAR_SIZE, SITE_URL, hueFrom, loadUserPage } from './_lib/seo.js';
 
 export const config = { runtime: 'edge' };
 
@@ -62,27 +62,51 @@ function hsl(h, s, l) {
   return `#${f(0)}${f(8)}${f(4)}`;
 }
 
-const AVATAR = 600;
+const AVATAR = AVATAR_SIZE;
 
-/** Avatar d'un Badeur sans photo (aperçu de son profil) : son initiale sur sa couleur, comme dans l'app. */
+/** Photo de profil en data URL (JPEG ou PNG, ≤ 2 Mo), sinon null. */
+async function photoData(url) {
+  try {
+    const res = await fetch(url);
+    const type = res.headers.get('content-type') ?? '';
+    if (!res.ok || !/^image\/(jpeg|png)/.test(type)) return null;
+    const buf = await res.arrayBuffer();
+    if (buf.byteLength > 2_000_000) return null;
+    let bin = '';
+    const bytes = new Uint8Array(buf);
+    for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+    return `data:${type.split(';')[0]};base64,${btoa(bin)}`;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Image d'aperçu d'un profil (600×600 PNG, servie depuis onbade.com) : sa photo recadrée en carré,
+ * sinon son initiale sur sa couleur, comme dans l'app.
+ */
 async function avatar(pseudo) {
   const page = await loadUserPage(pseudo).catch(() => null);
   if (!page) return new Response('Badeur introuvable', { status: 404 });
   const { user } = page;
-  if (user.photo) return Response.redirect(user.photo, 302);
+  const [photo, bricolage] = await Promise.all([user.photo ? photoData(user.photo) : null, googleFont('Bricolage+Grotesque', 800)]);
+  // Photo illisible ici (format, taille) : la photo d'origine plutôt que l'initiale.
+  if (user.photo && !photo) return Response.redirect(user.photo, 302);
+  if (!bricolage) {
+    // Sans police, le moteur d'image ne fonctionne pas : la photo telle quelle, sinon le logo.
+    return Response.redirect(user.photo || new URL('/assets/icon-512.png', SITE_URL), 302);
+  }
   const hue = hueFrom(user.id);
-  const bricolage = await googleFont('Bricolage+Grotesque', 800);
-  if (!bricolage) return Response.redirect(new URL('/assets/icon-512.png', SITE_URL), 302); // sans police, pas d'image possible
-  return new ImageResponse(
-    h('div', { width: AVATAR, height: AVATAR, background: hsl(hue, 38, 30), alignItems: 'center', justifyContent: 'center' },
-      h('div', { color: hsl(hue, 80, 86), fontSize: 300, fontWeight: 800, fontFamily: 'Bricolage Grotesque', lineHeight: 1 }, (user.pseudo ?? user.username)[0].toUpperCase())),
-    {
-      width: AVATAR,
-      height: AVATAR,
-      fonts: [{ name: 'Bricolage Grotesque', data: bricolage, weight: 800 }],
-      headers: { 'cache-control': 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800' },
-    },
-  );
+  const content = photo
+    ? h('div', { width: AVATAR, height: AVATAR }, img(photo, { width: AVATAR, height: AVATAR, objectFit: 'cover' }))
+    : h('div', { width: AVATAR, height: AVATAR, background: hsl(hue, 38, 30), alignItems: 'center', justifyContent: 'center' },
+      h('div', { color: hsl(hue, 80, 86), fontSize: 300, fontWeight: 800, fontFamily: 'Bricolage Grotesque', lineHeight: 1 }, (user.pseudo ?? user.username)[0].toUpperCase()));
+  return new ImageResponse(content, {
+    width: AVATAR,
+    height: AVATAR,
+    fonts: [{ name: 'Bricolage Grotesque', data: bricolage, weight: 800 }],
+    headers: { 'cache-control': 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800' },
+  });
 }
 
 export default async function handler(request) {

@@ -30,8 +30,16 @@ export function hueFrom(id = '') {
   return h;
 }
 
-/** Image d'aperçu d'un profil : sa photo, sinon son avatar (initiale sur sa couleur) généré par api/og.js. */
-export const profileImage = (u) => u.photo || `${SITE_URL}/api/og?avatar=${encodeURIComponent(u.username)}`;
+export const AVATAR_SIZE = 600;
+
+/**
+ * Image d'aperçu d'un profil, servie par api/og.js depuis onbade.com : sa photo recadrée en carré PNG
+ * (sinon son initiale sur sa couleur). `v` change avec la photo : les applis ne gardent pas l'ancienne en cache.
+ */
+export const profileImage = (u) => {
+  const v = u.photo ? u.photo.split('/').pop().replace(/[^\w-]/g, '').slice(0, 40) : 'i';
+  return `${SITE_URL}/api/og?avatar=${encodeURIComponent(u.username)}&v=${v}`;
+};
 
 async function getJson(path, fetchImpl) {
   const res = await fetchImpl(`${API_URL}${path}`, { headers: { accept: 'application/json' } });
@@ -71,7 +79,12 @@ export async function loadUserPage(key, fetchImpl = fetch) {
  * Place les balises et le contenu dans index.html.
  * `<base href="/">` : l'app est construite avec des chemins relatifs ; sous /b/… ils doivent partir de la racine.
  */
-export function renderPage(html, { title, description, canonical, image, imageAlt, type = 'website', robots, ld, body, largeImage = true }) {
+/**
+ * `imageSize` : dimensions déclarées de l'image d'aperçu. Sans elles, WhatsApp et Facebook doivent d'abord la télécharger
+ * et l'analyser : au premier partage, l'aperçu part souvent sans image. Carrée : petite carte « summary ».
+ */
+export function renderPage(html, { title, description, canonical, image, imageAlt, type = 'website', robots, ld, body, imageSize = { width: 1080, height: 1350 } }) {
+  const largeImage = imageSize.width !== imageSize.height;
   const meta = [
     ['name', 'description', description],
     ['name', 'robots', robots ?? 'index, follow, max-image-preview:large'],
@@ -82,7 +95,10 @@ export function renderPage(html, { title, description, canonical, image, imageAl
     ['property', 'og:description', description],
     ['property', 'og:url', canonical],
     ['property', 'og:image', image],
-    ...(largeImage ? [['property', 'og:image:type', 'image/png'], ['property', 'og:image:width', '1080'], ['property', 'og:image:height', '1350']] : []),
+    ['property', 'og:image:secure_url', image],
+    ['property', 'og:image:type', 'image/png'],
+    ['property', 'og:image:width', String(imageSize.width)],
+    ['property', 'og:image:height', String(imageSize.height)],
     ['property', 'og:image:alt', imageAlt ?? description],
     ['name', 'twitter:card', largeImage ? 'summary_large_image' : 'summary'],
     ['name', 'twitter:title', title],
@@ -103,7 +119,7 @@ export function renderPage(html, { title, description, canonical, image, imageAl
     .replace(/\s*<link rel="canonical"[^>]*>/g, '')
     .replace(/\s*<script type="application\/ld\+json">[\s\S]*?<\/script>/g, '')
     .replace(/<title>[^<]*<\/title>/, `<title>${escapeHtml(title)}</title>`)
-    .replace(/<head>/, `<head>\n  ${head}`)
+    .replace(/<head>(\s*<meta charset="[^"]*" \/>)?/, (open) => `${open}\n  ${head}`)
     .replace(/<div id="app">[\s\S]*?<\/div>\s*<!-- \/app -->|<div id="app"><\/div>/, `<div id="app">${body}</div><!-- /app -->`);
 }
 
@@ -202,12 +218,12 @@ ${badings.length ? `<ul>${badings.map((b) => `<li><a href="${badingPath(b.id)}">
 </main>`;
 
   // Aperçu du lien = photo de profil (carrée) : carte « summary » plutôt que grande image.
-  return renderPage(html, { title, description, canonical, image, imageAlt: `Photo de profil de ${name}`, type: 'profile', ld, body, largeImage: false });
+  return renderPage(html, { title, description, canonical, image, imageAlt: `Photo de profil de ${name}`, type: 'profile', ld, body, imageSize: { width: AVATAR_SIZE, height: AVATAR_SIZE } });
 }
 
 /** Page introuvable : pas d'indexation, l'app affiche son propre message. */
 export function notFoundPage(html) {
-  return html.replace(/<head>/, '<head>\n  <base href="/" />\n  <meta name="robots" content="noindex" />');
+  return html.replace(/<head>(\s*<meta charset="[^"]*" \/>)?/, (open) => `${open}\n  <base href="/" />\n  <meta name="robots" content="noindex" />`);
 }
 
 /** Sitemap XML (badings et profils), à partir de GET /api/sitemap du backend. */

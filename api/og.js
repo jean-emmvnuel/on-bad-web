@@ -1,5 +1,5 @@
 // Image de partage d'un bading (1080×1350), générée côté serveur pour les aperçus de lien.
-// `?avatar=<pseudo>` : aperçu d'un profil (sa photo recadrée en carré, sinon son initiale), 600×600 PNG.
+// `?avatar=<pseudo>` : aperçu d'un profil (sa photo recadrée en carré, sinon son initiale), 400×400 PNG.
 // Même mise en page que src/components/shareImage.js (l'image téléchargée depuis l'app).
 import { ImageResponse } from '@vercel/og';
 import { loadBading } from './_lib/bading.js';
@@ -82,7 +82,7 @@ async function photoData(url) {
 }
 
 /**
- * Image d'aperçu d'un profil (600×600 PNG, servie depuis onbade.com) : sa photo recadrée en carré,
+ * Image d'aperçu d'un profil (400×400 PNG, servie depuis onbade.com) : sa photo recadrée en carré,
  * sinon son initiale sur sa couleur, comme dans l'app.
  */
 async function avatar(pseudo) {
@@ -100,7 +100,7 @@ async function avatar(pseudo) {
   const content = photo
     ? h('div', { width: AVATAR, height: AVATAR }, img(photo, { width: AVATAR, height: AVATAR, objectFit: 'cover' }))
     : h('div', { width: AVATAR, height: AVATAR, background: hsl(hue, 38, 30), alignItems: 'center', justifyContent: 'center' },
-      h('div', { color: hsl(hue, 80, 86), fontSize: 300, fontWeight: 800, fontFamily: 'Bricolage Grotesque', lineHeight: 1 }, (user.pseudo ?? user.username)[0].toUpperCase()));
+      h('div', { color: hsl(hue, 80, 86), fontSize: AVATAR * 0.5, fontWeight: 800, fontFamily: 'Bricolage Grotesque', lineHeight: 1 }, (user.pseudo ?? user.username)[0].toUpperCase()));
   return new ImageResponse(content, {
     width: AVATAR,
     height: AVATAR,

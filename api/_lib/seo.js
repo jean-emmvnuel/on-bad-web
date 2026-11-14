@@ -30,7 +30,8 @@ export function hueFrom(id = '') {
   return h;
 }
 
-export const AVATAR_SIZE = 600;
+// 400 px : assez net pour une vignette, et le PNG reste sous les 300 Ko conseillés par WhatsApp.
+export const AVATAR_SIZE = 400;
 
 /**
  * Image d'aperçu d'un profil, servie par api/og.js depuis onbade.com : sa photo recadrée en carré PNG

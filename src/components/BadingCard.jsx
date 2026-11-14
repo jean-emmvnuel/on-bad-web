@@ -108,8 +108,8 @@ export function ActionsRow({ t, onComment }) {
       <button className="act" aria-label="Rebader" onClick={stop(() => openRebade(t))}>
         <Icon name="repeat" /><span>{S.compact(t.rebades)}</span>
       </button>
-      <button className="act" aria-label="Partager" onClick={stop(() => openShare(t))}>
-        <Icon name="share" />
+      <button className="act" aria-label={`Partager, ${t.shares || 0} partages`} onClick={stop(() => openShare(t))}>
+        <Icon name="share" /><span>{S.compact(t.shares || 0)}</span>
       </button>
       <span className="spacer" />
       <button ref={favRef} className={`act ${isFavorite ? 'on' : ''}`} aria-pressed={isFavorite} aria-label="Favori" onClick={favorite}>

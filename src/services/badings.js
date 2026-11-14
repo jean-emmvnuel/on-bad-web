@@ -157,9 +157,6 @@ export function recordLinkOpen(badingId, source) {
   fireAndForget(api.recordLinkOpen(badingId, source || 'direct'));
 }
 
-/** Partages d'un de mes badings (canaux et ouvertures du lien). */
-export const loadShareStats = (badingId) => api.getShareStats(toServerId(badingId));
-
 /** Supprime mon bading. Attend la confirmation du serveur avant de le retirer de l'écran. */
 export async function remove(badingId) {
   if (USE_BACKEND) await api.deleteBading(badingId);

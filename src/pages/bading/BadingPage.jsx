@@ -49,35 +49,8 @@ function Counts({ b, commentCount }) {
       <Stat value={b.likes} label="rires" />
       <Stat value={commentCount} label="commentaires" />
       <Stat value={b.rebades} label="rebades" />
+      <Stat value={b.shares || 0} label="partages" />
       {b.authorId === S.ME ? <Stat value={b.views || 0} label="vues" /> : null}
-    </div>
-  );
-}
-
-const CHANNEL_LABELS = { whatsapp: 'WhatsApp', facebook: 'Facebook', story: 'Story', download: 'Image enregistrée', copy: 'Lien copié', other: 'Autres', direct: 'Lien direct', unknown: 'Non précisé' };
-
-/** Détail : « WhatsApp 8 · Story 3 · … », du plus fréquent au moins fréquent. */
-const breakdown = (counts) => Object.entries(counts ?? {}).sort((x, y) => y[1] - x[1]).map(([k, n]) => `${CHANNEL_LABELS[k] ?? k} ${S.compact(n)}`).join(' · ');
-
-/**
- * Partages de mon bading (auteur seulement) : partages faits depuis l'app, par canal,
- * et ouvertures du lien hors de l'app (WhatsApp, story, Facebook…), par provenance.
- */
-function ShareStats({ id }) {
-  const [stats, setStats] = useState(null);
-  useEffect(() => {
-    let alive = true;
-    badings.loadShareStats(id).then((s) => { if (alive) setStats(s); }, () => {});
-    return () => { alive = false; };
-  }, [id]);
-  if (!stats) return null;
-  const { shares, opens } = stats;
-  return (
-    <div className="share-stats" data-share-stats="">
-      <p className="t-meta"><Icon name="share" /> <b style={{ color: 'var(--text)' }}>{S.compact(shares.total)}</b> partage{shares.total > 1 ? 's' : ''} depuis l’app · <b style={{ color: 'var(--text)' }}>{S.compact(opens.total)}</b> ouverture{opens.total > 1 ? 's' : ''} du lien</p>
-      {shares.total ? <p className="t-small muted">Partagé via : {breakdown(shares.byChannel)}</p> : null}
-      {opens.total ? <p className="t-small muted">Ouvert depuis : {breakdown(opens.bySource)}</p> : null}
-      {!shares.total && !opens.total ? <p className="t-small muted">Pas encore partagé. Partage-le en story pour le faire tourner.</p> : null}
     </div>
   );
 }
@@ -112,7 +85,6 @@ function Hero({ b, commentCount, onComment }) {
       ) : null}
       <span className="t-meta">{date}</span>
       <Counts b={b} commentCount={commentCount} />
-      {b.authorId === S.ME && USE_BACKEND ? <ShareStats id={b.id} /> : null}
       <div><ActionsRow t={b} onComment={onComment} /></div>
     </section>
   );

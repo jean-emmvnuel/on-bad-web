@@ -32,7 +32,14 @@ self.addEventListener('fetch', (e) => {
   if (req.mode === 'navigate') {
     e.respondWith(
       fetch(req)
-        .then((res) => { const copy = res.clone(); caches.open(VERSION).then((c) => c.put('index.html', copy)); return res; })
+        .then((res) => {
+          // Seule la page d'accueil sert de copie hors ligne (les pages /b/… et /u/… contiennent un bading ou un profil).
+          if (res.ok && url.pathname === new URL(self.registration.scope).pathname && !url.search) {
+            const copy = res.clone();
+            caches.open(VERSION).then((c) => c.put('index.html', copy));
+          }
+          return res;
+        })
         .catch(() => caches.match('index.html')),
     );
     return;

@@ -1,0 +1,7 @@
+# On Bade : badings et profils publics indexables, pas les écrans privés ni l'API.
+User-agent: *
+Allow: /
+Allow: /api/og
+Disallow: /api/
+
+Sitemap: https://www.onbade.com/sitemap.xml

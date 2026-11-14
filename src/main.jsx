@@ -8,6 +8,15 @@ import { App, preloadPages } from './App.jsx';
 
 // Avant le premier rendu : `?b=<id>` (lien partagé) ou un texte partagé vers On Bade deviennent une route.
 consumeLaunchParams();
+// Arrivée par une page publique (/b/…, /u/…, ?b=…) : son titre vaut pour ce bading ou ce profil seulement.
+const landingId = location.hash.match(/^#\/[bu]\/([\w-]+)/)?.[1];
+if (landingId) {
+  addEventListener('hashchange', function restoreTitle() {
+    if (location.hash.includes(landingId)) return;
+    document.title = "On Bade — raconte ce qui t'est arrivé";
+    removeEventListener('hashchange', restoreTitle);
+  });
+}
 if (isStandalone()) document.documentElement.classList.add('standalone');
 
 // Service worker seulement sur le site construit (en développement, il garderait d'anciens fichiers en cache).

@@ -20,6 +20,12 @@ function sync() {
   listeners.forEach((fn) => fn());
 }
 
+/**
+ * Relit l'adresse après un `history.replaceState` (qui ne déclenche pas « hashchange »).
+ * Ex. au démarrage, un lien partagé `?b=<id>` ou `/b/<id>` devient `#/b/<id>` après le chargement de ce module.
+ */
+export const refresh = sync;
+
 addEventListener('hashchange', () => {
   depth += 1;
   sync();

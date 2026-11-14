@@ -1,0 +1,89 @@
+// Référencement (api/_lib/seo.js) : pages publiques d'un bading et d'un profil, sitemap.
+import { describe, expect, it } from 'vitest';
+import { badingPage, loadBadingPage, loadUserPage, notFoundPage, renderPage, sitemapXml, userPage } from '../api/_lib/seo.js';
+
+const INDEX = `<!doctype html><html lang="fr"><head>
+  <title>On Bade</title>
+  <meta name="description" content="défaut" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://www.onbade.com/" />
+  <meta property="og:title" content="On Bade" />
+  <script type="application/ld+json">{"@type":"WebSite"}</script>
+  <script type="module" src="./assets/index.js"></script>
+</head><body><div id="app"><main class="seo"><h1>Accueil</h1></main></div><!-- /app --></body></html>`;
+
+const reply = (data, ok = true) => async () => ({ ok, json: async () => ({ success: ok, data }) });
+const zero = { id: 'u1', username: 'zero', pseudo: 'Zero', verified: false, joinedAt: Date.UTC(2026, 0, 2) };
+const ld = (html) => JSON.parse(html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)[1]);
+
+describe('Page publique d’un bading', () => {
+  const data = {
+    bading: { id: 'b1', authorId: 'u1', text: 'Le poulet est parti au village', createdAt: Date.UTC(2026, 10, 14), likes: 12, commentCount: 1, shares: 3 },
+    users: [zero, { id: 'u2', username: 'koffi', pseudo: 'Koffi' }],
+    comments: [{ id: 'c1', authorId: 'u2', text: 'Mdrrr <script>', createdAt: 1 }],
+  };
+
+  it('contenu lisible, adresse canonique, données structurées', async () => {
+    const page = await loadBadingPage('b1', reply(data));
+    const html = badingPage(INDEX, page);
+    expect(html).toContain('<base href="/" />');
+    expect(html).toContain('<link rel="canonical" href="https://www.onbade.com/b/b1" />');
+    expect(html).toContain('<h1>Zero sur On Bade</h1>');
+    expect(html).toContain('<a href="/u/u1">Zero</a>');
+    expect(html).toContain('Mdrrr &lt;script&gt;');
+    expect(html).not.toContain('<h1>Accueil</h1>');
+    expect(html.match(/rel="canonical"/g)).toHaveLength(1);
+    expect(html.match(/application\/ld\+json/g)).toHaveLength(1);
+    const json = ld(html);
+    expect(json['@type']).toBe('SocialMediaPosting');
+    expect(json.author).toMatchObject({ name: 'Zero', url: 'https://www.onbade.com/u/u1' });
+    expect(json.interactionStatistic[0]).toMatchObject({ userInteractionCount: 12 });
+    expect(json.comment).toHaveLength(1);
+  });
+
+  it('anonyme : ni pseudo ni lien vers le profil', async () => {
+    const page = await loadBadingPage('b1', reply({ ...data, bading: { ...data.bading, anonymous: true } }));
+    const html = badingPage(INDEX, page);
+    expect(html).toContain('Badeur anonyme');
+    expect(html).not.toContain('/u/u1');
+    expect(html).not.toMatch(/zero/i);
+    expect(ld(html).author).toEqual({ '@type': 'Person', name: 'Badeur anonyme' });
+  });
+
+  it('une rebade directe pointe vers le bading d’origine', async () => {
+    const page = await loadBadingPage('r1', reply({ bading: { id: 'r1', rebadeOf: 'b1', authorId: 'u2', text: '' }, origins: [data.bading], users: data.users }));
+    expect(badingPage(INDEX, page)).toContain('href="https://www.onbade.com/b/b1"');
+  });
+
+  it('identifiant douteux ou bading introuvable', async () => {
+    expect(await loadBadingPage('../admin', reply(data))).toBeNull();
+    expect(await loadBadingPage('b9', reply(null, false))).toBeNull();
+    expect(notFoundPage(INDEX)).toContain('<meta name="robots" content="noindex" />');
+  });
+
+  it('le JSON-LD ne peut pas fermer la balise script', () => {
+    const html = renderPage(INDEX, { title: 't', description: 'd', canonical: 'c', image: 'i', ld: { text: '</script><script>alert(1)</script>' }, body: '' });
+    expect(html).not.toContain('</script><script>alert(1)');
+  });
+});
+
+describe('Page publique d’un profil', () => {
+  it('liste ses badings signés avec des liens', async () => {
+    const page = await loadUserPage('u1', reply({ user: zero, badings: [{ id: 'b1', text: 'Coupure de courant', likes: 4 }] }));
+    const html = userPage(INDEX, page);
+    expect(html).toContain('<title>Zero (@zero) sur On Bade</title>');
+    expect(html).toContain('<a href="/b/b1">Coupure de courant</a>');
+    expect(html).toContain('<link rel="canonical" href="https://www.onbade.com/u/u1" />');
+    expect(ld(html)).toMatchObject({ '@type': 'ProfilePage', mainEntity: { name: 'Zero', alternateName: '@zero' } });
+  });
+});
+
+describe('Sitemap', () => {
+  it('accueil, badings et profils ; identifiants douteux écartés', () => {
+    const xml = sitemapXml({ badings: [{ id: 'b1', updatedAt: '2026-11-14T00:00:00.000Z' }, { id: 'x<y' }], users: [{ id: 'u1', updatedAt: null }] });
+    expect(xml).toContain('<loc>https://www.onbade.com/</loc>');
+    expect(xml).toContain('<loc>https://www.onbade.com/b/b1</loc><lastmod>2026-11-14T00:00:00.000Z</lastmod>');
+    expect(xml).toContain('<loc>https://www.onbade.com/u/u1</loc>');
+    expect(xml).not.toContain('x<y');
+  });
+});

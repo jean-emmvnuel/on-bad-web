@@ -2,6 +2,7 @@
 import * as S from './store.js';
 import { toast } from '../ui/toast.js';
 import { openIosInstallSheet } from '../components/InstallSheet.jsx';
+import { refresh } from './router.js';
 
 let deferred = null;
 const listeners = new Set();
@@ -32,23 +33,34 @@ export async function install() {
 /** `source` : canal du partage (whatsapp, facebook, story, copy, other), ajouté au lien pour compter d'où viennent les ouvertures. */
 export const badingUrl = (id, source) => `${location.origin}${location.pathname.replace(/index\.html$/, '')}?b=${encodeURIComponent(id)}${source ? `&s=${encodeURIComponent(source)}` : ''}`;
 
+/** Robots (moteurs de recherche, aperçus de lien) : leurs visites ne comptent pas comme des ouvertures. */
+const isBot = () => navigator.webdriver || /bot|crawl|spider|slurp|preview|facebookexternalhit|whatsapp|lighthouse/i.test(navigator.userAgent);
+
 /** Compte l'ouverture d'un lien partagé (chargé à part pour ne pas alourdir le démarrage). */
 const countOpen = (id, source) => { import('../services/badings.js').then((m) => m.recordLinkOpen(id, source)).catch(() => {}); };
 
 /**
  * À l'ouverture : transforme les paramètres d'URL en route.
  *  - `?b=<id>`               → lien partagé d'un bading
+ *  - `/b/<id>`, `/u/<id>`    → pages publiques (référencement, servies par api/share.js et api/profile.js)
  *  - `?text=…&url=…&title=…` → texte partagé depuis une autre app vers On Bade (share_target)
  */
 export function consumeLaunchParams() {
   const q = new URLSearchParams(location.search);
+  const page = location.pathname.match(/\/(b|u)\/([\w-]{1,64})\/?$/);
   let route = null;
-  if (q.get('b')) { route = `/b/${q.get('b')}`; countOpen(q.get('b'), q.get('s')); }
+  if (q.get('b')) { route = `/b/${q.get('b')}`; if (!isBot()) countOpen(q.get('b'), q.get('s')); }
+  else if (page) route = page[1] === 'b' ? `/b/${page[2]}` : `/u/${page[2]}`;
   else if (q.has('text') || q.has('url') || q.has('title')) {
     const text = [q.get('title'), q.get('text'), q.get('url')].filter(Boolean).join('\n').trim();
     if (text) { S.setDraft({ ...S.get().draft, text }); route = '/compose'; }
   }
-  if (route) history.replaceState(null, '', `${location.pathname}#${route}`);
+  // Page /b/… ou /u/… : retour à la racine du site, pour que les liens internes en « #/… » restent sur la même page.
+  const root = page ? location.pathname.slice(0, page.index + 1) : location.pathname;
+  if (route) {
+    history.replaceState(null, '', `${root}#${route}`);
+    refresh(); // sinon le routeur garde l'adresse lue avant (l'accueil) et le lien ouvre le fil au lieu du bading
+  }
 }
 
 export function registerSW() {

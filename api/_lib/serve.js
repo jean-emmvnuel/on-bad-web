@@ -16,8 +16,11 @@ export async function servePage(request, load, render) {
   let status = 200, body;
   try {
     const data = await load(url);
-    if (data) body = render(html, data);
-    else { status = 404; body = notFoundPage(html); }
+    if (!data) { status = 404; body = notFoundPage(html); }
+    else {
+      body = render(html, data, url);
+      if (body instanceof Response) return body; // ex. redirection vers l'adresse canonique
+    }
   } catch {
     status = 503;
     body = html.replace(/<head>/, '<head>\n  <base href="/" />');

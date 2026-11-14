@@ -119,8 +119,12 @@ export function forgetBadings(ids) {
 // ─── Lecture ──────────────────────────────────────────────
 export const me = () => state.session?.user ?? null;
 export const user = (id) => state.users[id];
-/** Adresse du profil d'un Badeur (le mien : mon profil complet). */
-export const profilePath = (id) => (id === ME ? '/profile' : `/u/${id}`);
+/** Adresse du profil d'un Badeur : `/@pseudo` (le mien : mon profil complet ; pseudo inconnu : `/u/<id>`). */
+export const profilePath = (id) => {
+  if (id === ME) return '/profile';
+  const pseudo = state.users[id]?.pseudo;
+  return pseudo ? `/@${pseudo}` : `/u/${id}`;
+};
 /** Badeur connu dont le pseudo est `pseudo` (sans le @), pour relier les @mentions à son profil. */
 export const userByPseudo = (pseudo) => {
   const p = pseudo.toLowerCase();

@@ -19,7 +19,19 @@ const fr = (ms) => (Number.isFinite(ms) ? new Date(ms).toLocaleDateString('fr-FR
 const jsonLd = (data) => `<script type="application/ld+json">${JSON.stringify(data).replace(/</g, '\\u003c')}</script>`;
 
 export const badingPath = (id) => `/b/${encodeURIComponent(id)}`;
-export const userPath = (id) => `/u/${encodeURIComponent(id)}`;
+/** Adresse publique d'un profil : /@pseudo (l'ancienne /u/<id> y redirige). */
+export const userPath = (u) => `/@${encodeURIComponent(u.username)}`;
+const PSEUDO = /^[A-Za-z0-9_.]{3,20}$/;
+
+/** Couleur d'avatar sans photo : même calcul que l'app (src/services/cache.js). */
+export function hueFrom(id = '') {
+  let h = 0;
+  for (const ch of String(id)) h = (h * 31 + ch.charCodeAt(0)) % 360;
+  return h;
+}
+
+/** Image d'aperçu d'un profil : sa photo, sinon son avatar (initiale sur sa couleur) généré par api/og.js. */
+export const profileImage = (u) => u.photo || `${SITE_URL}/api/og?avatar=${encodeURIComponent(u.username)}`;
 
 async function getJson(path, fetchImpl) {
   const res = await fetchImpl(`${API_URL}${path}`, { headers: { accept: 'application/json' } });
@@ -45,10 +57,10 @@ export async function loadBadingPage(id, fetchImpl = fetch) {
   return { id: data.bading.id, canonicalId: b.id, bading: b, author, comments };
 }
 
-/** Profil public (badings signés seulement) ou null. */
-export async function loadUserPage(id, fetchImpl = fetch) {
-  if (!id || !ID.test(id)) return null;
-  const data = await getJson(`/users/${encodeURIComponent(id)}?limit=30`, fetchImpl);
+/** Profil public (badings signés seulement) ou null. `key` : identifiant ou pseudo. */
+export async function loadUserPage(key, fetchImpl = fetch) {
+  if (!key || !(ID.test(key) || PSEUDO.test(key))) return null;
+  const data = await getJson(`/users/${encodeURIComponent(key)}?limit=30`, fetchImpl);
   if (!data?.user) return null;
   return { user: data.user, badings: (data.badings ?? []).filter((b) => (b.text ?? '').trim() || b.image) };
 }
@@ -96,12 +108,12 @@ export function renderPage(html, { title, description, canonical, image, imageAl
 }
 
 const personLd = (u) => (u
-  ? { '@type': 'Person', name: u.pseudo ?? u.username, alternateName: `@${u.username}`, url: `${SITE_URL}${userPath(u.id)}`, ...(u.photo ? { image: u.photo } : {}) }
+  ? { '@type': 'Person', name: u.pseudo ?? u.username, alternateName: `@${u.username}`, url: `${SITE_URL}${userPath(u)}`, ...(u.photo ? { image: u.photo } : {}) }
   : { '@type': 'Person', name: 'Badeur anonyme' });
 
 const counter = (type, n) => ({ '@type': 'InteractionCounter', interactionType: `https://schema.org/${type}`, userInteractionCount: n ?? 0 });
 
-const nameHtml = (u) => (u ? `<a href="${userPath(u.id)}">${escapeHtml(u.pseudo ?? u.username)}</a>` : 'Badeur anonyme');
+const nameHtml = (u) => (u ? `<a href="${userPath(u)}">${escapeHtml(u.pseudo ?? u.username)}</a>` : 'Badeur anonyme');
 
 /** Page d'un bading. */
 export function badingPage(html, page) {
@@ -151,13 +163,13 @@ ${comments.length ? `<section><h2>Commentaires</h2><ul>${comments.map((c) => `<l
 /** Page du profil d'un Badeur. */
 export function userPage(html, { user: u, badings }) {
   const name = u.pseudo ?? u.username;
-  const canonical = `${SITE_URL}${userPath(u.id)}`;
+  const canonical = `${SITE_URL}${userPath(u)}`;
   const title = `${name} (@${u.username}) sur On Bade`;
   const bio = oneLine(u.bio);
   const description = bio
     ? shorten(bio, 200)
     : `Les badings de ${name} sur On Bade : les galères du quotidien racontées pour faire rire tout le monde.`;
-  const image = u.photo || `${SITE_URL}/assets/icon-512.png`;
+  const image = profileImage(u);
 
   const ld = {
     '@context': 'https://schema.org',
@@ -172,7 +184,7 @@ export function userPage(html, { user: u, badings }) {
       alternateName: `@${u.username}`,
       identifier: u.id,
       url: canonical,
-      ...(u.photo ? { image: u.photo } : {}),
+      image,
       ...(bio ? { description: bio } : {}),
       agentInteractionStatistic: counter('WriteAction', badings.length),
     },
@@ -181,6 +193,7 @@ export function userPage(html, { user: u, badings }) {
   const body = `<main class="seo">
 <h1>${escapeHtml(name)} <small>@${escapeHtml(u.username)}</small></h1>
 ${bio ? `<p>${escapeHtml(bio)}</p>` : ''}
+<img src="${escapeHtml(image)}" alt="Photo de profil de ${escapeHtml(name)}" width="160" height="160" />
 ${u.joinedAt ? `<p><small>Sur On Bade depuis le ${fr(u.joinedAt)}</small></p>` : ''}
 <section><h2>Ses badings</h2>
 ${badings.length ? `<ul>${badings.map((b) => `<li><a href="${badingPath(b.id)}">${escapeHtml(shorten(oneLine(b.text) || 'Bading en image', 160))}</a> <small>😂 ${b.likes ?? 0}</small></li>`).join('')}</ul>` : '<p>Pas encore de bading.</p>'}
@@ -188,8 +201,8 @@ ${badings.length ? `<ul>${badings.map((b) => `<li><a href="${badingPath(b.id)}">
 <p><a href="/">Découvrir On Bade</a></p>
 </main>`;
 
-  // Image carrée (photo ou logo) : petite carte plutôt que grande image.
-  return renderPage(html, { title, description, canonical, image, imageAlt: `Photo de ${name}`, type: 'profile', ld, body, largeImage: false });
+  // Aperçu du lien = photo de profil (carrée) : carte « summary » plutôt que grande image.
+  return renderPage(html, { title, description, canonical, image, imageAlt: `Photo de profil de ${name}`, type: 'profile', ld, body, largeImage: false });
 }
 
 /** Page introuvable : pas d'indexation, l'app affiche son propre message. */
@@ -203,7 +216,7 @@ export function sitemapXml({ badings = [], users = [] }) {
   const rows = [
     url(`${SITE_URL}/`, null, '1.0'),
     ...badings.filter((b) => ID.test(b.id)).map((b) => url(`${SITE_URL}${badingPath(b.id)}`, b.updatedAt, '0.7')),
-    ...users.filter((u) => ID.test(u.id)).map((u) => url(`${SITE_URL}${userPath(u.id)}`, u.updatedAt, '0.5')),
+    ...users.filter((u) => u.username && PSEUDO.test(u.username)).map((u) => url(`${SITE_URL}${userPath(u)}`, u.updatedAt, '0.5')),
   ];
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${rows.join('\n')}\n</urlset>\n`;
 }

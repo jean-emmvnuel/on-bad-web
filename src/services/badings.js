@@ -182,6 +182,24 @@ export async function searchPseudos(query) {
 }
 
 /**
+ * Profil public trouvé par son pseudo (adresse `/@pseudo`) : charge le profil comme `loadUser`
+ * et renvoie l'identifiant du Badeur, ou null s'il n'existe pas (ou plus).
+ */
+export async function loadUserByPseudo(pseudo) {
+  if (!USE_BACKEND) return S.userByPseudo(pseudo)?.id ?? null;
+  try {
+    const { user, badings = [], origins = [], users = [] } = await api.getUser(pseudo);
+    storeUsers([user, ...users]);
+    storeBadings([...badings, ...origins]);
+    save();
+    return toLocalId(user.id);
+  } catch (error) {
+    if (error.status === 404) return null;
+    throw error;
+  }
+}
+
+/**
  * Profil public d'un autre Badeur : ses infos et ses badings signés (jamais ses anonymes).
  * Renvoie false s'il n'existe pas (ou plus) côté serveur.
  */

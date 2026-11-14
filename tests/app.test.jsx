@@ -170,10 +170,10 @@ describe('App React (mode démo)', () => {
   });
 
   it('profil d’un autre Badeur : ses badings signés, jamais ses anonymes', async () => {
-    await nav('/', () => document.querySelector('a.user-link[href="#/u/u1"]'));
-    await click(document.querySelector('a.name.user-link[href="#/u/u1"]'));
+    await nav('/', () => document.querySelector('a.user-link[href="#/@Koffi225"]'));
+    await click(document.querySelector('a.name.user-link[href="#/@Koffi225"]'));
     // Le fil contient aussi « Gbaka m… » : on attend que la page du profil ait remplacé le fil.
-    await until(() => location.hash === '#/u/u1' && $('#view .profile-hero') && $('#view').textContent.includes('Gbaka m'));
+    await until(() => location.hash === '#/@Koffi225' && $('#view .profile-hero') && $('#view').textContent.includes('Gbaka m'));
     expect(text()).toContain('@Koffi225');
     expect($('#view').textContent).not.toContain('regarder » la sauce'); // b7 est anonyme
     await nav('/u/inconnu', () => text().includes('Ce Badeur est introuvable'));

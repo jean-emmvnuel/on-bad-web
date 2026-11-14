@@ -44,6 +44,12 @@ describe('Ouverture depuis un lien', () => {
     expect(location.pathname).toBe('/');
   });
 
+  it('page publique /@pseudo : le profil, adresse ramenée à la racine', async () => {
+    await open('/@AwaLaGo');
+    await until(() => location.hash === '#/@AwaLaGo' && document.body.textContent.includes('AwaLaGo'));
+    expect(location.pathname).toBe('/');
+  });
+
   it('page publique /u/<id> : le profil', async () => {
     await open('/u/u2');
     await until(() => location.hash === '#/u/u2');

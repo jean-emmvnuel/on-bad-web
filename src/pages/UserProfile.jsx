@@ -1,4 +1,4 @@
-// Profil public d'un autre Badeur (#/u/<id>) : en-tête, statistiques et badings signés.
+// Profil public d'un autre Badeur (#/@pseudo, ou #/u/<id>) : en-tête, statistiques et badings signés.
 // Ses badings anonymes n'y apparaissent jamais (F4 RG2).
 import { useLayoutEffect, useRef } from 'react';
 import { gsap } from 'gsap';
@@ -16,6 +16,7 @@ import { SheetItem, confirmSheet, openSheet } from '../ui/sheet.jsx';
 import { toast } from '../ui/toast.js';
 import { ErrorState, LoadingState, errorMessage, toastError, useRemote } from '../ui/remote.jsx';
 import { CountUp, statsOf } from './Profile.jsx';
+import { profileUrl } from '../lib/pwa.js';
 
 const goBack = () => back('/');
 
@@ -44,7 +45,7 @@ function TopBar({ user }) {
 
   const copyLink = async () => {
     try {
-      await navigator.clipboard.writeText(`${location.origin}${location.pathname}#/u/${user.id}`);
+      await navigator.clipboard.writeText(profileUrl(user.pseudo)); // onbade.com/@pseudo
       toast('Lien copié');
     } catch {
       toast('Impossible de copier le lien');
@@ -121,7 +122,27 @@ const NotFound = () => (
 );
 
 export default function UserProfile({ params }) {
-  const id = toLocalId(params.id);
+  return params.pseudo ? <ByPseudo pseudo={params.pseudo} /> : <ById id={toLocalId(params.id)} />;
+}
+
+/** Ouvert par `/@pseudo` : le profil est cherché par son pseudo (déjà connu ou demandé au serveur). */
+function ByPseudo({ pseudo }) {
+  const remote = useRemote(`user:@${pseudo.toLowerCase()}`, () => badings.loadUserByPseudo(pseudo));
+  const id = remote.result ?? S.userByPseudo(pseudo)?.id ?? null;
+  const isMe = id === S.ME;
+
+  useLayoutEffect(() => {
+    if (isMe) go(S.get().session ? '/profile' : '/', { replace: true });
+  }, [isMe]);
+
+  if (isMe) return null;
+  if (!id && remote.status === 'loading') return <><TopBar /><LoadingState /></>;
+  if (!id && remote.status === 'error') return <><TopBar /><ErrorState message={errorMessage(remote.error)} onRetry={remote.retry} /></>;
+  if (!id) return <><TopBar /><NotFound /></>;
+  return <UserContent id={id} />;
+}
+
+function ById({ id }) {
   const isMe = id === S.ME;
 
   useLayoutEffect(() => {

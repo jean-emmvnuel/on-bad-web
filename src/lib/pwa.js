@@ -36,21 +36,24 @@ export const badingUrl = (id, source) => `${location.origin}${location.pathname.
 /** Robots (moteurs de recherche, aperçus de lien) : leurs visites ne comptent pas comme des ouvertures. */
 const isBot = () => navigator.webdriver || /bot|crawl|spider|slurp|preview|facebookexternalhit|whatsapp|lighthouse/i.test(navigator.userAgent);
 
+/** Adresse publique du profil d'un Badeur : onbade.com/@pseudo (page lisible par les moteurs de recherche). */
+export const profileUrl = (pseudo) => `${location.origin}${location.pathname.replace(/index\.html$/, '')}@${encodeURIComponent(pseudo)}`;
+
 /** Compte l'ouverture d'un lien partagé (chargé à part pour ne pas alourdir le démarrage). */
 const countOpen = (id, source) => { import('../services/badings.js').then((m) => m.recordLinkOpen(id, source)).catch(() => {}); };
 
 /**
  * À l'ouverture : transforme les paramètres d'URL en route.
  *  - `?b=<id>`               → lien partagé d'un bading
- *  - `/b/<id>`, `/u/<id>`    → pages publiques (référencement, servies par api/share.js et api/profile.js)
+ *  - `/b/<id>`, `/@pseudo`, `/u/<id>` → pages publiques (référencement, servies par api/share.js et api/profile.js)
  *  - `?text=…&url=…&title=…` → texte partagé depuis une autre app vers On Bade (share_target)
  */
 export function consumeLaunchParams() {
   const q = new URLSearchParams(location.search);
-  const page = location.pathname.match(/\/(b|u)\/([\w-]{1,64})\/?$/);
+  const page = location.pathname.match(/\/(?:(b|u)\/([\w-]{1,64})|(@[A-Za-z0-9_.]{3,20}))\/?$/);
   let route = null;
   if (q.get('b')) { route = `/b/${q.get('b')}`; if (!isBot()) countOpen(q.get('b'), q.get('s')); }
-  else if (page) route = page[1] === 'b' ? `/b/${page[2]}` : `/u/${page[2]}`;
+  else if (page) route = page[3] ? `/${page[3]}` : `/${page[1]}/${page[2]}`;
   else if (q.has('text') || q.has('url') || q.has('title')) {
     const text = [q.get('title'), q.get('text'), q.get('url')].filter(Boolean).join('\n').trim();
     if (text) { S.setDraft({ ...S.get().draft, text }); route = '/compose'; }

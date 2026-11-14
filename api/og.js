@@ -1,7 +1,9 @@
 // Image de partage d'un bading (1080×1350), générée côté serveur pour les aperçus de lien.
+// `?avatar=<pseudo>` : avatar d'un Badeur sans photo (aperçu de son profil), 600×600.
 // Même mise en page que src/components/shareImage.js (l'image téléchargée depuis l'app).
 import { ImageResponse } from '@vercel/og';
 import { loadBading } from './_lib/bading.js';
+import { SITE_URL, hueFrom, loadUserPage } from './_lib/seo.js';
 
 export const config = { runtime: 'edge' };
 
@@ -10,10 +12,15 @@ const LOGO_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" 
 const LOGO = `data:image/svg+xml,${encodeURIComponent(LOGO_SVG)}`;
 
 // Sans en-tête de navigateur, Google Fonts renvoie des polices TTF, le format lu par le moteur d'image.
+// Police introuvable (réseau) : null, l'image est quand même produite avec la police par défaut.
 async function googleFont(family, weight) {
-  const css = await (await fetch(`https://fonts.googleapis.com/css2?family=${family}:wght@${weight}`)).text();
-  const src = css.match(/src: url\((.+?)\) format/)?.[1];
-  return src ? (await fetch(src)).arrayBuffer() : null;
+  try {
+    const css = await (await fetch(`https://fonts.googleapis.com/css2?family=${family}:wght@${weight}`)).text();
+    const src = css.match(/src: url\((.+?)\) format/)?.[1];
+    return src ? await (await fetch(src)).arrayBuffer() : null;
+  } catch {
+    return null;
+  }
 }
 
 /** Petit utilitaire : un élément pour le moteur d'image (même forme que React.createElement). */
@@ -46,8 +53,42 @@ function card(b) {
       h('div', { color: '#F1E4FF', fontSize: 40, fontWeight: 500 }, 'onbade.com')));
 }
 
+/** hsl → #rrggbb (le moteur d'image lit sûrement l'hexadécimal). */
+function hsl(h, s, l) {
+  s /= 100; l /= 100;
+  const k = (n) => (n + h / 30) % 12;
+  const a = s * Math.min(l, 1 - l);
+  const f = (n) => Math.round(255 * (l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1))))).toString(16).padStart(2, '0');
+  return `#${f(0)}${f(8)}${f(4)}`;
+}
+
+const AVATAR = 600;
+
+/** Avatar d'un Badeur sans photo (aperçu de son profil) : son initiale sur sa couleur, comme dans l'app. */
+async function avatar(pseudo) {
+  const page = await loadUserPage(pseudo).catch(() => null);
+  if (!page) return new Response('Badeur introuvable', { status: 404 });
+  const { user } = page;
+  if (user.photo) return Response.redirect(user.photo, 302);
+  const hue = hueFrom(user.id);
+  const bricolage = await googleFont('Bricolage+Grotesque', 800);
+  if (!bricolage) return Response.redirect(new URL('/assets/icon-512.png', SITE_URL), 302); // sans police, pas d'image possible
+  return new ImageResponse(
+    h('div', { width: AVATAR, height: AVATAR, background: hsl(hue, 38, 30), alignItems: 'center', justifyContent: 'center' },
+      h('div', { color: hsl(hue, 80, 86), fontSize: 300, fontWeight: 800, fontFamily: 'Bricolage Grotesque', lineHeight: 1 }, (user.pseudo ?? user.username)[0].toUpperCase())),
+    {
+      width: AVATAR,
+      height: AVATAR,
+      fonts: [{ name: 'Bricolage Grotesque', data: bricolage, weight: 800 }],
+      headers: { 'cache-control': 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800' },
+    },
+  );
+}
+
 export default async function handler(request) {
-  const id = new URL(request.url).searchParams.get('id');
+  const params = new URL(request.url).searchParams;
+  if (params.get('avatar')) return avatar(params.get('avatar'));
+  const id = params.get('id');
   const b = await loadBading(id).catch(() => null);
   if (!b) return new Response('Bading introuvable', { status: 404 });
 

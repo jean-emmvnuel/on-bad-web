@@ -46,7 +46,7 @@ describe('Affichage sûr', () => {
   it('une @mention d’un Badeur connu mène à son profil', () => {
     loadFixtures();
     const koffi = Object.values(S.get().users).find((u) => u.pseudo === 'Koffi225');
-    expect(html(<Rich text="Merci @Koffi225." />)).toBe(`Merci <a class="mention" href="#/u/${koffi.id}">@Koffi225.</a>`);
+    expect(html(<Rich text="Merci @Koffi225." />)).toBe(`Merci <a class="mention" href="#/@${koffi.pseudo}">@Koffi225.</a>`);
   });
   it('avatar : masque pour l’anonyme, photo si elle existe, initiale sinon', () => {
     expect(html(<Avatar user={null} />)).toContain('Badeur anonyme');

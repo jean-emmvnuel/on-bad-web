@@ -54,6 +54,7 @@ const ROUTES = [
   { path: /^\/compose$/, page: 'compose', nav: 'compose', modal: true },
   { path: /^\/profile$/, page: 'profile', nav: 'profile' },
   { path: /^\/u\/([\w-]+)$/, page: 'user', keys: ['id'], level: 2, public: true },
+  { path: /^\/@([A-Za-z0-9_.]{3,20})$/, page: 'user', keys: ['pseudo'], level: 2, public: true },
   { path: /^\/trending$/, page: 'trending', nav: 'trending', public: true },
   { path: /^\/notifications$/, page: 'notifications', nav: 'notifications' },
   { path: /^\/settings$/, page: 'settings', nav: 'settings', level: 2 },

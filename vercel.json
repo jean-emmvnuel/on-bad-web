@@ -1,6 +1,7 @@
 {
   "routes": [
     { "src": "/b/([\\w-]{1,64})/?", "dest": "/api/share?b=$1" },
+    { "src": "/@([A-Za-z0-9_.]{3,20})/?", "dest": "/api/profile?p=$1" },
     { "src": "/u/([\\w-]{1,64})/?", "dest": "/api/profile?u=$1" },
     { "src": "/sitemap\\.xml", "dest": "/api/sitemap" },
     { "src": "/", "has": [{ "type": "query", "key": "b" }], "dest": "/api/share" },

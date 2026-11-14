@@ -29,7 +29,11 @@ export async function install() {
 }
 
 /** Lien public d'un bading. `?b=<id>` reste dans la portée de la PWA : il s'ouvre dans l'app installée. */
-export const badingUrl = (id) => `${location.origin}${location.pathname.replace(/index\.html$/, '')}?b=${encodeURIComponent(id)}`;
+/** `source` : canal du partage (whatsapp, facebook, story, copy, other), ajouté au lien pour compter d'où viennent les ouvertures. */
+export const badingUrl = (id, source) => `${location.origin}${location.pathname.replace(/index\.html$/, '')}?b=${encodeURIComponent(id)}${source ? `&s=${encodeURIComponent(source)}` : ''}`;
+
+/** Compte l'ouverture d'un lien partagé (chargé à part pour ne pas alourdir le démarrage). */
+const countOpen = (id, source) => { import('../services/badings.js').then((m) => m.recordLinkOpen(id, source)).catch(() => {}); };
 
 /**
  * À l'ouverture : transforme les paramètres d'URL en route.
@@ -39,7 +43,7 @@ export const badingUrl = (id) => `${location.origin}${location.pathname.replace(
 export function consumeLaunchParams() {
   const q = new URLSearchParams(location.search);
   let route = null;
-  if (q.get('b')) route = `/b/${q.get('b')}`;
+  if (q.get('b')) { route = `/b/${q.get('b')}`; countOpen(q.get('b'), q.get('s')); }
   else if (q.has('text') || q.has('url') || q.has('title')) {
     const text = [q.get('title'), q.get('text'), q.get('url')].filter(Boolean).join('\n').trim();
     if (text) { S.setDraft({ ...S.get().draft, text }); route = '/compose'; }
@@ -68,7 +72,7 @@ export function registerSW() {
       if (!params.targetURL) return;
       const u = new URL(params.targetURL);
       const id = u.searchParams.get('b');
-      if (id) location.hash = `#/b/${id}`;
+      if (id) { countOpen(id, u.searchParams.get('s')); location.hash = `#/b/${id}`; }
       else if (u.hash) location.hash = u.hash;
     });
   }

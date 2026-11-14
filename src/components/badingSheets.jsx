@@ -16,7 +16,7 @@ const REPORT_REASONS = ['Haine', 'Harcèlement', 'Contenu choquant', 'Spam', 'Us
  * Lien dynamique : `…/?b=<id>` reste dans la portée de la PWA, donc il s'ouvre dans l'app installée
  * (Android, ordinateur) et sinon sur le site, directement sur le bading. En prod → www.onbade.com/?b=<id>.
  */
-export const badingLink = (id) => badingUrl(id);
+export const badingLink = (id, source) => badingUrl(id, source);
 
 const teaser = (t) => (t.length > 140 ? `${t.slice(0, 140).trimEnd()}…` : t);
 const shareText = (b, url) => `${b.text ? `« ${teaser(b.text)} »\n\n` : b.image ? '📷 Un bading en image\n\n' : ''}😂 Lis la suite sur On Bade : ${url}`;
@@ -182,13 +182,15 @@ const downloadBlob = (blob, name) => {
 };
 
 function ShareSheet({ b }) {
-  const url = badingLink(b.id);
-  const message = shareText(b, url);
+  // Un lien par canal (`&s=…`) : on sait ensuite d'où viennent les personnes qui l'ouvrent.
+  const link = (source) => badingLink(b.id, source);
+  const url = link('copy');
+  const message = (source) => shareText(b, link(source));
   const story = useStoryImage(b);
   const fileName = `on-bade-${b.id}.png`;
 
-  const done = (feedback) => {
-    badings.share(b.id);
+  const done = (feedback, channel) => {
+    badings.share(b.id, channel);
     closeSheet();
     toast(feedback);
   };
@@ -200,8 +202,8 @@ function ShareSheet({ b }) {
     const file = new File([story.blob], fileName, { type: 'image/png' });
     if (navigator.canShare?.({ files: [file] })) {
       try {
-        await navigator.share({ files: [file], text: `😂 Sur On Bade : ${url}` });
-        done('Story prête à publier');
+        await navigator.share({ files: [file], text: `😂 Sur On Bade : ${link('story')}` });
+        done('Story prête à publier', 'story');
       } catch (error) {
         if (error?.name !== 'AbortError') toast('Partage impossible, réessaie');
       }
@@ -209,16 +211,16 @@ function ShareSheet({ b }) {
     }
     // Ordinateur ou navigateur sans partage de fichiers : image téléchargée et lien copié.
     downloadBlob(story.blob, fileName);
-    await copyText(url);
-    done('Image téléchargée et lien copié');
+    await copyText(link('story'));
+    done('Image téléchargée et lien copié', 'story');
   };
 
   const shareMore = async () => {
     if (navigator.share) {
-      try { await navigator.share({ text: message, url }); done('Partagé'); } catch { /* partage annulé */ }
+      try { await navigator.share({ text: message('other'), url: link('other') }); done('Partagé', 'other'); } catch { /* partage annulé */ }
     } else {
-      await copyText(message);
-      done('Texte copié, colle-le où tu veux');
+      await copyText(message('other'));
+      done('Texte copié, colle-le où tu veux', 'other');
     }
   };
 
@@ -234,14 +236,14 @@ function ShareSheet({ b }) {
       </button>
       <p className="t-small muted" style={{ textAlign: 'center', marginTop: -4 }}>Statut WhatsApp, story Snapchat, Facebook ou Instagram : choisis l’app dans la liste.</p>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <ShareTarget label="WhatsApp" background="#25D366" onClick={() => { open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank', 'noopener'); done('Envoyé vers WhatsApp'); }}>
+        <ShareTarget label="WhatsApp" background="#25D366" onClick={() => { open(`https://wa.me/?text=${encodeURIComponent(message('whatsapp'))}`, '_blank', 'noopener'); done('Envoyé vers WhatsApp', 'whatsapp'); }}>
           <Icon name="message" />
         </ShareTarget>
-        <ShareTarget label="Facebook" background="#1877F2" onClick={() => { open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank', 'noopener'); done('Ouvert dans Facebook'); }}>
+        <ShareTarget label="Facebook" background="#1877F2" onClick={() => { open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(link('facebook'))}`, '_blank', 'noopener'); done('Ouvert dans Facebook', 'facebook'); }}>
           <b style={{ fontFamily: 'var(--font-display)', fontSize: 28 }}>f</b>
         </ShareTarget>
-        <ShareTarget label="Enregistrer" background="var(--surface-2)" onClick={() => { if (story.status === 'ready') { downloadBlob(story.blob, fileName); done('Image enregistrée'); } }}><Icon name="download" /></ShareTarget>
-        <ShareTarget label="Copier le lien" background="var(--surface-2)" onClick={async () => { await copyText(url); done('Lien copié'); }}><Icon name="copy" /></ShareTarget>
+        <ShareTarget label="Enregistrer" background="var(--surface-2)" onClick={() => { if (story.status === 'ready') { downloadBlob(story.blob, fileName); done('Image enregistrée', 'download'); } }}><Icon name="download" /></ShareTarget>
+        <ShareTarget label="Copier le lien" background="var(--surface-2)" onClick={async () => { await copyText(url); done('Lien copié', 'copy'); }}><Icon name="copy" /></ShareTarget>
         <ShareTarget label="Autres" background="var(--surface-2)" onClick={shareMore}><Icon name="ellipsis" /></ShareTarget>
       </div>
       <p className="t-small muted" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{url}</p>

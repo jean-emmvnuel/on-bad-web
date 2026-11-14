@@ -140,10 +140,25 @@ export async function rebade(badingId, text, anonymous) {
 }
 
 /** Compte un partage (sans bloquer l'utilisateur si le serveur ne répond pas). */
-export function share(badingId) {
-  if (USE_BACKEND) fireAndForget(api.addBadingShare(badingId));
+/** Partage fait depuis l'app. `channel` : whatsapp, facebook, story, download, copy ou other. */
+export function share(badingId, channel) {
+  if (USE_BACKEND) fireAndForget(api.addBadingShare(badingId, channel));
   S.share(badingId);
 }
+
+/**
+ * Quelqu'un ouvre un lien partagé (/?b=<id>&s=<source>) : compté côté serveur (une fois par visiteur et par jour).
+ * Ici, une seule fois par onglet, pour ne pas recompter à chaque rechargement.
+ */
+export function recordLinkOpen(badingId, source) {
+  if (!USE_BACKEND || !badingId) return;
+  const key = `onbade-open:${badingId}`;
+  try { if (sessionStorage.getItem(key)) return; sessionStorage.setItem(key, '1'); } catch { /* navigation privée */ }
+  fireAndForget(api.recordLinkOpen(badingId, source || 'direct'));
+}
+
+/** Partages d'un de mes badings (canaux et ouvertures du lien). */
+export const loadShareStats = (badingId) => api.getShareStats(toServerId(badingId));
 
 /** Supprime mon bading. Attend la confirmation du serveur avant de le retirer de l'écran. */
 export async function remove(badingId) {

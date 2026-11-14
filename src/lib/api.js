@@ -187,7 +187,11 @@ export const createBading = (payload) => post('/badings', payload); // { text, a
 export const addBadingView = (badingId) => post(`/badings/${id(badingId)}/views`);
 export const toggleBadingLike = (badingId) => post(`/badings/${id(badingId)}/like`); // → { likes, likedByMe }
 export const createRebade = (badingId, payload) => post(`/badings/${id(badingId)}/rebades`, payload); // { text, anonymous } → { bading, rebades }
-export const addBadingShare = (badingId) => post(`/badings/${id(badingId)}/shares`);
+export const addBadingShare = (badingId, channel) => post(`/badings/${id(badingId)}/shares`, channel ? { channel } : undefined);
+/** Ouverture d'un lien partagé (public, compté une fois par visiteur et par jour). */
+export const recordLinkOpen = (badingId, source) => post(`/badings/${id(badingId)}/opens`, { source });
+/** Partages d'un de mes badings → { shares: { total, byChannel }, opens: { total, bySource } }. */
+export const getShareStats = (badingId) => get(`/badings/${id(badingId)}/share-stats`);
 export const deleteBading = (badingId) => del(`/badings/${id(badingId)}`);
 export const reportBading = (badingId, reason) => post(`/badings/${id(badingId)}/report`, { reason });
 

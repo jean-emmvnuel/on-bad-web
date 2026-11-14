@@ -597,3 +597,7 @@ body.scrolled .topbar { border-bottom-color: rgba(255, 255, 255, 0.06); box-shad
 .story-preview img { width: 100%; height: 100%; object-fit: contain; display: block; }
 .story-preview .sk { width: 100%; height: 100%; }
 .story-preview p { padding: 16px; text-align: center; }
+
+/* Partages d'un bading (auteur) */
+.share-stats { display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; border-radius: var(--r-md); background: var(--surface-2); }
+.share-stats svg.i { width: 16px; height: 16px; vertical-align: -3px; }

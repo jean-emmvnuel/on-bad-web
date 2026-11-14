@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { MAX_BYTES, readImageFile } from '../src/ui/cropper.js';
 import { STICKERS, sticker } from '../src/lib/stickers.js';
 import { Avatar, Rich } from '../src/ui/icons.jsx';
+import { UnreadDot } from '../src/components/Shell.jsx';
 import { Sticker } from '../src/ui/Sticker.jsx';
 import * as S from '../src/lib/store.js';
 import { loadFixtures } from './fixtures.js';
@@ -51,5 +52,23 @@ describe('Affichage sûr', () => {
     expect(html(<Avatar user={null} />)).toContain('Badeur anonyme');
     expect(html(<Avatar user={{ pseudo: 'Awa', hue: 10, photo: 'data:x' }} />)).toContain('<img src="data:x"');
     expect(html(<Avatar user={{ pseudo: 'awa', hue: 10 }} />)).toContain('>A<');
+  });
+});
+
+describe('Pastille des notifications non lues', () => {
+  it('affiche le nombre, « 99+ » au-delà de 99, rien à zéro', () => {
+    expect(html(<UnreadDot count={3} />)).toContain('>3<');
+    expect(html(<UnreadDot count={150} />)).toContain('>99+<');
+    expect(html(<UnreadDot count={0} />)).toContain('hidden');
+  });
+  it('suit le compte du serveur, et passe à zéro quand tout est lu', () => {
+    loadFixtures();
+    const local = S.get().notifications.filter((n) => !n.read).length;
+    expect(S.unread()).toBe(local);
+    S.setUnreadCount(42);
+    expect(S.unread()).toBe(42);
+    S.markAllRead();
+    expect(S.unread()).toBe(0);
+    delete S.get().unreadCount;
   });
 });

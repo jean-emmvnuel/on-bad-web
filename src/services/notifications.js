@@ -14,6 +14,28 @@ export async function load() {
   save();
 }
 
+/**
+ * Relit le nombre de non lues sur le serveur (pastille du menu), sans charger la liste.
+ * Silencieux en cas d'échec : la pastille garde sa dernière valeur.
+ */
+export async function refreshUnread() {
+  if (!USE_BACKEND || !S.get().session) return;
+  try {
+    const { unread } = await api.getUnreadCount();
+    if (typeof unread === 'number') S.setUnreadCount(unread);
+  } catch (error) {
+    console.warn('[notifications]', error);
+  }
+}
+
+/** Marque une notification comme lue (au clic). L'affichage n'attend pas le serveur. */
+export function markRead(id) {
+  const n = S.get().notifications.find((x) => x.id === id);
+  if (!n || n.read) return;
+  if (USE_BACKEND) fireAndForget(api.markNotificationsRead([id]));
+  S.markRead(id);
+}
+
 /** Marque tout comme lu. L'affichage n'attend pas le serveur. */
 export function markAllRead() {
   if (USE_BACKEND) fireAndForget(api.markNotificationsRead());

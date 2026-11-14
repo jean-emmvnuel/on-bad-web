@@ -100,6 +100,7 @@ export function storeStickers(stickers = []) {
 
 export function storeNotifications(notifications = []) {
   S.get().notifications = notifications.map((n) => ({ ...n, actorId: toLocalId(n.actorId) }));
+  S.get().unreadCount = notifications.filter((n) => !n.read).length;
 }
 
 /** Ouvre la session à partir de la réponse de /login ou /register. */

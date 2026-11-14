@@ -147,7 +147,12 @@ export function displayName(b) {
   const u = state.users[b.authorId];
   return { name: u?.pseudo ?? 'Badeur', handle: u ? `@${u.pseudo}` : null, user: u ?? null };
 }
-export const unread = () => state.notifications.filter((n) => !n.read).length;
+/**
+ * Notifications non lues (pastille du menu). Avec le backend, le serveur donne le compte exact
+ * (`unreadCount`, relu régulièrement) ; sinon on compte celles gardées dans le navigateur.
+ */
+export const unread = () => (typeof state.unreadCount === 'number' ? state.unreadCount : state.notifications.filter((n) => !n.read).length);
+export function setUnreadCount(count) { if (state.unreadCount !== count) { state.unreadCount = count; commit(); } }
 const liveComments = (badingId) => state.comments.filter((c) => c.badingId === badingId && !c.deleted && !state.blocked.includes(c.authorId));
 // Nombre de commentaires par bading, calculé en une passe (le fil en affiche un par carte).
 const commentCounts = memo(() => {
@@ -238,7 +243,15 @@ export function rebade(id, opinion, anonymous) {
 }
 export function remove(id) { const b = bading(id); if (b) { b.deleted = true; commit(); } }
 export function setDraft(draft) { state.draft = draft; commit(); }
-export function markAllRead() { state.notifications.forEach((n) => (n.read = true)); commit(); }
+/** Une notification lue (on a cliqué dessus). */
+export function markRead(id) {
+  const n = state.notifications.find((x) => x.id === id);
+  if (!n || n.read) return;
+  n.read = true;
+  if (typeof state.unreadCount === 'number') state.unreadCount = Math.max(0, state.unreadCount - 1);
+  commit();
+}
+export function markAllRead() { state.notifications.forEach((n) => (n.read = true)); if (typeof state.unreadCount === 'number') state.unreadCount = 0; commit(); }
 export function setMentionPolicy(p) { state.mentionPolicy = p; commit(); }
 export function toggleFavorite(id) {
   const on = state.favorites.includes(id);

@@ -1,11 +1,12 @@
 // Coquille web : barre du haut + 3 colonnes (ordinateur), onglets en bas (mobile).
 // Elle reste en place quand on change d'écran : seul le contenu de <main id="view"> change.
-import { useSyncExternalStore } from 'react';
+import { useEffect, useSyncExternalStore } from 'react';
 import * as S from '../lib/store.js';
 import { useStore } from '../lib/useStore.js';
 import { canInstall, install, onInstallChange } from '../lib/pwa.js';
 import { goOnClick, goOnEnter } from '../lib/router.js';
 import { Avatar, Icon, Logo } from '../ui/icons.jsx';
+import { refreshUnread } from '../services/notifications.js';
 
 
 /** Le bouton « Installer » a-t-il un sens ici ? (suit l'invite d'installation du navigateur) */
@@ -13,8 +14,33 @@ export const useCanInstall = () => useSyncExternalStore(onInstallChange, canInst
 
 const current = (nav, key) => (nav === key ? 'page' : undefined);
 
-function UnreadDot({ count }) {
-  return <b className="dot" hidden={!count}>{count || null}</b>;
+const UNREAD_EVERY_MS = 60_000;
+
+/** Pastille des notifications non lues (« 99+ » au-delà de 99). */
+export function UnreadDot({ count }) {
+  const label = count ? `${count > 99 ? 'plus de 99' : count} notification${count > 1 ? 's' : ''} non lue${count > 1 ? 's' : ''}` : undefined;
+  return <b className="dot" hidden={!count} aria-label={label}>{count ? (count > 99 ? '99+' : count) : null}</b>;
+}
+
+/**
+ * Tient la pastille à jour sans ouvrir la page Notifications : au démarrage, toutes les minutes
+ * et au retour sur l'onglet. Reporte aussi le compte sur l'icône de l'app installée (si le navigateur le permet).
+ */
+function useUnreadRefresh(active, count) {
+  useEffect(() => {
+    if (!active) return undefined;
+    refreshUnread();
+    const timer = setInterval(() => { if (document.visibilityState === 'visible') refreshUnread(); }, UNREAD_EVERY_MS);
+    const onVisible = () => { if (document.visibilityState === 'visible') refreshUnread(); };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => { clearInterval(timer); document.removeEventListener('visibilitychange', onVisible); };
+  }, [active]);
+
+  useEffect(() => {
+    if (!active || typeof navigator === 'undefined') return;
+    if (count && navigator.setAppBadge) navigator.setAppBadge(count).catch(() => {});
+    else if (!count && navigator.clearAppBadge) navigator.clearAppBadge().catch(() => {});
+  }, [active, count]);
 }
 
 function MeCard() {
@@ -54,6 +80,7 @@ export function Shell({ nav, guest = false, viewRef, children }) {
   useStore(); // pastilles, tendances et carte « moi » suivent les données
   const showInstall = useCanInstall();
   const unread = S.unread();
+  useUnreadRefresh(!guest && !!S.get().session, unread);
 
   return (
     <div className="shell">

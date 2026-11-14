@@ -224,4 +224,6 @@ export const cancelDeletion = () => del('/me/deletion');
 
 // Notifications
 export const getNotifications = () => get('/notifications'); // → { notifications, users, badings, origins }
-export const markNotificationsRead = () => post('/notifications/read');
+/** Sans `ids` : tout marquer comme lu ; avec : seulement ces notifications. */
+export const markNotificationsRead = (ids) => post('/notifications/read', ids ? { ids } : undefined);
+export const getUnreadCount = () => get('/notifications/unread'); // → { unread }

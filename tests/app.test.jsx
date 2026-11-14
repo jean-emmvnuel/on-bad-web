@@ -163,6 +163,24 @@ describe('App React (mode démo)', () => {
     await nav('/u/me', () => location.hash === '#/profile');
   });
 
+  it('notifications de l’équipe : titre et texte affichés, sans lien', async () => {
+    S.get().notifications.unshift({ id: 'n-team', kind: 'admin_message', title: 'Message de test', body: 'Merci pour tes badings', read: false, createdAt: Date.now() });
+    S.get().notifications.unshift({ id: 'n-warn', kind: 'warning', title: 'Avertissement', body: 'Reste dans la charte', read: false, createdAt: Date.now() });
+    await nav('/notifications', () => text().includes('Merci pour tes badings'));
+    expect(text()).toContain('Reste dans la charte');
+    const team = $('[data-kind="admin_message"]');
+    expect(team.textContent).toContain('Message de test');
+    // Ouvrir la page ne marque rien comme lu ; cliquer marque seulement celle-ci, sans quitter la page.
+    await new Promise((r) => setTimeout(r, 1500));
+    expect(S.get().notifications.find((n) => n.id === 'n-team').read).toBe(false);
+    await click(team);
+    expect(S.get().notifications.find((n) => n.id === 'n-team').read).toBe(true);
+    expect(S.get().notifications.find((n) => n.id === 'n-warn').read).toBe(false);
+    expect(location.hash).toBe('#/notifications');
+    expect(team.textContent).not.toContain('badge');
+    expect($('[data-kind="warning"]').textContent).not.toContain('badge');
+  });
+
   it('se déconnecter renvoie à la connexion', async () => {
     await nav('/settings', () => byText('Se déconnecter'));
     await click(byText('Se déconnecter'));

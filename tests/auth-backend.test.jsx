@@ -16,7 +16,9 @@ const takenEmails = new Set();
 const routes = {
   'POST /login': (body) => {
     if (body.email === 'inconnu@test.ci') return json(404, { message: 'Invalid email or password', success: false });
-    if (body.password !== 'motdepasse1') return json(401, { message: 'Invalid email or password', success: false });
+    if (body.password === 'trop-essais') return json(429, { code: 'too_many_attempts', message: 'Trop de tentatives', success: false });
+    // Le serveur ne dit pas si l'e-mail a un compte : même réponse pour un compte inconnu et un mauvais mot de passe.
+    if (body.password !== 'motdepasse1') return json(401, { code: 'invalid_credentials', message: 'E-mail ou mot de passe incorrect', success: false });
     return json(200, { message: 'User logged in successfully', success: true, data: { user: serverUser, token: 'jwt-1' } });
   },
   'POST /register': () => (registerStatus === 409
@@ -115,9 +117,15 @@ describe('Authentification avec le backend Next.js', () => {
     await until(() => text().includes("Aucun compte n'utilise cet e-mail"));
   });
 
-  it('mauvais mot de passe (401) : message sous le mot de passe, on reste sur la connexion', async () => {
+  it('identifiants refusés (401) : un seul message, sans dire si le compte existe', async () => {
     await logIn('awa@test.ci', 'mauvais-mdp');
-    await until(() => text().includes('Mot de passe incorrect'));
+    await until(() => text().includes('E-mail ou mot de passe incorrect'));
+    expect(location.hash).toBe('#/auth/login');
+  });
+
+  it('trop de tentatives (429) : message dédié', async () => {
+    await logIn('awa@test.ci', 'trop-essais');
+    await until(() => text().includes('Trop de tentatives'));
     expect(location.hash).toBe('#/auth/login');
   });
 

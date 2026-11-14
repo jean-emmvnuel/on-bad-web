@@ -13,10 +13,11 @@ const EMAIL_NEEDED_FOR_RESET = "Entre d'abord ton adresse e-mail, on t'enverra u
 const SERVER_MESSAGES = {
   unknown: "Aucun compte n'utilise cet e-mail. Inscris-toi d'abord.",
   wrong_password: 'Mot de passe incorrect.',
-  invalid_credentials: 'E-mail ou mot de passe incorrect (le mot de passe fait au moins 8 caractères).',
+  invalid_credentials: 'E-mail ou mot de passe incorrect.',
+  too_many_attempts: 'Trop de tentatives. Patiente un peu avant de réessayer, ou réinitialise ton mot de passe.',
   bad_response: 'Le serveur a répondu de façon inattendue. Réessaie dans un instant.',
 };
-const ERROR_FIELDS = { unknown: 'form', wrong_password: 'pw', invalid_credentials: 'form' };
+const ERROR_FIELDS = { unknown: 'form', wrong_password: 'pw', invalid_credentials: 'form', too_many_attempts: 'form' };
 const RESET_MESSAGES = { not_available: "Le changement de mot de passe n'est pas encore disponible. Contacte-nous à oriverseit@gmail.com." };
 
 export default function Login() {

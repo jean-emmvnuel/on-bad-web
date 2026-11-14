@@ -4,7 +4,7 @@
 //   POST /api/register { firstname, lastname, username, email, password } → 201 { user, token }
 //        409 email_taken / pseudo_taken · 400 invalid_pseudo / invalid_email / weak_password / invalid_name
 //   POST /api/login    { email, password } → 200 { user, token }
-//        404 unknown · 401 wrong_password · 403 account_blocked
+//        401 invalid_credentials (le serveur ne dit pas si l'e-mail a un compte) · 429 too_many_attempts · 403 account_blocked
 //   GET  /api/email-available?email=   GET /api/pseudo-available?pseudo=   → { available }
 //   POST /api/password-reset { email } → 204      POST /api/logout → 204 (le jeton est révoqué)
 import * as S from '../lib/store.js';
@@ -102,7 +102,7 @@ export async function logIn(email, password) {
     try {
       response = await api.login({ email, password });
     } catch (error) {
-      withCode(error, { codesByStatus: { 404: 'unknown', 401: 'wrong_password', 400: 'invalid_credentials', 403: 'account_blocked' } });
+      withCode(error, { codesByStatus: { 404: 'unknown', 401: 'invalid_credentials', 400: 'invalid_credentials', 403: 'account_blocked', 429: 'too_many_attempts' } });
     }
     openSession(email, response);
     return;

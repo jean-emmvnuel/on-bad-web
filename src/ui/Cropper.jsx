@@ -7,13 +7,14 @@ import { gsap } from 'gsap';
 import { reduceMotion } from '../lib/motion.js';
 import { Icon } from './icons.jsx';
 
-const ALL_RATIOS = [['4:5', 'Portrait', 4 / 5], ['1:1', 'Carré', 1]];
+// « libre » : pas de proportion imposée, le cadre se règle librement avec ses poignées (stickers).
+const ALL_RATIOS = [['libre', 'Libre', null], ['4:5', 'Portrait', 4 / 5], ['1:1', 'Carré', 1]];
 const MIN_FRAME = 72;
 const PAD = 20;
 const HANDLES = ['nw', 'ne', 'sw', 'se'];
 
 export function Cropper({ img, initial = {}, opts = {}, onClose }) {
-  const { ratios = ['4:5', '1:1'], outMax = 1080, title = 'Recadrer', round = false } = opts;
+  const { ratios = ['4:5', '1:1'], outMax = 1080, fitLongest = false, title = 'Recadrer', round = false } = opts;
   const RATIOS = ALL_RATIOS.filter((r) => ratios.includes(r[0]));
 
   const rootRef = useRef(null);
@@ -50,7 +51,8 @@ export function Cropper({ img, initial = {}, opts = {}, onClose }) {
     m.H = m.rot % 180 ? img.naturalWidth : img.naturalHeight;
     m.SW = stageRef.current.clientWidth;
     m.SH = stageRef.current.clientHeight;
-    const r = ratioOf(), aw = m.SW - 2 * PAD, ah = m.SH - 2 * PAD;
+    // Libre : le cadre part de l'image entière.
+    const r = ratioOf() ?? m.W / m.H, aw = m.SW - 2 * PAD, ah = m.SH - 2 * PAD;
     const fw = Math.min(aw, ah * r), fh = fw / r;
     m.f = { x: (m.SW - fw) / 2, y: (m.SH - fh) / 2, w: fw, h: fh };
     m.minS = Math.max(m.f.w / m.W, m.f.h / m.H);
@@ -86,7 +88,9 @@ export function Cropper({ img, initial = {}, opts = {}, onClose }) {
     g.drawImage(img, -img.naturalWidth / 2, -img.naturalHeight / 2);
     const sx = (m.f.x - (m.cx - (m.W * m.s) / 2)) / m.s, sy = (m.f.y - (m.cy - (m.H * m.s) / 2)) / m.s;
     const sw = m.f.w / m.s, sh = m.f.h / m.s;
-    const ow = Math.round(Math.min(outMax, sw)), oh = Math.round((ow * sh) / sw);
+    // `fitLongest` : outMax limite le plus grand côté (sticker très haut), sinon la largeur.
+    const k = Math.min(1, outMax / (fitLongest ? Math.max(sw, sh) : sw));
+    const ow = Math.max(1, Math.round(sw * k)), oh = Math.max(1, Math.round(sh * k));
     const out = document.createElement('canvas');
     out.width = ow; out.height = oh;
     const o = out.getContext('2d');
@@ -94,7 +98,9 @@ export function Cropper({ img, initial = {}, opts = {}, onClose }) {
     o.fillStyle = '#1a1919';
     o.fillRect(0, 0, ow, oh);
     o.drawImage(full, sx, sy, sw, sh, 0, 0, ow, oh);
-    return { dataUrl: out.toDataURL('image/jpeg', 0.84), ratio: ow / oh, w: ow, h: oh, crop: { ratioKey: m.ratioKey, rot: m.rot } };
+    // rect : zone choisie dans l'image tournée (pixels d'origine), pour appliquer le même recadrage
+    // à toutes les images d'une vidéo (sticker GIF).
+    return { dataUrl: out.toDataURL('image/jpeg', 0.84), ratio: ow / oh, w: ow, h: oh, rect: { sx, sy, sw, sh }, crop: { ratioKey: m.ratioKey, rot: m.rot } };
   }
 
   const close = (value) => {
@@ -186,7 +192,7 @@ export function Cropper({ img, initial = {}, opts = {}, onClose }) {
         {RATIOS.length > 1 ? (
           <div className="seg" role="radiogroup" aria-label="Format">
             {RATIOS.map(([key, label]) => (
-              <button key={key} role="radio" aria-checked={key === ratioKey} onClick={() => chooseRatio(key)}><b>{key}</b><span>{label}</span></button>
+              <button key={key} role="radio" aria-checked={key === ratioKey} onClick={() => chooseRatio(key)}><b>{key === 'libre' ? '↔' : key}</b><span>{label}</span></button>
             ))}
           </div>
         ) : null}

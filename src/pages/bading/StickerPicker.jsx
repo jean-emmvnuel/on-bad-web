@@ -9,6 +9,7 @@ import { reduceMotion } from '../../lib/motion.js';
 import { STICKERS, THEMES, sticker as builtinSticker } from '../../lib/stickers.js';
 import * as stickers from '../../services/stickers.js';
 import { ACCEPT, openCropper, readImageFile } from '../../ui/cropper.js';
+import { VIDEO_ACCEPT, frameDataUrl, loadVideo, makeGif, openVideoTrim } from '../../ui/gifSticker.js';
 import { Icon } from '../../ui/icons.jsx';
 import { Sticker } from '../../ui/Sticker.jsx';
 import { closeSheet, openSheet } from '../../ui/sheet.jsx';
@@ -90,7 +91,8 @@ export function StickerPicker({ onPick }) {
     e.target.value = '';
     try {
       const src = await readImageFile(file);
-      const cropped = await openCropper(src, {}, { ratios: ['1:1'], outMax: 512, title: 'Créer un sticker' });
+      // Forme libre (cadre réglable), ou carré si on le choisit ; 512 px au plus sur le plus grand côté.
+      const cropped = await openCropper(src, {}, { ratios: ['libre', '1:1'], outMax: 512, fitLongest: true, title: 'Créer un sticker' });
       if (!cropped) return;
       toast('Création du sticker…');
       await stickers.create(cropped.dataUrl);
@@ -98,6 +100,32 @@ export function StickerPicker({ onPick }) {
       toast('Sticker créé et ajouté à tes stickers');
     } catch (error) {
       toastFileOrServerError(error, stickerErrors());
+    }
+  };
+
+  // Sticker GIF : extrait de 4 s au plus, recadré librement, encodé dans le navigateur (la vidéo n'est pas envoyée).
+  const createFromVideo = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    let video = null;
+    try {
+      video = await loadVideo(file);
+      const part = await openVideoTrim(video);
+      if (!part) return;
+      const frame = await frameDataUrl(video, part.start);
+      const cropped = await openCropper(frame, {}, { ratios: ['libre', '1:1'], outMax: 512, fitLongest: true, title: 'Recadrer le GIF' });
+      if (!cropped) return;
+      toast('Création du GIF…');
+      const gif = await makeGif(video, { ...part, rect: cropped.rect, rot: cropped.crop.rot });
+      toast('Envoi du sticker…');
+      await stickers.create(gif);
+      setTab('mine');
+      toast('Sticker GIF créé et ajouté à tes stickers');
+    } catch (error) {
+      toastFileOrServerError(error, stickerErrors());
+    } finally {
+      video?.pause();
+      video?.release?.();
     }
   };
 
@@ -113,7 +141,7 @@ export function StickerPicker({ onPick }) {
   let empty = null;
   if (!ids.length) {
     empty = isMine
-      ? <p className="t-small muted sp-empty">Crée un sticker avec une photo, ou touche le sticker d’un Badeur dans les commentaires pour l’ajouter ici.</p>
+      ? <p className="t-small muted sp-empty">Crée un sticker avec une photo ou un GIF à partir d’une vidéo, ou touche le sticker d’un Badeur dans les commentaires pour l’ajouter ici.</p>
       : <p className="t-small muted sp-empty">Tes stickers récents apparaîtront ici.</p>;
   }
 
@@ -128,10 +156,16 @@ export function StickerPicker({ onPick }) {
       </div>
       <div className="sp-grid">
         {isMine ? (
-          <label className="sp-create" title="Créer un sticker à partir d'une photo">
-            <Icon name="plus" /><span>Créer</span>
-            <input type="file" accept={ACCEPT} hidden onChange={createFromPhoto} />
-          </label>
+          <>
+            <label className="sp-create" title="Créer un sticker à partir d'une photo">
+              <Icon name="plus" /><span>Photo</span>
+              <input type="file" accept={ACCEPT} hidden onChange={createFromPhoto} />
+            </label>
+            <label className="sp-create" title="Créer un sticker GIF à partir d'un extrait vidéo">
+              <b className="sp-gif">GIF</b><span>Vidéo</span>
+              <input type="file" accept={VIDEO_ACCEPT} hidden onChange={createFromVideo} />
+            </label>
+          </>
         ) : null}
         {ids.map((id) => (
           <div className="sp-cell" key={id}>

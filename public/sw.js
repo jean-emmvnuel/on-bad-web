@@ -64,6 +64,20 @@ self.addEventListener('fetch', (e) => {
   }
 });
 
+// Notification push du serveur (app fermée ou en arrière-plan) : { title, body, path, tag }.
+self.addEventListener('push', (e) => {
+  let data = {};
+  try { data = e.data ? e.data.json() : {}; } catch { data = { body: e.data?.text() }; }
+  const title = data.title || 'On Bade';
+  e.waitUntil(self.registration.showNotification(title, {
+    body: data.body || '',
+    icon: 'assets/icon-192.png',
+    badge: 'assets/icon-192.png',
+    tag: data.tag,
+    data: { path: data.path || '/notifications' },
+  }));
+});
+
 // Clic sur une notification : ouvre l'écran concerné dans la fenêtre existante, sinon en ouvre une.
 self.addEventListener('notificationclick', (e) => {
   e.notification.close();

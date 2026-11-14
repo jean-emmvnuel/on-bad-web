@@ -4,7 +4,8 @@ import * as S from '../../lib/store.js';
 import { useStore } from '../../lib/useStore.js';
 import { USE_BACKEND } from '../../services/mode.js';
 import { back, go } from '../../lib/router.js';
-import { enableNotifications, notifStatus, notify } from '../../lib/notify.js';
+import { disableNotifications, enableNotifications, notifStatus, notify } from '../../lib/notify.js';
+import { pushNeedsInstall } from '../../lib/push.js';
 import * as account from '../../services/account.js';
 import * as auth from '../../services/auth.js';
 import { Avatar, Icon, Logo } from '../../ui/icons.jsx';
@@ -21,7 +22,7 @@ const BADGE_STATUS_LABELS = {
 };
 
 const NOTIFICATION_LABELS = {
-  granted: (enabled) => (enabled ? 'Activées : rires, commentaires, réponses, mentions' : 'Autorisées — touche pour les réactiver'),
+  granted: (enabled) => (enabled ? 'Activées sur cet appareil, même app fermée — touche pour les couper' : 'Coupées — touche pour les réactiver'),
   denied: () => 'Bloquées : à réautoriser dans les réglages du navigateur',
   undetermined: () => 'Touche pour les activer',
   unavailable: () => 'Non prises en charge par ce navigateur',
@@ -102,12 +103,21 @@ function SettingsContent() {
   };
 
   const toggleNotifications = async () => {
-    const result = await enableNotifications();
+    if (notificationStatus === 'granted' && state.notifEnabled) {
+      await disableNotifications();
+      toast('Notifications coupées sur cet appareil');
+      return;
+    }
+    if (pushNeedsInstall()) {
+      toast('Sur iPhone : installe d’abord On Bade sur l’écran d’accueil (Partager → Sur l’écran d’accueil)');
+      return;
+    }
+    const { status, push } = await enableNotifications();
     setNotificationStatus(notifStatus());
-    if (result === 'granted') {
-      toast('Notifications activées 🎉');
+    if (status === 'granted') {
+      toast(push ? 'Notifications activées, même app fermée 🎉' : 'Notifications activées 🎉');
       setTimeout(() => notify('Notifications activées 🎉', 'Tu seras prévenu quand on rit à tes badings.', '/notifications'), 300);
-    } else if (result === 'denied') {
+    } else if (status === 'denied') {
       toast('Notifications bloquées par le navigateur');
     }
   };
@@ -153,7 +163,7 @@ function SettingsContent() {
         </Section>
 
         <Section title="Notifications">
-          <SettingRow icon="bell" label="Notifications du navigateur" detail={NOTIFICATION_LABELS[notificationStatus](state.notifEnabled)} onClick={toggleNotifications} />
+          <SettingRow icon="bell" label="Notifications sur ce téléphone" detail={NOTIFICATION_LABELS[notificationStatus](state.notifEnabled)} onClick={toggleNotifications} />
           <SettingRow icon="message" label="Notifications par e-mail"
             detail={state.emailNotifications !== false ? `Activées · mentions, commentaires, réponses et messages de l’équipe, à ${me.email ?? 'ton adresse'}` : 'Désactivées'}
             right={<span className="toggle-switch" aria-hidden="true" data-on={state.emailNotifications !== false} data-email-notif=""><i /></span>}

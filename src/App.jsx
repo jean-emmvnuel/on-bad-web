@@ -3,6 +3,7 @@ import { Suspense, lazy, useEffect, useLayoutEffect, useRef, useSyncExternalStor
 import { gsap } from 'gsap';
 import * as S from './lib/store.js';
 import { back, go, useLocation } from './lib/router.js';
+import { syncPush } from './lib/push.js';
 import { isStandalone } from './lib/pwa.js';
 import { project, reduceMotion, spring, velocityTracker } from './lib/motion.js';
 import { logOut } from './services/auth.js';
@@ -175,6 +176,9 @@ export function App() {
   const access = useAccess();
   const resolved = resolve(location, access);
   const { route, params, redirect } = resolved;
+
+  // Session ouverte (démarrage, connexion, inscription) : abonnement push remis à jour si les notifications sont activées.
+  useEffect(() => { if (access.session) syncPush(S.get().notifEnabled); }, [access.session]);
 
   const viewRef = useRef(null);
   const lastRoute = useRef(null);

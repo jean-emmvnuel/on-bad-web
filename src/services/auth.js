@@ -8,6 +8,7 @@
 //   GET  /api/email-available?email=   GET /api/pseudo-available?pseudo=   → { available }
 //   POST /api/password-reset { email } → 204      POST /api/logout → 204 (le jeton est révoqué)
 import * as S from '../lib/store.js';
+import { forgetPushOnLogout } from '../lib/push.js';
 import * as api from '../lib/api.js';
 import { USE_AUTH_BACKEND, fail, fireAndForget } from './mode.js';
 import { clearSession, save, storeSession } from './cache.js';
@@ -129,6 +130,7 @@ export async function confirmPasswordReset(token, password) {
 
 /** Déconnexion : le serveur révoque le jeton (sans attendre sa réponse), puis on l'oublie. */
 export function logOut() {
+  forgetPushOnLogout(); // avant l'effacement du jeton : le serveur oublie cet appareil
   forgetAll();
   if (USE_AUTH_BACKEND) {
     if (api.getToken()) fireAndForget(api.logout()); // le jeton est lu avant d'être effacé juste en dessous

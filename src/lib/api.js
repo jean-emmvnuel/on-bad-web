@@ -216,6 +216,11 @@ export const updateMe = (changes) => patch('/me', changes); // { pseudo } → { 
 export const updatePhoto = (image) => put('/me/photo', { image }); // image = data URL ou null → { user }
 export const getSettings = () => get('/me/settings'); // → { mentionPolicy, blocked, badge, deletion }
 export const updateSettings = (changes) => patch('/me/settings', changes); // { mentionPolicy?, emailNotifications? }
+
+// Notifications push (app fermée)
+export const getPushKey = () => get('/push/key'); // → { publicKey | null }
+export const savePushSubscription = (subscription) => post('/me/push', subscription); // { endpoint, keys: { p256dh, auth } } → 204
+export const deletePushSubscription = (endpoint) => request('/me/push', { method: 'DELETE', body: { endpoint } }); // → 204
 export const blockUser = (userId) => put(`/me/blocked/${id(userId)}`);
 export const unblockUser = (userId) => del(`/me/blocked/${id(userId)}`);
 export const addFavorite = (badingId) => put(`/me/favorites/${id(badingId)}`);

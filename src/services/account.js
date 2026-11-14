@@ -55,10 +55,11 @@ export async function loadExport() {
 /** Charge les réglages : mentions, comptes bloqués, badge, suppression en cours. */
 export async function loadSettings() {
   if (!USE_BACKEND) return;
-  const { mentionPolicy, blocked, badge, deletion } = await api.getSettings();
+  const { mentionPolicy, emailNotifications = true, blocked, badge, deletion } = await api.getSettings();
   storeUsers(blocked);
   Object.assign(S.get(), {
     mentionPolicy,
+    emailNotifications,
     blocked: blocked.map((u) => toLocalId(u.id)),
     badge,
     deletion,
@@ -69,6 +70,14 @@ export async function loadSettings() {
 export async function setMentionPolicy(policy) {
   if (USE_BACKEND) await api.updateSettings({ mentionPolicy: policy });
   S.setMentionPolicy(policy);
+}
+
+/** Notifications importantes (mentions, commentaires, réponses, messages de l'équipe) aussi par e-mail. */
+export async function setEmailNotifications(on) {
+  if (USE_BACKEND) await api.updateSettings({ emailNotifications: on });
+  S.get().emailNotifications = on;
+  S.touch?.();
+  save();
 }
 
 export async function unblock(userId) {

@@ -14,7 +14,7 @@ const BANNED = ['connard', 'pute', 'nègre', 'tuer'];
 function initialState() {
   return {
     v: DATA_VERSION, onboarded: false, session: null, users: {}, badings: [], comments: [], notifications: [],
-    draft: { text: '', anonymous: false, image: null }, recentStickers: [], customStickers: {}, myStickers: [], mentionPolicy: 'everyone', favorites: [], blocked: [], postedToday: 0,
+    draft: { text: '', anonymous: false, image: null }, recentStickers: [], customStickers: {}, myStickers: [], mentionPolicy: 'everyone', emailNotifications: true, favorites: [], blocked: [], postedToday: 0,
     badge: { status: 'none' },
     deletion: { status: 'none' }, pendingLink: null, notifEnabled: false, accounts: {}, pendingSignup: null,
   };

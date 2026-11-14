@@ -215,7 +215,7 @@ export const getExport = () => get('/me/export'); // → { user, badings, liked,
 export const updateMe = (changes) => patch('/me', changes); // { pseudo } → { user }
 export const updatePhoto = (image) => put('/me/photo', { image }); // image = data URL ou null → { user }
 export const getSettings = () => get('/me/settings'); // → { mentionPolicy, blocked, badge, deletion }
-export const updateSettings = (changes) => patch('/me/settings', changes); // { mentionPolicy }
+export const updateSettings = (changes) => patch('/me/settings', changes); // { mentionPolicy?, emailNotifications? }
 export const blockUser = (userId) => put(`/me/blocked/${id(userId)}`);
 export const unblockUser = (userId) => del(`/me/blocked/${id(userId)}`);
 export const addFavorite = (badingId) => put(`/me/favorites/${id(badingId)}`);

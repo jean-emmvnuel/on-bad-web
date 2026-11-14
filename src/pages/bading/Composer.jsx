@@ -5,6 +5,7 @@ import * as comments from '../../services/comments.js';
 import { Avatar, Icon } from '../../ui/icons.jsx';
 import { errorMessage, toastError, usePending } from '../../ui/remote.jsx';
 import { StickerPicker } from './StickerPicker.jsx';
+import { MentionList, useMentions } from '../../ui/mentions.jsx';
 
 const MAX_HEIGHT = 120;
 const COMMENT_ERRORS = { blocked_word: 'Ce commentaire contient un mot refusé par la charte.' };
@@ -18,6 +19,8 @@ export function Composer({ badingId, parent, onCancelReply, textareaRef, onPoste
   const [error, setError] = useState('');
   const [pickerOpen, setPickerOpen] = useState(false);
   const [pending, run] = usePending();
+  // @mentions : la personne mentionnée reçoit une notification (si elle accepte les mentions).
+  const { suggestions, insert, trackCaret } = useMentions({ text, setText, textareaRef });
 
   const tooLong = text.length > S.RULES.commentMax;
   const lengthError = tooLong ? `${S.RULES.commentMax} caractères maximum (${text.length}).` : '';
@@ -67,11 +70,13 @@ export function Composer({ badingId, parent, onCancelReply, textareaRef, onPoste
         <button className="icon-btn" style={{ width: 28, height: 28 }} aria-label="Annuler la réponse" onClick={onCancelReply}><Icon name="x" /></button>
       </div>
       {pickerOpen ? <StickerPicker onPick={sendSticker} /> : null}
+      <MentionList users={suggestions} onPick={insert} compact />
       <div className="row">
         <Avatar user={S.me()} size={32} />
-        <textarea ref={textareaRef} rows={1} maxLength={600} placeholder={parent ? 'Ta réponse…' : 'Ton commentaire…'} aria-label="Ton commentaire"
+        <textarea ref={textareaRef} rows={1} maxLength={600} placeholder={parent ? 'Ta réponse…' : 'Ton commentaire… (@ pour mentionner)'} aria-label="Ton commentaire"
           value={text}
-          onChange={(e) => { setText(e.target.value); setError(''); }}
+          onChange={(e) => { setText(e.target.value); trackCaret(e); setError(''); }}
+          onKeyUp={trackCaret} onClick={trackCaret}
           onKeyDown={(e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey) && text.trim() && !tooLong) send(); }} />
         <button className={`icon-btn sticker-btn ${pickerOpen ? 'on' : ''}`} aria-label="Envoyer un sticker" aria-expanded={pickerOpen} onClick={() => setPickerOpen(!pickerOpen)}>
           <Icon name="sticker" />

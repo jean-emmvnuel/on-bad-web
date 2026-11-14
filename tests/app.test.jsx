@@ -125,6 +125,18 @@ describe('App React (mode démo)', () => {
     expect(text()).toContain('Trop vrai ce bading');
   });
 
+  it('commentaire : taper « @Ko » propose les pseudos, un clic insère la mention', async () => {
+    await nav('/bading/b4', () => $('.composer textarea'));
+    await type($('.composer textarea'), 'Merci @Ko');
+    await until(() => $('.composer [data-mentions]')?.textContent.includes('Koffi225'));
+    await click([...document.querySelectorAll('.composer [data-mentions] button')].find((b) => b.textContent.includes('Koffi225')));
+    expect($('.composer textarea').value).toBe('Merci @Koffi225 ');
+    expect($('.composer [data-mentions]')).toBeNull();
+    await click([...document.querySelectorAll('.composer button')].find((b) => b.textContent === 'Publier'));
+    await wait(50);
+    expect(S.threads('b4').some((t) => t.root.text === 'Merci @Koffi225')).toBe(true);
+  });
+
   it('menu « … » ouvre une feuille, Échap la ferme', async () => {
     await click($('.topbar [aria-label="Plus d\'options"]'));
     expect($('#sheet-root .sheet')).toBeTruthy();
@@ -149,6 +161,11 @@ describe('App React (mode démo)', () => {
     await nav('/settings', () => text().includes('Qui peut me mentionner'));
     await click(byText('Personne'));
     expect(S.get().mentionPolicy).toBe('nobody');
+    // Notifications par e-mail : activées par défaut, un clic les coupe.
+    expect($('[data-email-notif]').dataset.on).toBe('true');
+    await click($('[data-email-notif]').closest('button'));
+    await until(() => S.get().emailNotifications === false);
+    expect($('[data-email-notif]').dataset.on).toBe('false');
     await nav('/privacy', () => text().includes('Paragraphe'));
   });
 

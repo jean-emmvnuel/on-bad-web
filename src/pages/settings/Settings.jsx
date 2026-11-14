@@ -154,6 +154,11 @@ function SettingsContent() {
 
         <Section title="Notifications">
           <SettingRow icon="bell" label="Notifications du navigateur" detail={NOTIFICATION_LABELS[notificationStatus](state.notifEnabled)} onClick={toggleNotifications} />
+          <SettingRow icon="message" label="Notifications par e-mail"
+            detail={state.emailNotifications !== false ? `Activées · mentions, commentaires, réponses et messages de l’équipe, à ${me.email ?? 'ton adresse'}` : 'Désactivées'}
+            right={<span className="toggle-switch" aria-hidden="true" data-on={state.emailNotifications !== false} data-email-notif=""><i /></span>}
+            disabled={busy === 'email-notif'}
+            onClick={() => runAction('email-notif', () => account.setEmailNotifications(state.emailNotifications === false), state.emailNotifications === false ? 'Notifications par e-mail activées' : 'Notifications par e-mail désactivées')} />
         </Section>
 
         <Section title="Mes données">

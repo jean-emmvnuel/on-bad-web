@@ -9,6 +9,7 @@ import * as badings from '../../services/badings.js';
 import { ACCEPT, openCropper, readImageFile } from '../../ui/cropper.js';
 import { Avatar, Icon, Verified } from '../../ui/icons.jsx';
 import { toast } from '../../ui/toast.js';
+import { MentionList, useMentions } from '../../ui/mentions.jsx';
 import { errorMessage, usePending } from '../../ui/remote.jsx';
 
 const PUBLISH_ERRORS = {
@@ -19,28 +20,6 @@ const PUBLISH_ERRORS = {
   blocked_word: 'Un mot de ton bading n’est pas accepté par la charte. Reformule-le.',
   too_many_mentions: `${S.RULES.maxMentions} mentions maximum par bading.`,
 };
-
-const MENTION_AT_CURSOR = /@([\w.]*)$/;
-const MENTION_SEARCH_DELAY = 150; // on attend une courte pause dans la frappe avant d'interroger le serveur
-
-/** Pseudos proposés pour le mot « @… » sous le curseur ; seule la réponse à la dernière frappe compte. */
-function useMentionSuggestions(query) {
-  const [users, setUsers] = useState([]);
-  useEffect(() => {
-    if (query === null) { setUsers([]); return undefined; }
-    let current = true;
-    const timer = setTimeout(async () => {
-      try {
-        const found = await badings.searchPseudos(query);
-        if (current) setUsers(found.filter(Boolean));
-      } catch (error) {
-        console.warn(error); // pas de suggestions, mais on peut toujours écrire
-      }
-    }, MENTION_SEARCH_DELAY);
-    return () => { current = false; clearTimeout(timer); };
-  }, [query]);
-  return users;
-}
 
 /** Anneau qui se remplit + caractères restants. */
 function CharMeter({ length, max, withImage }) {
@@ -85,7 +64,6 @@ export default function Compose() {
   // Image recadrée { src, ratio } ; l'original est gardé en mémoire pour pouvoir recadrer à nouveau.
   const [image, setImage] = useState(draft.image ?? null);
   const [error, setError] = useState('');
-  const [caret, setCaret] = useState(draft.text.length);
   const [pending, run] = usePending();
   const original = useRef(null);
   const cropSettings = useRef({});
@@ -121,23 +99,7 @@ export default function Compose() {
 
   // ─── @mentions ───
 
-  const mentionMatch = text.slice(0, caret).match(MENTION_AT_CURSOR);
-  const mentionQuery = mentionMatch && S.countMentions(text) <= S.RULES.maxMentions ? mentionMatch[1] : null;
-  const suggestions = useMentionSuggestions(mentionQuery);
-
-  const insertMention = (pseudo) => {
-    const before = text.slice(0, caret).replace(MENTION_AT_CURSOR, `@${pseudo} `);
-    const next = before + text.slice(caret);
-    setText(next);
-    setCaret(before.length);
-    requestAnimationFrame(() => {
-      const ta = textareaRef.current;
-      ta.focus();
-      ta.setSelectionRange(before.length, before.length);
-    });
-  };
-
-  const trackCaret = (e) => setCaret(e.target.selectionEnd);
+  const { suggestions, insert: insertMention, trackCaret } = useMentions({ text, setText, textareaRef, allow: S.countMentions(text) <= S.RULES.maxMentions });
 
   // ─── Image : choix, recadrage, retrait ───
 
@@ -196,7 +158,7 @@ export default function Compose() {
             <textarea ref={textareaRef} className="plain" rows={6} maxLength={1200} aria-label="Ton bading"
               placeholder={image ? 'Ajoute une légende (facultatif)…' : "Qu'est-ce qui t'est arrivé ?"}
               value={text}
-              onChange={(e) => { setText(e.target.value); setCaret(e.target.selectionEnd); setError(''); }}
+              onChange={(e) => { setText(e.target.value); trackCaret(e); setError(''); }}
               onKeyUp={trackCaret} onClick={trackCaret} />
             <CharMeter length={length} max={max} withImage={!!image} />
             <div>
@@ -205,15 +167,7 @@ export default function Compose() {
                 onRemove={() => { setImage(null); original.current = null; }} />
             </div>
             <div>
-              {suggestions.length ? (
-                <div style={{ background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 'var(--r-lg)', overflow: 'hidden' }}>
-                  {suggestions.map((u) => (
-                    <button key={u.id} className="srow" style={{ minHeight: 52 }} onClick={() => insertMention(u.pseudo)}>
-                      <Avatar user={u} size={32} /><b>{u.pseudo}</b>{u.verified ? <Verified /> : null}
-                    </button>
-                  ))}
-                </div>
-              ) : null}
+              <MentionList users={suggestions} onPick={insertMention} />
             </div>
             <p className="error" ref={errorRef} hidden={!error}>{error}</p>
           </div>

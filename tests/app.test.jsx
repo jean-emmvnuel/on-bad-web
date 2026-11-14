@@ -163,6 +163,18 @@ describe('App React (mode démo)', () => {
     await nav('/u/me', () => location.hash === '#/profile');
   });
 
+  it('onglet « Du moment » : les badings les plus drôles, classés par rires', async () => {
+    await nav('/', () => document.querySelector('.tabbar a[href="#/trending"]'));
+    expect([...document.querySelectorAll('.tabbar > a, .tabbar .bader a')].length).toBe(5);
+    await click(document.querySelector('.tabbar a[href="#/trending"]'));
+    await until(() => location.hash === '#/trending' && $('#view [data-trending]'));
+    const top = S.moment(20);
+    expect(top.length).toBeGreaterThan(0);
+    expect(top.every((b, i) => i === 0 || top[i - 1].likes >= b.likes)).toBe(true);
+    expect(top.some((b) => b.rebadeOf)).toBe(false);
+    expect($('.tabbar a[href="#/trending"]').getAttribute('aria-current')).toBe('page');
+  });
+
   it('notifications de l’équipe : titre et texte affichés, sans lien', async () => {
     S.get().notifications.unshift({ id: 'n-team', kind: 'admin_message', title: 'Message de test', body: 'Merci pour tes badings', read: false, createdAt: Date.now() });
     S.get().notifications.unshift({ id: 'n-warn', kind: 'warning', title: 'Avertissement', body: 'Reste dans la charte', read: false, createdAt: Date.now() });

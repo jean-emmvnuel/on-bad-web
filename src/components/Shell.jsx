@@ -63,7 +63,7 @@ function MeCard() {
 }
 
 function Trends() {
-  const top = S.feed().filter((b) => !b.rebadeOf).sort((a, b) => b.likes - a.likes).slice(0, 3);
+  const top = S.moment(3);
   return top.map((b) => {
     const { name } = S.displayName(b);
     const path = `/bading/${b.id}`;
@@ -143,17 +143,17 @@ export function Shell({ nav, guest = false, viewRef, children }) {
       </div>
       <nav className="tabbar" aria-label="Onglets">
         <a href="#/" aria-current={current(nav, 'feed')}><Icon name="house" /><span>Fil</span></a>
-        {guest
-          ? <a href="#/auth/login"><Icon name="user" /><span>Connexion</span></a>
-          : <a href="#/notifications" aria-current={current(nav, 'notifications')}><span className="tb-ic"><Icon name="bell" /><UnreadDot count={unread} /></span><span>Notifs</span></a>}
+        <a href="#/trending" aria-current={current(nav, 'trending')}><Icon name="flame" /><span>Du moment</span></a>
         <div className="bader">
           {guest
             ? <a href="#/auth/signup"><Icon name="plus" />S'inscrire</a>
             : <a href="#/compose"><Icon name="plus" />Bader</a>}
         </div>
         {guest
-          ? <a href="#/auth/signup"><Icon name="user" /><span>Profil</span></a>
-          : <a href="#/profile" aria-current={current(nav, 'profile')}><Icon name="user" /><span>Profil</span></a>}
+          ? <a href="#/auth/login"><Icon name="user" /><span>Connexion</span></a>
+          : <a href="#/notifications" aria-current={current(nav, 'notifications')}><span className="tb-ic"><Icon name="bell" /><UnreadDot count={unread} /></span><span>Notifs</span></a>}
+        {/* Visiteur : pas d'onglet Profil (il menait à l'inscription, déjà au centre) ; la barre garde de la place. */}
+        {guest ? null : <a href="#/profile" aria-current={current(nav, 'profile')}><Icon name="user" /><span>Profil</span></a>}
       </nav>
     </div>
   );

@@ -27,6 +27,7 @@ const LOADERS = {
   compose: () => import('./pages/compose/Compose.jsx'),
   profile: () => import('./pages/Profile.jsx'),
   user: () => import('./pages/UserProfile.jsx'),
+  trending: () => import('./pages/Trending.jsx'),
   notifications: () => import('./pages/Notifications.jsx'),
   settings: () => import('./pages/settings/Settings.jsx'),
 };
@@ -53,6 +54,7 @@ const ROUTES = [
   { path: /^\/compose$/, page: 'compose', nav: 'compose', modal: true },
   { path: /^\/profile$/, page: 'profile', nav: 'profile' },
   { path: /^\/u\/([\w-]+)$/, page: 'user', keys: ['id'], level: 2, public: true },
+  { path: /^\/trending$/, page: 'trending', nav: 'trending', public: true },
   { path: /^\/notifications$/, page: 'notifications', nav: 'notifications' },
   { path: /^\/settings$/, page: 'settings', nav: 'settings', level: 2 },
 ];
@@ -224,7 +226,7 @@ export function App() {
   );
 
   let layout;
-  if (route.bare || (!access.session && route.public && !['feed', 'bading', 'user'].includes(route.page))) {
+  if (route.bare || (!access.session && route.public && !['feed', 'bading', 'user', 'trending'].includes(route.page))) {
     layout = location.path.startsWith('/auth/')
       ? <div className="auth-split"><AuthBrand /><main id="view" ref={viewRef}>{page}</main></div>
       : <main id="view" ref={viewRef}>{page}</main>;

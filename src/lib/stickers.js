@@ -19,7 +19,7 @@ export const STICKERS = [
   { id: 'wouya', theme: 'nouchi', emoji: '🌪️', label: 'Wouyaya', bg: '#ff5a5f', fg: '#ffffff', rot: 5 },
 ];
 // Onglets du sélecteur : réactions et nouchi réunis dans un seul onglet (« all » = toute la bibliothèque).
-export const THEMES = [['recent', 'Récents'], ['all', 'Réactions & nouchi']];
+export const THEMES = [['recent', 'Récents'], ['all', 'Réactions']];
 
 /** Sticker de la bibliothèque On Bade (undefined pour un sticker personnel ou inconnu). */
 export const sticker = (id) => STICKERS.find((s) => s.id === id);

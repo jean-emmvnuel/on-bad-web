@@ -161,11 +161,9 @@ describe('App React (mode démo)', () => {
     await nav('/settings', () => text().includes('Qui peut me mentionner'));
     await click(byText('Personne'));
     expect(S.get().mentionPolicy).toBe('nobody');
-    // Notifications par e-mail : activées par défaut, un clic les coupe.
-    expect($('[data-email-notif]').dataset.on).toBe('true');
-    await click($('[data-email-notif]').closest('button'));
-    await until(() => S.get().emailNotifications === false);
-    expect($('[data-email-notif]').dataset.on).toBe('false');
+    // Plus de notifications par e-mail : les actions arrivent en push, l'e-mail sert au compte.
+    expect($('[data-email-notif]')).toBeNull();
+    expect(text()).not.toContain('Notifications par e-mail');
     await nav('/privacy', () => text().includes('Paragraphe'));
   });
 

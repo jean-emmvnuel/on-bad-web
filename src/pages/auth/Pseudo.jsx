@@ -1,4 +1,4 @@
-// Étape 2 de l'inscription : choix du pseudo + acceptation de la charte.
+// Dernière étape de l'inscription : choix du pseudo + acceptation de la charte.
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import * as S from '../../lib/store.js';
 import { back, go } from '../../lib/router.js';
@@ -23,6 +23,7 @@ const SIGNUP_ERRORS = {
   taken: TAKEN_MESSAGE,
   account_exists: 'Cet e-mail ou ce pseudo est déjà utilisé. Change de pseudo, ou connecte-toi si tu as déjà un compte.',
   invalid_signup: "Il manque des informations : reviens à l'étape précédente.",
+  email_unverified: 'La confirmation de ton e-mail a expiré : reviens en arrière pour recevoir un nouveau code.',
   bad_response: 'Le serveur a répondu de façon inattendue. Réessaie dans un instant.',
 };
 
@@ -59,8 +60,9 @@ function usePseudoStatus(pseudo) {
 
 export default function Pseudo() {
   // Arrivée directe ou page rechargée : l'étape 1 (gardée en mémoire seulement) est perdue.
-  const lost = !auth.hasPendingSignup();
-  useLayoutEffect(() => { if (lost) go('/auth/signup', { replace: true }); }, [lost]);
+  // Adresse pas encore confirmée par le code : retour à l'écran du code.
+  const lost = !auth.emailConfirmed();
+  useLayoutEffect(() => { if (lost) go(auth.hasPendingSignup() ? '/auth/code' : '/auth/signup', { replace: true }); }, [lost]);
 
   const [value, setValue] = useState('');
   const pseudo = value.trim();
@@ -97,11 +99,11 @@ export default function Pseudo() {
 
   return (
     <AuthFrame
-      step={2}
-      total={2}
+      step={auth.NEEDS_EMAIL_CODE ? 3 : 2}
+      total={auth.NEEDS_EMAIL_CODE ? 3 : 2}
       title="Choisis ton nom de Badeur"
       subtitle="C'est ton pseudo public. Tu pourras toujours publier en anonyme."
-      onBack={() => back('/auth/signup')}
+      onBack={() => back(auth.NEEDS_EMAIL_CODE ? '/auth/code' : '/auth/signup')}
       foot={(
         <button className="btn btn-primary btn-block" disabled={!(usable && accepted) || pending} aria-busy={pending || undefined} onClick={enter}>
           {pending ? 'Création du compte…' : 'Entrer dans On Bade'}

@@ -24,6 +24,10 @@ const routes = {
   'POST /register': () => (registerStatus === 409
     ? json(409, { success: false, code: 'email_taken', message: 'Cette adresse e-mail a déjà un compte' })
     : json(201, { message: 'Compte créé', success: true, data: { user: { ...serverUser, passwordHash: undefined }, token: 'jwt-2' } })),
+  'POST /register/code': () => json(200, { success: true, data: { challenge: 'defi-1', expiresIn: 600 } }),
+  'POST /register/verify': (body) => (body.code === '123456'
+    ? json(200, { success: true, data: { emailToken: 'preuve-1' } })
+    : json(400, { success: false, code: 'invalid_code', message: 'Code incorrect' })),
   'POST /password-reset/confirm': () => new Response(null, { status: 204 }),
   'GET /email-available': (_body, u) => json(200, { success: true, data: { available: !takenEmails.has(u.searchParams.get('email')) } }),
   'GET /pseudo-available': () => json(200, { success: true, data: { available: true } }),
@@ -167,7 +171,7 @@ describe('Authentification avec le backend Next.js', () => {
     await until(() => $('#email'));
   });
 
-  it('inscription : prénom et nom envoyés, pseudo dans « username », compte existant (409) signalé', async () => {
+  it('inscription : code reçu par e-mail vérifié, prénom et nom envoyés, pseudo dans « username », compte existant (409) signalé', async () => {
     await goTo('#/auth/signup');
     await until(() => $('#firstname'));
     await type($('#firstname'), 'Awa');
@@ -176,14 +180,22 @@ describe('Authentification avec le backend Next.js', () => {
     await type($('#pw'), 'motdepasse1');
     await type($('#pw2'), 'motdepasse1');
     await click(byText('Continuer'));
+    await until(() => $('#otp'));
+    expect(calls.find((c) => c.key === 'POST /register/code').body).toEqual({ email: 'awa@test.ci' });
+    expect(text()).toContain('awa@test.ci');
+    await type($('#otp'), '111111');
+    await until(() => text().includes('Code incorrect'));
+    expect($('#pseudo')).toBeNull();
+    await type($('#otp'), '123456');
     await until(() => $('#pseudo'));
+    expect(calls.find((c) => c.key === 'POST /register/verify' && c.body.code === '123456').body).toEqual({ email: 'awa@test.ci', code: '123456', challenge: 'defi-1' });
 
     await type($('#pseudo'), 'AwaK');
     await until(() => text().includes('Disponible'));
     await click($('[role="checkbox"]'));
     await click(byText('Entrer dans On Bade'));
     await until(() => text().includes('Cet e-mail ou ce pseudo est déjà utilisé'));
-    expect(calls.find((c) => c.key === 'POST /register').body).toEqual({ firstname: 'Awa', lastname: 'Koné', username: 'AwaK', email: 'awa@test.ci', password: 'motdepasse1' });
+    expect(calls.find((c) => c.key === 'POST /register').body).toEqual({ firstname: 'Awa', lastname: 'Koné', username: 'AwaK', email: 'awa@test.ci', password: 'motdepasse1', emailToken: 'preuve-1' });
 
     registerStatus = 201;
     await click(byText('Entrer dans On Bade'));

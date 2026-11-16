@@ -172,11 +172,13 @@ const id = encodeURIComponent;
 // Le format attendu de chaque réponse est décrit dans API.md.
 
 // Authentification
-export const register = (userData) => post('/register', userData); // { firstname, lastname, username, email, password } → { token, user }
+export const register = (userData) => post('/register', userData); // { firstname, lastname, username, email, password, emailToken } → { token, user }
 export const getPlatform = () => get('/platform'); // → { platform: { maintenance, maintenanceMessage, signupsOpen, … }, rules }
 export const login = (credentials) => post('/login', credentials); // { email, password } → { token, user }
 export const logout = () => post('/logout');
 export const getMe = () => get('/me'); // → { user }
+export const requestSignupCode = (email) => post('/register/code', { email }); // → { challenge, expiresIn } (code à 6 chiffres envoyé par e-mail)
+export const verifySignupCode = (body) => post('/register/verify', body); // { email, code, challenge } → { emailToken }
 export const isEmailAvailable = (email) => get('/email-available', { email }); // → { available }
 export const isPseudoAvailable = (pseudo) => get('/pseudo-available', { pseudo }); // → { available }
 export const requestPasswordReset = (email) => post('/password-reset', { email });

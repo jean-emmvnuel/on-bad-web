@@ -1,6 +1,6 @@
 {
   "title": "Politique de confidentialité de On Bade",
-  "version": "Version 1.2 — 16 novembre 2026",
+  "version": "Version 1.3 — 16 novembre 2026",
   "intro": "On Bade est un réseau social où l'on raconte, signé ou en anonyme, les histoires drôles du quotidien. Cette politique (site onbade.com et application) explique quelles données personnelles nous traitons, pourquoi, combien de temps, avec qui, et comment exercer tes droits. Elle s'appuie sur le droit ivoirien de la protection des données personnelles et sur les textes qui encadrent le numérique en Côte d'Ivoire.",
   "sections": [
     {
@@ -28,7 +28,7 @@
         "Contenus : badings (texte et photos), rebades et avis, commentaires et réponses, mentions (@pseudo), rires donnés, favoris (privés), signalements effectués, stickers que tu crées (à partir d'une photo, ou d'un extrait vidéo transformé en GIF directement sur ton téléphone : la vidéo elle-même ne nous est jamais envoyée).",
         "Mode anonyme : quand tu publies en « Badeur anonyme », ton pseudo n'est jamais montré aux autres utilisateurs, mais le lien entre ton compte et ce bading est conservé (voir section 6).",
         "Badge vérifié (si tu le demandes) : copie d'une pièce d'identité ou d'un document d'entreprise, et liens vers tes réseaux sociaux.",
-        "Paramètres : qui peut te mentionner, utilisateurs bloqués, choix de recevoir ou non les notifications par e-mail, et, si tu actives les notifications sur ton téléphone, l'adresse d'abonnement que ton navigateur crée pour les recevoir, avec le type de navigateur et d'appareil.",
+        "Paramètres : qui peut te mentionner, utilisateurs bloqués, et, si tu actives les notifications sur ton téléphone, l'adresse d'abonnement que ton navigateur crée pour les recevoir, avec le type de navigateur et d'appareil.",
         "Activité : badings que tu as vus (pour compter les vues et ne pas te remontrer les mêmes), date de ta dernière activité, et, quand tu partages un bading, le canal choisi (WhatsApp, Facebook, story, lien copié…).",
         "Ouvertures des liens partagés : quand quelqu'un ouvre un lien de bading partagé, nous comptons l'ouverture et sa provenance à l'aide d'une empreinte anonyme recalculée chaque jour, qui ne permet pas de retrouver l'adresse IP ni la personne.",
         "Données techniques : adresse IP et type de navigateur, utilisés pour la sécurité (limiter les tentatives de connexion, bloquer le spam) et dans les journaux du serveur ; pour les comptes de l'équipe, l'historique des connexions au back-office.",
@@ -39,7 +39,8 @@
       "title": "4. Pourquoi nous les utilisons",
       "paragraphs": [
         "Fournir le service (exécution du contrat que tu acceptes en t'inscrivant) : créer et sécuriser ton compte, publier et afficher les badings, commentaires, rebades et stickers, gérer favoris, mentions et blocages.",
-        "Te notifier : dans l'application ; par e-mail pour les mentions, commentaires, réponses, ta demande de badge et les messages de l'équipe (désactivable dans les paramètres ou par le lien présent dans chaque e-mail) ; et sur ton téléphone, même application fermée, uniquement si tu actives « Notifications sur ce téléphone » (désactivable à tout moment).",
+        "T'écrire par e-mail, uniquement pour ton compte : le code qui confirme ton adresse à l'inscription et le lien pour réinitialiser ton mot de passe. Aucune publicité, aucune notification d'activité par e-mail.",
+        "Te notifier : dans l'application, et sur ton téléphone, même application fermée, uniquement si tu actives « Notifications sur ce téléphone » (désactivable à tout moment).",
         "Rendre tes publications signées trouvables (exécution du contrat) : ton profil public (onbade.com/@pseudo) et tes badings signés sont des pages publiques, lisibles sans compte et référencées par les moteurs de recherche comme Google (voir section 7).",
         "Modérer et protéger la communauté (intérêt légitime et obligations légales) : appliquer la charte du Badeur, traiter les signalements, prévenir le spam, l'usurpation d'identité et le harcèlement.",
         "Vérifier un compte (avec ton consentement explicite) : instruire ta demande de badge vérifié.",
@@ -52,7 +53,7 @@
       "paragraphs": [
         "Compte et contenus : tant que ton compte est actif. Quand tu demandes la suppression de ton compte, tes données sont effacées 30 jours après la demande (délai pendant lequel tu peux annuler), sauf obligation légale de conservation.",
         "Pièces d'identité du badge : supprimées dès que la demande est traitée (acceptée ou refusée).",
-        "Liens de réinitialisation du mot de passe : 1 heure. Abonnement aux notifications sur ton téléphone : jusqu'à ce que tu les désactives, que tu te déconnectes de cet appareil, ou que ton navigateur le fasse expirer.",
+        "Code de confirmation de l'adresse e-mail : 10 minutes (il n'est pas enregistré). Liens de réinitialisation du mot de passe : 1 heure. Abonnement aux notifications sur ton téléphone : jusqu'à ce que tu les désactives, que tu te déconnectes de cet appareil, ou que ton navigateur le fasse expirer.",
         "Journaux techniques et données de connexion : 12 mois au plus, ou la durée imposée par la réglementation sur la cybercriminalité.",
         "Signalements et décisions de modération : 2 ans, pour gérer les sanctions progressives et les recours.",
         "Ces durées sont des durées maximales, revues avec l'ARTCI lors des formalités préalables."
@@ -93,7 +94,7 @@
       "title": "10. Tes droits",
       "paragraphs": [
         "Conformément à la loi n° 2013-450, tu disposes d'un droit d'information, d'accès, de rectification, d'effacement et d'opposition (y compris à recevoir des notifications), ainsi que du droit de retirer ton consentement à tout moment.",
-        "Dans l'application : modifie ton pseudo et ta photo, choisis qui peut te mentionner, bloque des utilisateurs, supprime tes badings et commentaires, coupe les notifications par e-mail et sur ton téléphone.",
+        "Dans l'application : modifie ton pseudo et ta photo, choisis qui peut te mentionner, bloque des utilisateurs, supprime tes badings et commentaires, coupe les notifications sur ton téléphone.",
         "Supprimer ton compte : Paramètres → Mes données → « Demander la suppression de mon compte ». La demande est enregistrée immédiatement ; ton compte et toutes tes données (badings signés et anonymes, commentaires, favoris, photo, abonnements aux notifications) sont effacés 30 jours plus tard. Tu peux annuler la demande depuis le même écran jusqu'à cette date.",
         "Recevoir une copie de tes données : Paramètres → Mes données → « Recevoir une copie de mes données ». Le document (PDF) est créé et téléchargé tout de suite.",
         "Pour toute autre demande (rectification, opposition, question) : écris à oriverseit@gmail.com. Nous répondons dans un délai d'un mois au plus, après vérification de ton identité.",

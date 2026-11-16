@@ -1,4 +1,4 @@
-// Inscription, étape 1 sur 2 : prénom, nom, e-mail, mot de passe (le pseudo vient ensuite, dans Pseudo.jsx).
+// Inscription, étape 1 sur 3 : prénom, nom, e-mail, mot de passe (puis le code reçu par e-mail, Code.jsx, et le pseudo, Pseudo.jsx).
 import { useLayoutEffect } from 'react';
 import * as S from '../../lib/store.js';
 import { go } from '../../lib/router.js';
@@ -11,7 +11,11 @@ const PASSWORD_MISMATCH = 'Les deux mots de passe ne sont pas identiques.';
 const NAME_MISSING = 'Indique ton prénom et ton nom.';
 
 // Erreurs renvoyées par le serveur : message affiché, et champ sous lequel l'afficher.
-const SERVER_MESSAGES = { taken: 'Un compte existe déjà avec cet e-mail. Connecte-toi plutôt.' };
+const SERVER_MESSAGES = {
+  taken: 'Un compte existe déjà avec cet e-mail. Connecte-toi plutôt.',
+  mail_unavailable: 'L’e-mail avec ton code n’a pas pu partir. Réessaie dans un instant.',
+  too_many_attempts: 'Trop de codes demandés. Patiente un peu avant de réessayer.',
+};
 const ERROR_FIELDS = { taken: 'email' };
 
 export default function Signup({ query }) {
@@ -59,13 +63,13 @@ export default function Signup({ query }) {
       form.setError(ERROR_FIELDS[error.code] ?? 'form', errorMessage(error, SERVER_MESSAGES));
       return;
     }
-    go('/auth/pseudo');
+    go(auth.NEEDS_EMAIL_CODE ? '/auth/code' : '/auth/pseudo');
   });
 
   return (
     <AuthFrame
       step={1}
-      total={2}
+      total={auth.NEEDS_EMAIL_CODE ? 3 : 2}
       title="Crée ton compte"
       subtitle="Ton nom et ton e-mail restent privés : personne ne les voit, même quand tu publies en anonyme."
       foot={<AuthFoot label="Continuer" pendingLabel="Vérification…" pending={pending} disabled={!form.filled} onSubmit={submit}

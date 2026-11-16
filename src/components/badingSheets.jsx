@@ -74,7 +74,7 @@ export function openMore(b, onRemoved) {
 
   const remove = () => confirmSheet(
     'Supprimer ce bading ?',
-    "Il disparaît du fil et de ton profil. Les rebades afficheront « Ce bading n'est plus disponible ». C'est définitif.",
+    "Il disparaît du fil et de ton profil, avec toutes ses rebades. C'est définitif.",
     'Supprimer',
     async () => {
       try { await badings.remove(b.id); } catch (error) { return toastError(error); }

@@ -92,6 +92,17 @@ describe('Rebade (F5)', () => {
     S.rebade('b3', 'trop drôle', false);
     expect(S.get().badings[0].rebadeOf).toBe('b2');
   });
+  it('bading d’origine supprimé : ses rebades disparaissent du fil, avec ou sans avis', () => {
+    S.rebade('b5', '', false);
+    const plain = S.get().badings[0];
+    S.rebade('b5', 'mon avis', false);
+    const withOpinion = S.get().badings[0];
+    expect(S.feed().map((b) => b.id)).toEqual(expect.arrayContaining([plain.id, withOpinion.id]));
+    S.remove('b5');
+    const ids = S.feed().map((b) => b.id);
+    expect(ids).not.toContain(plain.id);
+    expect(ids).not.toContain(withOpinion.id);
+  });
 });
 
 describe('Commentaires et stickers (F8)', () => {

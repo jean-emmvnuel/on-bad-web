@@ -145,7 +145,9 @@ export function bading(id) {
   const found = state.badings[byId.get(id)];
   return found?.id === id ? found : undefined;
 }
-export const feed = memo(() => state.badings.filter((b) => !b.deleted && !state.blocked.includes(b.authorId)).sort((a, b) => b.createdAt - a.createdAt));
+/** Rebade (avec ou sans avis) d'un bading supprimé : elle disparaît avec lui. */
+export const orphanRebade = (b) => !!b.rebadeOf && !!bading(b.rebadeOf)?.deleted;
+export const feed = memo(() => state.badings.filter((b) => !b.deleted && !state.blocked.includes(b.authorId) && !orphanRebade(b)).sort((a, b) => b.createdAt - a.createdAt));
 /** Badings du moment : les plus drôles du fil (rires reçus), hors rebades ; le plus récent d'abord à égalité. */
 export const moment = (limit = 20) => feed().filter((b) => !b.rebadeOf).sort((a, b) => (b.likes - a.likes) || (b.createdAt - a.createdAt)).slice(0, limit);
 export function displayName(b) {

@@ -73,7 +73,7 @@ export function Composer({ badingId, parent, onCancelReply, textareaRef, onPoste
       <MentionList users={suggestions} onPick={insert} compact />
       <div className="row">
         <Avatar user={S.me()} size={32} />
-        <textarea ref={textareaRef} rows={1} maxLength={600} placeholder={parent ? 'Ta réponse…' : 'Ton commentaire… (@ pour mentionner)'} aria-label="Ton commentaire"
+        <textarea ref={textareaRef} rows={1} maxLength={600} placeholder={parent ? 'Ta réponse…' : 'Ton commentaire…'} aria-label="Ton commentaire"
           value={text}
           onChange={(e) => { setText(e.target.value); trackCaret(e); setError(''); }}
           onKeyUp={trackCaret} onClick={trackCaret}
@@ -81,7 +81,9 @@ export function Composer({ badingId, parent, onCancelReply, textareaRef, onPoste
         <button className={`icon-btn sticker-btn ${pickerOpen ? 'on' : ''}`} aria-label="Envoyer un sticker" aria-expanded={pickerOpen} onClick={() => setPickerOpen(!pickerOpen)}>
           <Icon name="sticker" />
         </button>
-        <button className="btn btn-primary btn-sm" disabled={!text.trim() || tooLong || pending} aria-busy={pending || undefined} onClick={send}>Publier</button>
+        <button className="send-btn" data-send-comment aria-label={parent ? 'Envoyer la réponse' : 'Envoyer le commentaire'} disabled={!text.trim() || tooLong || pending} aria-busy={pending || undefined} onClick={send}>
+          <Icon name="arrowUp" />
+        </button>
       </div>
       <p className="error" hidden={!shownError}>{shownError}</p>
     </div>

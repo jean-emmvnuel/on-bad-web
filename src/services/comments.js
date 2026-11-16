@@ -25,10 +25,8 @@ export async function addComment(badingId, text, parent = null, stickerId = null
   const { comment } = await api.createComment(badingId, {
     text: stickerId ? '' : text.trim(),
     stickerId,
-    // Une réponse à une réponse reste dans le même fil : on la rattache au commentaire racine…
-    parentId: parent ? parent.parentId ?? parent.id : null,
-    // … mais on garde à qui l'on répond, pour afficher « en réponse à @… ».
-    replyToId: parent ? parent.id : null,
+    // La réponse s'imbrique sous le commentaire auquel elle répond.
+    parentId: parent ? parent.id : null,
   });
   storeComment(comment);
   syncCommentCount(badingId);

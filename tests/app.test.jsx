@@ -119,7 +119,7 @@ describe('App React (mode démo)', () => {
   it('page d’un bading : commentaires, réponse publiée', async () => {
     await nav('/bading/b4', () => text().includes('hymne national'));
     await type($('.composer textarea'), 'Trop vrai ce bading');
-    await click([...document.querySelectorAll('.composer button')].find((b) => b.textContent === 'Publier'));
+    await click(document.querySelector('[data-send-comment]'));
     await wait(50);
     expect(S.threads('b4').some((t) => t.root.text === 'Trop vrai ce bading')).toBe(true);
     expect(text()).toContain('Trop vrai ce bading');
@@ -132,7 +132,7 @@ describe('App React (mode démo)', () => {
     await click([...document.querySelectorAll('.composer [data-mentions] button')].find((b) => b.textContent.includes('Koffi225')));
     expect($('.composer textarea').value).toBe('Merci @Koffi225 ');
     expect($('.composer [data-mentions]')).toBeNull();
-    await click([...document.querySelectorAll('.composer button')].find((b) => b.textContent === 'Publier'));
+    await click(document.querySelector('[data-send-comment]'));
     await wait(50);
     expect(S.threads('b4').some((t) => t.root.text === 'Merci @Koffi225')).toBe(true);
   });

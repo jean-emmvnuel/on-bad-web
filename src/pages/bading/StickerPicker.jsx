@@ -64,6 +64,7 @@ function stickerIdsForTab(tab) {
   let ids;
   if (tab === 'recent') ids = state.recentStickers || [];
   else if (tab === 'mine') ids = state.myStickers || [];
+  else if (tab === 'all') ids = STICKERS.map((s) => s.id);
   else ids = STICKERS.filter((s) => s.theme === tab).map((s) => s.id);
   return ids.filter((id) => !S.customSticker(id)?.removed);
 }

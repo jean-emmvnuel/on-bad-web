@@ -18,7 +18,8 @@ export const STICKERS = [
   { id: 'dose', theme: 'nouchi', emoji: '💯', label: "C'est dosé", bg: '#9810e6', fg: '#ffffff', rot: -2 },
   { id: 'wouya', theme: 'nouchi', emoji: '🌪️', label: 'Wouyaya', bg: '#ff5a5f', fg: '#ffffff', rot: 5 },
 ];
-export const THEMES = [['recent', 'Récents'], ['reactions', 'Réactions'], ['nouchi', 'Nouchi']];
+// Onglets du sélecteur : réactions et nouchi réunis dans un seul onglet (« all » = toute la bibliothèque).
+export const THEMES = [['recent', 'Récents'], ['all', 'Réactions & nouchi']];
 
 /** Sticker de la bibliothèque On Bade (undefined pour un sticker personnel ou inconnu). */
 export const sticker = (id) => STICKERS.find((s) => s.id === id);

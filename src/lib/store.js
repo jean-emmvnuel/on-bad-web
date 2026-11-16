@@ -170,10 +170,35 @@ const commentCounts = memo(() => {
 });
 // Avec le backend, chaque bading porte son `commentCount` (le fil n'a pas chargé les commentaires).
 export const commentCount = (badingId) => bading(badingId)?.commentCount ?? commentCounts().get(badingId) ?? 0;
+/** Profondeur maximale d'imbrication des réponses : au-delà, elles se rangent au dernier niveau (« en réponse à @… »). */
+export const MAX_REPLY_DEPTH = 3;
+
+/**
+ * Fils de commentaires d'un bading, en arbre : chaque réponse est imbriquée sous le commentaire auquel elle répond.
+ * Renvoie [{ root, replies, children }] : `replies` = toutes les réponses du fil (à plat),
+ * `children` = nœuds { comment, children } du premier niveau. Une réponse dont le commentaire parent n'est plus
+ * visible (supprimé, masqué, auteur bloqué) disparaît avec lui.
+ */
 export function threads(badingId) {
   const live = liveComments(badingId);
+  const byParent = new Map();
+  live.forEach((c) => {
+    if (!c.parentId) return;
+    if (!byParent.has(c.parentId)) byParent.set(c.parentId, []);
+    byParent.get(c.parentId).push(c);
+  });
+  const byDate = (a, b) => a.createdAt - b.createdAt;
+  // Descendants d'un commentaire, du plus ancien au plus récent.
+  const descendants = (id) => (byParent.get(id) ?? []).flatMap((c) => [c, ...descendants(c.id)]);
+  const build = (comment, depth) => {
+    // Au dernier niveau, toutes les réponses plus profondes se rangent à côté (à plat).
+    const kids = depth >= MAX_REPLY_DEPTH ? [] : depth === MAX_REPLY_DEPTH - 1
+      ? descendants(comment.id).sort(byDate).map((c) => ({ comment: c, children: [] }))
+      : [...(byParent.get(comment.id) ?? [])].sort(byDate).map((c) => build(c, depth + 1));
+    return { comment, children: kids };
+  };
   return live.filter((c) => !c.parentId).sort((a, b) => b.likes - a.likes || a.createdAt - b.createdAt)
-    .map((root) => ({ root, replies: live.filter((c) => c.parentId === root.id).sort((a, b) => a.createdAt - b.createdAt) }));
+    .map((root) => ({ root, replies: descendants(root.id).sort(byDate), children: build(root, 0).children }));
 }
 export const searchPseudos = (q) => Object.values(state.users).filter((u) => u.id !== ME && !state.blocked.includes(u.id) && u.pseudo.toLowerCase().startsWith(q.toLowerCase())).slice(0, 5);
 export const countMentions = (t) => (t.match(/@[\w.]+/g) ?? []).length;
@@ -290,7 +315,7 @@ export function addComment(badingId, text, parent, stickerId = null) {
   const t = stickerId ? '' : text.trim(); if (!stickerId && (!t || t.length > RULES.commentMax)) return null;
   if (!stickerId && BANNED.some((w) => t.toLowerCase().includes(w))) return null;
   if (stickerId) state.recentStickers = [stickerId, ...(state.recentStickers || []).filter((x) => x !== stickerId)].slice(0, 12);
-  const c = { id: uid('c'), badingId, authorId: ME, text: t, ...(stickerId ? { sticker: stickerId } : {}), createdAt: Date.now(), parentId: parent ? parent.parentId ?? parent.id : null, replyTo: parent ? state.users[parent.authorId]?.pseudo : undefined, likes: 0, likedByMe: false };
+  const c = { id: uid('c'), badingId, authorId: ME, text: t, ...(stickerId ? { sticker: stickerId } : {}), createdAt: Date.now(), parentId: parent ? parent.id : null, replyTo: parent ? state.users[parent.authorId]?.pseudo : undefined, likes: 0, likedByMe: false };
   state.comments.push(c); commit(); return c;
 }
 // ─── Stickers personnels (F8, comme sur TikTok) ───
@@ -319,7 +344,17 @@ export function saveSticker(id) {
 }
 export function unsaveSticker(id) { state.myStickers = state.myStickers.filter((x) => x !== id); commit(); }
 export const customSticker = (id) => state.customStickers?.[id];
-export function removeComment(id) { state.comments.forEach((c) => { if (c.id === id || c.parentId === id) c.deleted = true; }); commit(); }
+export function removeComment(id) {
+  // Le commentaire et toutes ses réponses, à tous les niveaux.
+  const gone = new Set([id]);
+  let grew = true;
+  while (grew) {
+    grew = false;
+    state.comments.forEach((c) => { if (!gone.has(c.id) && gone.has(c.parentId)) { gone.add(c.id); grew = true; } });
+  }
+  state.comments.forEach((c) => { if (gone.has(c.id)) c.deleted = true; });
+  commit();
+}
 export function toggleCommentLike(id) { const c = state.comments.find((x) => x.id === id); if (c) { c.likes += c.likedByMe ? -1 : 1; c.likedByMe = !c.likedByMe; commit(); } }
 export function setNotifEnabled(v) { state.notifEnabled = v; commit(); }
 export function pushNotification(n) { state.notifications.unshift({ ...n, id: uid('n'), createdAt: Date.now(), read: false }); commit(); }

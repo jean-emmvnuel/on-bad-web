@@ -100,10 +100,23 @@ describe('Commentaires et stickers (F8)', () => {
     expect(S.addComment('b1', 'a'.repeat(501), null)).toBeNull();
     expect(S.addComment('b1', 'tu es un connard', null)).toBeNull();
   });
-  it('une réponse s’accroche toujours au commentaire racine (un seul niveau)', () => {
-    const root = S.get().comments.find((c) => c.id === 'c1'), reply = S.get().comments.find((c) => c.id === 'c2');
+  it('une réponse s’imbrique sous le commentaire auquel elle répond (arbre, 3 niveaux max.)', () => {
+    const reply = S.get().comments.find((c) => c.id === 'c2');
     const c = S.addComment('b4', 'Je réponds à la réponse', reply);
-    expect(c.parentId).toBe(root.id);
+    expect(c.parentId).toBe(reply.id);
+    const thread = S.threads('b4').find((t) => t.root.id === 'c1');
+    const level1 = thread.children.find((n) => n.comment.id === 'c2');
+    expect(level1.children.map((n) => n.comment.id)).toEqual([c.id]);
+    expect(thread.replies.map((r) => r.id)).toContain(c.id);
+    // Au-delà du 3e niveau, les réponses se rangent au dernier niveau, à plat.
+    const d3 = S.addComment('b4', 'Niveau trois', c);
+    const d4 = S.addComment('b4', 'Niveau quatre', d3);
+    const level2 = S.threads('b4').find((t) => t.root.id === 'c1').children.find((n) => n.comment.id === 'c2').children[0];
+    expect(level2.children.map((n) => n.comment.id)).toEqual([d3.id, d4.id]);
+    expect(level2.children.every((n) => n.children.length === 0)).toBe(true);
+    // Supprimer une réponse retire aussi toutes les siennes.
+    S.removeComment(c.id);
+    expect(S.threads('b4').find((t) => t.root.id === 'c1').replies.map((r) => r.id)).not.toContain(d4.id);
   });
   it('un commentaire-sticker n’a pas de texte et alimente les récents', () => {
     const c = S.addComment('b1', 'ignoré', null, 'ehhh');

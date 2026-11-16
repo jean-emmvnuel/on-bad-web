@@ -144,6 +144,8 @@ async function send(url, method, body) {
       setToken(null);
       dispatchEvent(new CustomEvent('onbade:unauthorized'));
     }
+    // Mode maintenance activé dans le back-office : l'app affiche l'écran de maintenance (lib/platform.js).
+    if (response.status === 503 && data.code === 'maintenance') dispatchEvent(new CustomEvent('onbade:maintenance', { detail: { message: data.message } }));
     throw new ApiError(response.status, data.code || `http_${response.status}`, data.message);
   }
 
@@ -171,6 +173,7 @@ const id = encodeURIComponent;
 
 // Authentification
 export const register = (userData) => post('/register', userData); // { firstname, lastname, username, email, password } → { token, user }
+export const getPlatform = () => get('/platform'); // → { platform: { maintenance, maintenanceMessage, signupsOpen, … }, rules }
 export const login = (credentials) => post('/login', credentials); // { email, password } → { token, user }
 export const logout = () => post('/logout');
 export const getMe = () => get('/me'); // → { user }

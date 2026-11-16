@@ -5,6 +5,7 @@ import './styles/style.css';
 import { reduceMotion } from './lib/motion.js';
 import { consumeLaunchParams, isStandalone, registerSW } from './lib/pwa.js';
 import { App, preloadPages } from './App.jsx';
+import { watchPlatform } from './lib/platform.js';
 
 // Avant le premier rendu : `?b=<id>` (lien partagé) ou un texte partagé vers On Bade deviennent une route.
 consumeLaunchParams();
@@ -18,6 +19,7 @@ if (landingId) {
   });
 }
 if (isStandalone()) document.documentElement.classList.add('standalone');
+watchPlatform(); // mode maintenance réglé dans le back-office
 
 // Service worker seulement sur le site construit (en développement, il garderait d'anciens fichiers en cache).
 if (import.meta.env.PROD) registerSW();

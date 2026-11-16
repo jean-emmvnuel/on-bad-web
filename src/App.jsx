@@ -4,6 +4,9 @@ import { gsap } from 'gsap';
 import * as S from './lib/store.js';
 import { back, go, useLocation } from './lib/router.js';
 import { syncPush } from './lib/push.js';
+import { usePlatform } from './lib/platform.js';
+import { Maintenance } from './components/Maintenance.jsx';
+import { NotifPrompt } from './components/NotifPrompt.jsx';
 import { isStandalone } from './lib/pwa.js';
 import { project, reduceMotion, spring, velocityTracker } from './lib/motion.js';
 import { logOut } from './services/auth.js';
@@ -174,6 +177,7 @@ function edgeBack(view, anim) {
 export function App() {
   const location = useLocation();
   const access = useAccess();
+  const platform = usePlatform();
   const resolved = resolve(location, access);
   const { route, params, redirect } = resolved;
 
@@ -222,6 +226,9 @@ export function App() {
 
   if (redirect) return <Hosts />;
 
+  // Mode maintenance (back-office) : tout le site affiche l'écran de maintenance.
+  if (platform.maintenance) return <><Maintenance message={platform.message} /><ToastHost /></>;
+
   const Page = PAGES[route.page];
   // Clé = adresse complète : chaque navigation monte un écran neuf, comme avant.
   const page = (
@@ -243,5 +250,5 @@ export function App() {
 }
 
 function Hosts() {
-  return <><SheetHost /><ToastHost /><OverlayHost /></>;
+  return <><SheetHost /><ToastHost /><OverlayHost /><NotifPrompt /></>;
 }

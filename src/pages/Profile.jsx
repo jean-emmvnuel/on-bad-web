@@ -13,6 +13,7 @@ import { countUp } from '../ui/effects.js';
 import { SheetItem, closeSheet, openSheet } from '../ui/sheet.jsx';
 import { toast } from '../ui/toast.js';
 import { ErrorState, LoadingState, errorMessage, toastError, toastFileOrServerError, useRemote } from '../ui/remote.jsx';
+import { shareProfile } from '../lib/pwa.js';
 
 const TABS = [
   { key: 'public', label: 'Badings' },
@@ -163,7 +164,10 @@ function ProfileContent() {
         <div className="pf-stats">
           {statsOf(mySignedBadings()).map(([value, label]) => <div key={label}><CountUp value={value} /><span>{label}</span></div>)}
         </div>
-        <button className="btn btn-secondary btn-sm pf-btn" onClick={openPhotoMenu}><Icon name="image" /> {me.photo ? 'Changer ma photo' : 'Ajouter une photo'}</button>
+        <div className="pf-actions">
+          <button className="btn btn-secondary btn-sm pf-btn" onClick={openPhotoMenu}><Icon name="image" /> {me.photo ? 'Changer ma photo' : 'Ajouter une photo'}</button>
+          <button className="btn btn-secondary btn-sm pf-btn" data-share-profile onClick={() => shareProfile(me.pseudo, { mine: true })}><Icon name="share" /> Partager mon profil</button>
+        </div>
         <input type="file" accept={ACCEPT} hidden ref={fileRef} onChange={onPhotoFile} />
       </section>
       <div className="pf-tabs" role="tablist">

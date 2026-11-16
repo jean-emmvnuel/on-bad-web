@@ -16,7 +16,7 @@ import { SheetItem, confirmSheet, openSheet } from '../ui/sheet.jsx';
 import { toast } from '../ui/toast.js';
 import { ErrorState, LoadingState, errorMessage, toastError, useRemote } from '../ui/remote.jsx';
 import { CountUp, statsOf } from './Profile.jsx';
-import { profileUrl } from '../lib/pwa.js';
+import { profileUrl, shareProfile } from '../lib/pwa.js';
 
 const goBack = () => back('/');
 
@@ -100,6 +100,9 @@ function UserContent({ id }) {
           <div className="pf-stats">
             {statsOf(signed).map(([value, label]) => <div key={label}><CountUp value={value} /><span>{label}</span></div>)}
           </div>
+        )}
+        {blocked ? null : (
+          <button className="btn btn-secondary btn-sm pf-btn" data-share-profile onClick={() => shareProfile(user.pseudo)}><Icon name="share" /> Partager le profil</button>
         )}
       </section>
       {blocked ? (

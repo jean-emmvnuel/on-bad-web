@@ -39,6 +39,28 @@ const isBot = () => navigator.webdriver || /bot|crawl|spider|slurp|preview|faceb
 /** Adresse publique du profil d'un Badeur : onbade.com/@pseudo (page lisible par les moteurs de recherche). */
 export const profileUrl = (pseudo) => `${location.origin}${location.pathname.replace(/index\.html$/, '')}@${encodeURIComponent(pseudo)}`;
 
+/**
+ * Partage le profil public d'un Badeur (onbade.com/@pseudo) : partage du téléphone (WhatsApp, Snapchat…)
+ * quand il existe, sinon le lien est copié. `mine` : texte pour son propre profil.
+ */
+export async function shareProfile(pseudo, { mine = false } = {}) {
+  const url = profileUrl(pseudo);
+  const text = mine ? 'Viens lire mes badings sur On Bade 😂' : `Les badings de @${pseudo} sur On Bade 😂`;
+  if (navigator.share) {
+    try { await navigator.share({ title: `@${pseudo} sur On Bade`, text, url }); return 'shared'; } catch (error) {
+      if (error?.name === 'AbortError') return 'cancelled'; // partage fermé par la personne
+    }
+  }
+  try {
+    await navigator.clipboard.writeText(url);
+    toast('Lien du profil copié');
+    return 'copied';
+  } catch {
+    toast(`Lien du profil : ${url}`);
+    return 'shown';
+  }
+}
+
 /** Compte l'ouverture d'un lien partagé (chargé à part pour ne pas alourdir le démarrage). */
 const countOpen = (id, source) => { import('../services/badings.js').then((m) => m.recordLinkOpen(id, source)).catch(() => {}); };
 

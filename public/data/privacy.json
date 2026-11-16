@@ -1,7 +1,7 @@
 {
   "title": "Politique de confidentialité de On Bade",
-  "version": "Version 1.1 — 5 novembre 2026",
-  "intro": "On Bade est un réseau social où l'on raconte, signé ou en anonyme, les histoires drôles du quotidien. Cette politique explique quelles données personnelles nous traitons, pourquoi, combien de temps, avec qui, et comment exercer tes droits. Elle s'appuie sur le droit ivoirien de la protection des données personnelles et sur les textes qui encadrent le numérique en Côte d'Ivoire.",
+  "version": "Version 1.2 — 16 novembre 2026",
+  "intro": "On Bade est un réseau social où l'on raconte, signé ou en anonyme, les histoires drôles du quotidien. Cette politique (site onbade.com et application) explique quelles données personnelles nous traitons, pourquoi, combien de temps, avec qui, et comment exercer tes droits. Elle s'appuie sur le droit ivoirien de la protection des données personnelles et sur les textes qui encadrent le numérique en Côte d'Ivoire.",
   "sections": [
     {
       "title": "1. Qui est responsable de tes données ?",
@@ -24,32 +24,36 @@
     {
       "title": "3. Les données que nous traitons",
       "paragraphs": [
-        "Compte : adresse e-mail, mot de passe (stocké uniquement sous forme chiffrée irréversible, jamais en clair), pseudo, avatar choisi parmi nos visages « Badeur », date d'inscription, acceptation de la charte.",
-        "Contenus : badings, rebades et avis, commentaires et réponses, mentions (@pseudo), rires donnés, favoris (privés), signalements effectués.",
-        "Mode anonyme : quand tu publies en « Badeur anonyme », ton pseudo n'est jamais affiché, mais le lien entre toi et ce bading est conservé de façon séparée et protégée (voir section 6).",
+        "Compte : prénom et nom (visibles uniquement par l'équipe On Bade, jamais par les autres Badeurs), adresse e-mail, pseudo, mot de passe (stocké uniquement sous forme chiffrée irréversible, jamais en clair), photo de profil si tu en ajoutes une, date d'inscription, et confirmation que tu as 18 ans ou plus et que tu acceptes la charte du Badeur et cette politique.",
+        "Contenus : badings (texte et photos), rebades et avis, commentaires et réponses, mentions (@pseudo), rires donnés, favoris (privés), signalements effectués, stickers que tu crées (à partir d'une photo, ou d'un extrait vidéo transformé en GIF directement sur ton téléphone : la vidéo elle-même ne nous est jamais envoyée).",
+        "Mode anonyme : quand tu publies en « Badeur anonyme », ton pseudo n'est jamais montré aux autres utilisateurs, mais le lien entre ton compte et ce bading est conservé (voir section 6).",
         "Badge vérifié (si tu le demandes) : copie d'une pièce d'identité ou d'un document d'entreprise, et liens vers tes réseaux sociaux.",
-        "Paramètres : qui peut te mentionner, utilisateurs bloqués, préférences de notifications, jeton de notification push de ton appareil.",
-        "Données techniques : modèle et système de l'appareil, version de l'application, adresse IP, journaux de connexion et d'erreurs, statistiques de partage (nombre de partages, pas leur contenu).",
-        "Nous ne collectons pas ta localisation, ton carnet de contacts, ni tes photos (hors la pièce d'identité que tu choisis d'envoyer pour le badge). Nous ne vendons aucune donnée et n'affichons pas de publicité ciblée."
+        "Paramètres : qui peut te mentionner, utilisateurs bloqués, choix de recevoir ou non les notifications par e-mail, et, si tu actives les notifications sur ton téléphone, l'adresse d'abonnement que ton navigateur crée pour les recevoir, avec le type de navigateur et d'appareil.",
+        "Activité : badings que tu as vus (pour compter les vues et ne pas te remontrer les mêmes), date de ta dernière activité, et, quand tu partages un bading, le canal choisi (WhatsApp, Facebook, story, lien copié…).",
+        "Ouvertures des liens partagés : quand quelqu'un ouvre un lien de bading partagé, nous comptons l'ouverture et sa provenance à l'aide d'une empreinte anonyme recalculée chaque jour, qui ne permet pas de retrouver l'adresse IP ni la personne.",
+        "Données techniques : adresse IP et type de navigateur, utilisés pour la sécurité (limiter les tentatives de connexion, bloquer le spam) et dans les journaux du serveur ; pour les comptes de l'équipe, l'historique des connexions au back-office.",
+        "Nous ne collectons pas ta localisation, ton carnet de contacts, ni les photos de ton téléphone (hors celles que tu choisis de publier, d'utiliser comme photo de profil ou de sticker, ou d'envoyer pour le badge). Nous ne vendons aucune donnée et n'affichons pas de publicité ciblée."
       ]
     },
     {
       "title": "4. Pourquoi nous les utilisons",
       "paragraphs": [
-        "Fournir le service (exécution du contrat que tu acceptes en t'inscrivant) : créer et sécuriser ton compte, publier et afficher les badings, commentaires et rebades, gérer favoris, mentions et blocages.",
-        "Te notifier (avec ton consentement, retirable à tout moment) : rires, commentaires, réponses, rebades, mentions, réponse à ta demande de badge, et activité en direct sur l'écran verrouillé et la Dynamic Island de l'iPhone.",
+        "Fournir le service (exécution du contrat que tu acceptes en t'inscrivant) : créer et sécuriser ton compte, publier et afficher les badings, commentaires, rebades et stickers, gérer favoris, mentions et blocages.",
+        "Te notifier : dans l'application ; par e-mail pour les mentions, commentaires, réponses, ta demande de badge et les messages de l'équipe (désactivable dans les paramètres ou par le lien présent dans chaque e-mail) ; et sur ton téléphone, même application fermée, uniquement si tu actives « Notifications sur ce téléphone » (désactivable à tout moment).",
+        "Rendre tes publications signées trouvables (exécution du contrat) : ton profil public (onbade.com/@pseudo) et tes badings signés sont des pages publiques, lisibles sans compte et référencées par les moteurs de recherche comme Google (voir section 7).",
         "Modérer et protéger la communauté (intérêt légitime et obligations légales) : appliquer la charte du Badeur, traiter les signalements, prévenir le spam, l'usurpation d'identité et le harcèlement.",
         "Vérifier un compte (avec ton consentement explicite) : instruire ta demande de badge vérifié.",
-        "Améliorer l'application (intérêt légitime) : statistiques agrégées et anonymisées d'usage et de stabilité.",
+        "Améliorer l'application (intérêt légitime) : statistiques globales d'usage et de partage (nombre de partages et d'ouvertures de liens par canal), sans outil de pistage publicitaire.",
         "Respecter la loi : répondre aux réquisitions des autorités judiciaires dans les conditions prévues par la loi n° 2013-451."
       ]
     },
     {
       "title": "5. Combien de temps nous les gardons",
       "paragraphs": [
-        "Compte et contenus : tant que ton compte est actif. Quand tu demandes la suppression de ton compte, tes données sont effacées ou anonymisées 30 jours après la demande (délai pendant lequel tu peux annuler), sauf obligation légale de conservation.",
-        "Pièces d'identité du badge : supprimées dès que la demande est traitée (acceptée ou refusée), et au plus tard 30 jours après leur envoi.",
-        "Liens de réinitialisation du mot de passe : 1 heure. Journaux techniques et données de connexion : 12 mois, ou la durée imposée par la réglementation sur la cybercriminalité.",
+        "Compte et contenus : tant que ton compte est actif. Quand tu demandes la suppression de ton compte, tes données sont effacées 30 jours après la demande (délai pendant lequel tu peux annuler), sauf obligation légale de conservation.",
+        "Pièces d'identité du badge : supprimées dès que la demande est traitée (acceptée ou refusée).",
+        "Liens de réinitialisation du mot de passe : 1 heure. Abonnement aux notifications sur ton téléphone : jusqu'à ce que tu les désactives, que tu te déconnectes de cet appareil, ou que ton navigateur le fasse expirer.",
+        "Journaux techniques et données de connexion : 12 mois au plus, ou la durée imposée par la réglementation sur la cybercriminalité.",
         "Signalements et décisions de modération : 2 ans, pour gérer les sanctions progressives et les recours.",
         "Ces durées sont des durées maximales, revues avec l'ARTCI lors des formalités préalables."
       ]
@@ -57,31 +61,31 @@
     {
       "title": "6. Le mode anonyme, en clair",
       "paragraphs": [
-        "Ce que voient les autres : « Badeur anonyme », un avatar générique, jamais ton pseudo, ni sur le bading, ni dans les notifications, ni sur ton profil public, ni dans tes statistiques publiques.",
-        "Ce que nous gardons : le lien entre ton compte et le bading, stocké à part, chiffré et accessible uniquement à des modérateurs habilités, dont chaque accès est journalisé.",
-        "Quand ce lien peut être utilisé : en cas d'abus grave signalé (menaces, harcèlement, contenu illégal) pour appliquer la charte, ou sur réquisition d'une autorité judiciaire. Jamais pour un autre usage."
+        "Ce que voient les autres utilisateurs : « Badeur anonyme » et un avatar générique, jamais ton pseudo, ni sur le bading, ni dans les notifications, ni sur ton profil public, ni dans tes statistiques publiques, ni dans le partage ou sur Google. Un bading anonyme ne rapporte pas de points visibles, pour qu'on ne puisse pas remonter jusqu'à toi.",
+        "Ce que sait l'équipe On Bade : le lien entre ton compte et le bading est conservé. L'équipe d'administration peut donc connaître l'auteur d'un bading anonyme ; seuls les administrateurs habilités peuvent l'afficher, et chaque consultation est inscrite dans un journal d'audit.",
+        "Quand ce lien est utilisé : en cas d'abus signalé (menaces, harcèlement, contenu illégal) pour appliquer la charte, ou sur réquisition d'une autorité judiciaire. Jamais pour un autre usage, et jamais pour le révéler aux autres utilisateurs."
       ]
     },
     {
       "title": "7. Avec qui nous les partageons",
       "paragraphs": [
-        "Les autres utilisateurs voient ce que tu publies sous ton pseudo, ton avatar et ton badge. Tes favoris, tes blocages et tes badings anonymes (côté auteur) restent privés.",
-        "Nos sous-traitants techniques, liés par contrat et tenus à la confidentialité : hébergement de la base de données et des fichiers, envoi des e-mails (confirmation, réinitialisation du mot de passe), services de notifications push d'Apple (APNs), de Google (FCM) et d'Expo.",
+        "Tout le monde, y compris sans compte : ton pseudo, ta photo de profil, ton badge et tes badings signés (avec leurs commentaires) sont publics. Ils peuvent apparaître dans les résultats des moteurs de recherche comme Google, et dans les aperçus de liens quand quelqu'un les partage. Tes favoris, tes blocages, ton prénom, ton nom, ton e-mail et le lien avec tes badings anonymes restent privés.",
+        "Nos sous-traitants techniques, tenus à la confidentialité : Hostinger (serveur de l'API et base de données, en France), Vercel (hébergement du site, réseau mondial, siège aux États-Unis), Resend (envoi des e-mails depuis l'Union européenne, en Irlande), Google Fonts (polices du site, ce qui transmet ton adresse IP à Google au chargement), et les services de notification de ton navigateur (Google, Apple, Mozilla ou Microsoft), qui acheminent les notifications sous forme chiffrée sans pouvoir les lire. Dans l'application mobile, les notifications passent par les services d'Apple (APNs), de Google (FCM) et d'Expo.",
         "Les autorités judiciaires ou administratives, uniquement sur demande légale.",
-        "Quand tu partages un bading (WhatsApp, Facebook, image, lien), seul le texte du bading et son lien sont transmis à l'application choisie. Un bading anonyme reste anonyme."
+        "Quand tu partages un bading (WhatsApp, Facebook, story, image, lien), le texte du bading, son lien et, pour l'image de story, ton pseudo et ta photo sont transmis à l'application choisie. Un bading anonyme reste anonyme."
       ]
     },
     {
       "title": "8. Transferts hors de Côte d'Ivoire",
       "paragraphs": [
-        "Certains prestataires (hébergement, notifications push) peuvent traiter des données hors de Côte d'Ivoire. Conformément à la loi n° 2013-450, ces transferts ne sont réalisés que vers des pays offrant un niveau de protection suffisant ou avec l'autorisation préalable de l'ARTCI, et sont encadrés par des garanties contractuelles.",
+        "Certains prestataires traitent des données hors de Côte d'Ivoire : en France et en Irlande (Union européenne) pour le serveur et les e-mails, aux États-Unis et dans le monde pour l'hébergement du site et l'acheminement des notifications. Conformément à la loi n° 2013-450, ces transferts ne sont réalisés que vers des pays offrant un niveau de protection suffisant ou avec l'autorisation préalable de l'ARTCI, et sont encadrés par des garanties contractuelles.",
         "La liste à jour des prestataires et des pays concernés est disponible sur simple demande."
       ]
     },
     {
       "title": "9. Sécurité",
       "paragraphs": [
-        "Mots de passe hachés avec un algorithme dédié (bcrypt ou Argon2), jamais stockés en clair, chiffrement des échanges (HTTPS/TLS), chiffrement au repos des données sensibles (lien d'anonymat, pièces d'identité), accès par rôle et journalisé pour l'équipe, sauvegardes régulières, limitation de débit contre le spam.",
+        "Mots de passe hachés avec Argon2id (un algorithme conçu pour cela), jamais stockés en clair ; échanges chiffrés (HTTPS/TLS) ; pièces d'identité du badge jamais publiées et supprimées après décision ; codes de double authentification de l'équipe chiffrés ; accès de l'équipe par rôle, avec journal d'audit ; protection contre les tentatives de connexion répétées et le spam ; serveur protégé par pare-feu ; sauvegardes de la base avant chaque mise à jour.",
         "En cas de violation de données susceptible de présenter un risque, nous informons l'ARTCI et, lorsque la loi ou la gravité l'exige, les personnes concernées, dans les meilleurs délais."
       ]
     },
@@ -89,21 +93,28 @@
       "title": "10. Tes droits",
       "paragraphs": [
         "Conformément à la loi n° 2013-450, tu disposes d'un droit d'information, d'accès, de rectification, d'effacement et d'opposition (y compris à recevoir des notifications), ainsi que du droit de retirer ton consentement à tout moment.",
-        "Dans l'application : modifie ton pseudo et ton avatar, choisis qui peut te mentionner, bloque des utilisateurs, supprime tes badings et commentaires, désactive les notifications.",
-        "Supprimer ton compte : Paramètres → Mes données → « Demander la suppression de mon compte ». La demande est enregistrée immédiatement ; ton compte et toutes tes données (badings signés et anonymes, commentaires, favoris, avatar, jetons de notification) sont effacés 30 jours plus tard. Tu peux annuler la demande depuis le même écran jusqu'à cette date.",
-        "Recevoir une copie de tes données : Paramètres → Mes données → « Recevoir une copie de mes données ». Un lien sécurisé t'est envoyé sous 30 jours au plus.",
-        "Pour toute autre demande (rectification, opposition, question) : écris à [adresse dédiée]. Nous répondons dans un délai d'un mois au plus, après vérification de ton identité.",
+        "Dans l'application : modifie ton pseudo et ta photo, choisis qui peut te mentionner, bloque des utilisateurs, supprime tes badings et commentaires, coupe les notifications par e-mail et sur ton téléphone.",
+        "Supprimer ton compte : Paramètres → Mes données → « Demander la suppression de mon compte ». La demande est enregistrée immédiatement ; ton compte et toutes tes données (badings signés et anonymes, commentaires, favoris, photo, abonnements aux notifications) sont effacés 30 jours plus tard. Tu peux annuler la demande depuis le même écran jusqu'à cette date.",
+        "Recevoir une copie de tes données : Paramètres → Mes données → « Recevoir une copie de mes données ». Le document (PDF) est créé et téléchargé tout de suite.",
+        "Pour toute autre demande (rectification, opposition, question) : écris à oriverseit@gmail.com. Nous répondons dans un délai d'un mois au plus, après vérification de ton identité.",
         "Si tu estimes que tes droits ne sont pas respectés, tu peux saisir l'ARTCI (Autorité de Régulation des Télécommunications/TIC de Côte d'Ivoire, Abidjan — www.artci.ci)."
       ]
     },
     {
       "title": "11. Âge minimum",
       "paragraphs": [
-        "On Bade est réservé aux personnes âgées de 18 ans et plus. Si nous apprenons qu'un compte appartient à un mineur, il est fermé et ses données supprimées."
+        "On Bade est réservé aux personnes âgées de 18 ans et plus : tu le confirmes en cochant la case prévue à l'inscription. Si nous apprenons qu'un compte appartient à un mineur, il est fermé et ses données supprimées."
       ]
     },
     {
-      "title": "12. Modifications",
+      "title": "12. Cookies et stockage sur ton appareil",
+      "paragraphs": [
+        "On Bade n'utilise ni cookie publicitaire, ni outil de mesure d'audience tiers.",
+        "Le site garde sur ton appareil (stockage local du navigateur) ce qui est nécessaire pour fonctionner : ta session de connexion, tes préférences et une copie des contenus déjà chargés pour aller plus vite et fonctionner hors ligne. Tout est effacé à la déconnexion ou en vidant les données du site dans ton navigateur."
+      ]
+    },
+    {
+      "title": "13. Modifications",
       "paragraphs": [
         "Nous pouvons faire évoluer cette politique (nouvelle fonctionnalité, changement de prestataire, évolution de la loi). En cas de changement important, tu seras prévenu dans l'application avant son entrée en vigueur. La date de version figure en haut de ce document."
       ]

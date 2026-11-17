@@ -352,7 +352,12 @@ textarea.plain { width: 100%; background: none; border: 0; outline: 0; resize: n
 .comment .c-actions .c-toggle[data-collapsed="true"] { color: var(--brand-ink); }
 .comment .c-actions .c-toggle[data-collapsed="true"] svg { transform: rotate(-90deg); }
 .c-children .comment .c-actions { gap: 12px; flex-wrap: wrap; }
-@media (max-width: 420px) { .c-children { --elbow: 20px; } }
+@media (max-width: 420px) { .c-children { --elbow: 20px; } .c-children .c-children .c-children { --elbow: 14px; } }
+/* Suite d'un fil profond : bouton « Voir la suite » et retour à tous les commentaires. */
+.c-more-btn[data-continue] { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; min-height: 36px; }
+.c-more-btn[data-continue] svg { width: 16px; height: 16px; }
+.c-back { align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 14px; border-radius: var(--r-pill); background: var(--surface-2); color: var(--text); font-weight: 600; font-size: 14px; }
+.c-back svg { width: 18px; height: 18px; }
 
 /* ───────────── Barre d'onglets mobile ───────────── */
 .tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 15; height: calc(68px + env(safe-area-inset-bottom)); padding: 6px 12px max(8px, env(safe-area-inset-bottom)); display: flex; align-items: center; background: var(--bg); border-top: 1px solid var(--line); }
@@ -414,12 +419,13 @@ button.srow:hover { background: var(--surface-2); }
 }
 
 /* ───────────── Images des badings (F1) ───────────── */
-.b-img { position: relative; width: 100%; max-width: 100%; min-width: 0; margin: 10px 0 4px; border-radius: var(--r-lg); overflow: hidden; background: var(--surface-2); border: 1px solid var(--line); aspect-ratio: var(--ratio); max-height: 520px; }
+.b-img { position: relative; width: min(100%, calc(520px * var(--ratio))); max-width: 100%; min-width: 0; margin: 10px 0 4px; border-radius: var(--r-lg); overflow: hidden; background: var(--surface-2); border: 1px solid var(--line); aspect-ratio: var(--ratio); max-height: 520px; }
 /* La photo est posée par-dessus le cadre : seul le ratio (aspect-ratio) fixe la taille, jamais la taille réelle du fichier. */
 .b-img img { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; }
-.b-img.small { max-height: 220px; margin-top: 8px; }
+/* Hauteur plafonnée : la largeur suit le ratio, sinon object-fit: cover rognerait l'image recadrée par son auteur. */
+.b-img.small { max-height: 220px; width: min(100%, calc(220px * var(--ratio))); margin-top: 8px; }
 /* Page d'un bading : image en entier (pas la classe utilitaire .full, réservée aux pages pleine hauteur). */
-.b-img.b-img-hero { max-height: none; margin: 0; }
+.b-img.b-img-hero { max-height: none; width: 100%; margin: 0; }
 /* min-width: 0 : dans une colonne flex (page d'un bading), l'image ne doit pas imposer sa largeur naturelle. */
 .zoom-img { display: block; width: 100%; min-width: 0; max-width: 100%; padding: 0; text-align: left; cursor: zoom-in; border-radius: var(--r-lg); }
 .lightbox { position: fixed; inset: 0; z-index: 120; background: rgba(10, 9, 9, 0.94); display: grid; place-items: center; padding: 24px; cursor: zoom-out; }
@@ -429,7 +435,7 @@ button.srow:hover { background: var(--surface-2); }
 .compose-tools { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-top: 1px solid var(--line); }
 .tool-btn { display: inline-flex; align-items: center; gap: 8px; height: 38px; padding: 0 14px; border-radius: var(--r-pill); background: var(--surface-2); color: var(--brand-ink); font-weight: 600; cursor: pointer; }
 .tool-btn:hover { background: var(--line); }
-.compose-img { position: relative; margin: 6px 0; border-radius: var(--r-lg); overflow: hidden; aspect-ratio: var(--ratio); max-height: 420px; background: var(--surface-2); }
+.compose-img { position: relative; width: min(100%, calc(420px * var(--ratio))); margin: 6px 0; border-radius: var(--r-lg); overflow: hidden; aspect-ratio: var(--ratio); max-height: 420px; background: var(--surface-2); }
 .compose-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .compose-img-actions { position: absolute; top: 10px; right: 10px; display: flex; gap: 8px; }
 .chip-btn { display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 12px; border-radius: var(--r-pill); background: rgba(26, 25, 25, 0.82); color: #fff; font-weight: 600; font-size: 14px; backdrop-filter: blur(8px); }

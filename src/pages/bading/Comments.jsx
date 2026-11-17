@@ -14,6 +14,11 @@ import { toastError } from '../../ui/remote.jsx';
 
 const REPORT_REASONS = ['Haine', 'Harcèlement', 'Spam', 'Autre'];
 const PREVIEW_REPLIES = 2; // réponses visibles d'office sous un commentaire quand il n'est ni ouvert ni replié
+/**
+ * Niveaux de décalage affichés dans la page. Il n'y a pas de limite de profondeur : plus bas, « Continuer la conversation »
+ * ouvre la suite du fil à partir de ce commentaire (toujours en arbre), pour que le texte garde de la place sur téléphone.
+ */
+export const INLINE_DEPTH = 4;
 const ROOT_AVATAR = 36;
 const REPLY_AVATAR = 28;
 
@@ -136,6 +141,7 @@ function Comment({ c, isReply, stem, showReplyTo, replyCount = 0, collapsed = fa
 
 const moreLabel = (hidden) => (hidden > 1 ? `Voir les ${hidden} autres réponses` : 'Voir 1 autre réponse');
 
+const moreCount = (n) => (n > 1 ? `${n} réponses` : '1 réponse');
 const countAll = (nodes) => nodes.reduce((n, node) => n + 1 + countAll(node.children), 0);
 const involvesMe = (nodes) => nodes.some((node) => node.comment.authorId === S.ME || involvesMe(node.children));
 
@@ -144,18 +150,20 @@ const involvesMe = (nodes) => nodes.some((node) => node.comment.authorId === S.M
  * `threadState[id]` : true = réponses ouvertes, false = repliées (bouton ⌄ du commentaire), undefined = automatique
  * (toutes si j'y participe, sinon les premières).
  */
-function Node({ c, children, depth, parent, threadState, setOpen, onReply, onSticker }) {
+function Node({ c, children, depth, parent, threadState, setOpen, onReply, onSticker, onFocus }) {
   const openState = threadState[c.id];
   const collapsed = openState === false;
   const expanded = openState ?? (c.authorId === S.ME || involvesMe(children));
 
-  const shown = collapsed ? [] : expanded ? children : children.slice(0, PREVIEW_REPLIES);
-  const hiddenCount = collapsed ? 0 : children.length - shown.length;
-  const hasBranches = shown.length > 0 || hiddenCount > 0;
+  // Dernier niveau décalé : la suite s'ouvre à part (« Voir la suite »).
+  const deeper = depth >= INLINE_DEPTH && children.length > 0 && !collapsed;
+  const shown = collapsed || deeper ? [] : expanded ? children : children.slice(0, PREVIEW_REPLIES);
+  const hiddenCount = collapsed || deeper ? 0 : children.length - shown.length;
+  const hasBranches = shown.length > 0 || hiddenCount > 0 || deeper;
   // Chaque commentaire qui a des réponses peut les replier (fil plus court) ou les déplier.
   const toggle = () => setOpen(c.id, collapsed);
   // « en réponse à @… » : seulement si la réponse n'est pas rangée directement sous le commentaire visé
-  // (dernier niveau d'imbrication, anciennes réponses) ou vise quelqu'un d'autre que son auteur.
+  // (anciennes réponses) ou vise quelqu'un d'autre que son auteur.
   const parentPseudo = parent ? S.user(parent.authorId)?.pseudo : null;
   const showReplyTo = !!parent && (c.parentId !== parent.id || c.replyTo !== parentPseudo);
 
@@ -167,8 +175,15 @@ function Node({ c, children, depth, parent, threadState, setOpen, onReply, onSti
         <div className="c-children">
           {shown.map((node) => (
             <Node key={node.comment.id} c={node.comment} children={node.children} depth={depth + 1} parent={c}
-              threadState={threadState} setOpen={setOpen} onReply={onReply} onSticker={onSticker} />
+              threadState={threadState} setOpen={setOpen} onReply={onReply} onSticker={onSticker} onFocus={onFocus} />
           ))}
+          {deeper ? (
+            <div className="cnode c-more">
+              <button className="c-more-btn" data-continue={c.id} onClick={() => onFocus(c.id)}>
+                Voir la suite · {moreCount(countAll(children))} <Icon name="arrowRight" />
+              </button>
+            </div>
+          ) : null}
           {hiddenCount > 0 ? (
             <div className="cnode c-more">
               <button className="c-more-btn" onClick={() => setOpen(c.id, true)}>{moreLabel(hiddenCount)}</button>
@@ -180,8 +195,14 @@ function Node({ c, children, depth, parent, threadState, setOpen, onReply, onSti
   );
 }
 
-export function CommentThreads({ badingId, threadState, setOpen, onReply, onSticker }) {
+/**
+ * `focusId` : fil ouvert à partir d'un commentaire profond (« Voir la suite »), sinon tout le fil.
+ * `onFocus(id | null)` change ce point de départ.
+ */
+export function CommentThreads({ badingId, threadState, setOpen, onReply, onSticker, focusId = null, onFocus = () => {} }) {
   const threads = S.threads(badingId);
+  const focused = focusId ? S.threadNode(badingId, focusId) : null;
+  const common = { threadState, setOpen, onReply, onSticker, onFocus };
 
   if (!threads.length) {
     return (
@@ -191,12 +212,31 @@ export function CommentThreads({ badingId, threadState, setOpen, onReply, onStic
       </div>
     );
   }
+  if (focused) {
+    const parent = focused.comment.parentId ? S.get().comments.find((x) => x.id === focused.comment.parentId) : null;
+    return (
+      <div className="c-threads" data-focus={focusId}>
+        <button className="c-back" onClick={() => onFocus(null)}><Icon name="arrowLeft" /> Revenir à tous les commentaires</button>
+        <Node c={focused.comment} children={focused.children} depth={0} parent={parent} {...common} />
+      </div>
+    );
+  }
   return (
     <div className="c-threads">
       {threads.map(({ root, children }) => (
-        <Node key={root.id} c={root} children={children} depth={0} parent={null}
-          threadState={threadState} setOpen={setOpen} onReply={onReply} onSticker={onSticker} />
+        <Node key={root.id} c={root} children={children} depth={0} parent={null} {...common} />
       ))}
     </div>
   );
+}
+
+/**
+ * Point de départ à donner au fil pour que `commentId` soit visible (null : tout le fil),
+ * à partir du point de départ actuel `focusId`.
+ */
+export function focusFor(commentId, focusId) {
+  const chain = S.commentAncestors(commentId); // parent direct … racine
+  if (focusId === null ? chain.length <= INLINE_DEPTH : commentId === focusId || (chain.includes(focusId) && chain.indexOf(focusId) + 1 <= INLINE_DEPTH)) return focusId;
+  // Sinon : départ INLINE_DEPTH niveaux au-dessus, la réponse arrive au dernier niveau décalé (le plus de contexte possible).
+  return chain.length <= INLINE_DEPTH ? null : chain[INLINE_DEPTH - 1];
 }

@@ -7,6 +7,7 @@ import * as S from '../lib/store.js';
 import { reduceMotion } from '../lib/motion.js';
 import { toast } from '../ui/toast.js';
 import { Icon } from '../ui/icons.jsx';
+import { NotificationBell } from '../components/Shell.jsx';
 
 const PREVIEW = [
   { rank: 1, w: '78%', laughs: '12,4 k', medal: '#FFC93C' },
@@ -48,6 +49,8 @@ export default function Leaderboard() {
         <span style={{ display: 'flex', color: '#FFC93C', paddingLeft: 4 }}><Icon name="trophy" /></span>
         <h1 className="t-heading" style={{ flex: 'none' }}>Classement</h1>
         <span className="lb-soon">Bientôt</span>
+        <span style={{ flex: 1 }} />
+        <NotificationBell />
       </header>
       <div className="lb" ref={ref} data-leaderboard>
         <div className="lb-hero lb-in">

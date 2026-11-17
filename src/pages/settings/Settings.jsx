@@ -9,6 +9,7 @@ import { pushNeedsInstall } from '../../lib/push.js';
 import * as account from '../../services/account.js';
 import * as auth from '../../services/auth.js';
 import { Avatar, Icon, Logo } from '../../ui/icons.jsx';
+import { NotificationBell } from '../../components/Shell.jsx';
 import { toast } from '../../ui/toast.js';
 import { ErrorState, LoadingState, errorMessage, toastError, useRemote } from '../../ui/remote.jsx';
 import { DAY, openBadgeSheet, openDeletionSheet, openPseudoSheet } from './sheets.jsx';
@@ -57,6 +58,7 @@ const TopBar = () => (
   <header className="topbar">
     <button className="icon-btn" onClick={goBack} aria-label="Retour"><Icon name="arrowLeft" /></button>
     <h1 className="t-heading">Paramètres</h1>
+    <NotificationBell />
   </header>
 );
 

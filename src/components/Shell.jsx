@@ -17,8 +17,13 @@ const current = (nav, key) => (nav === key ? 'page' : undefined);
 const UNREAD_EVERY_MS = 60_000;
 
 /** Pastille des notifications non lues (« 99+ » au-delà de 99). */
-/** Cloche des notifications en haut à droite (téléphone et PWA), avec la pastille des non lues. */
+/**
+ * Cloche des notifications en haut à droite de chaque page (téléphone et PWA), avec la pastille des non lues.
+ * Rien pour un visiteur ; sur ordinateur, les notifications sont dans le menu du haut (classe only-mobile).
+ */
 export function NotificationBell() {
+  useStore(); // la pastille suit les nouvelles notifications, quelle que soit la page
+  if (!S.get().session) return null;
   const unread = S.unread();
   const label = unread ? `Notifications, ${unread > 99 ? 'plus de 99' : unread} non lue${unread > 1 ? 's' : ''}` : 'Notifications';
   return <a className="icon-btn only-mobile notif-bell" href="#/notifications" aria-label={label}><Icon name="bell" /><UnreadDot count={unread} /></a>;

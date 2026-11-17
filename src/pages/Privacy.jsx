@@ -4,6 +4,7 @@ import { gsap } from 'gsap';
 import { reduceMotion } from '../lib/motion.js';
 import { back } from '../lib/router.js';
 import { Icon } from '../ui/icons.jsx';
+import { NotificationBell } from '../components/Shell.jsx';
 
 const SOURCE = `${import.meta.env.BASE_URL}data/privacy.json`;
 const RIGHTS_MAILTO = 'mailto:oriverseit@gmail.com?subject=Mes%20donn%C3%A9es%20On%20Bade';
@@ -62,6 +63,7 @@ export default function Privacy() {
       <header className="topbar">
         <button className="icon-btn" onClick={() => back('/settings')} aria-label="Retour"><Icon name="arrowLeft" /></button>
         <h1 className="t-heading">Confidentialité</h1>
+        <NotificationBell />
       </header>
       <article ref={ref} style={{ padding: '16px 16px 48px', display: 'flex', flexDirection: 'column', gap: 24 }}>{content}</article>
     </>

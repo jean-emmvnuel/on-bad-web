@@ -9,6 +9,7 @@ import * as account from '../services/account.js';
 import { BadingCard } from '../components/BadingCard.jsx';
 import { ACCEPT, openCropper, readImageFile } from '../ui/cropper.js';
 import { Avatar, Icon, Verified } from '../ui/icons.jsx';
+import { NotificationBell } from '../components/Shell.jsx';
 import { countUp } from '../ui/effects.js';
 import { SheetItem, closeSheet, openSheet } from '../ui/sheet.jsx';
 import { toast } from '../ui/toast.js';
@@ -63,6 +64,7 @@ const TopBar = () => (
   <header className="topbar">
     <h1 className="t-heading" style={{ flex: 1 }}>Profil</h1>
     <a className="icon-btn only-mobile" href="#/settings" aria-label="Paramètres"><Icon name="settings" /></a>
+    <NotificationBell />
   </header>
 );
 

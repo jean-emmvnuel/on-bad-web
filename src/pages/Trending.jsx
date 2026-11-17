@@ -9,6 +9,7 @@ import { USE_BACKEND } from '../services/mode.js';
 import * as badings from '../services/badings.js';
 import { BadingCard } from '../components/BadingCard.jsx';
 import { Icon } from '../ui/icons.jsx';
+import { NotificationBell } from '../components/Shell.jsx';
 import { ErrorState, LoadingState, errorMessage, useRemote } from '../ui/remote.jsx';
 
 const LIMIT = 20;
@@ -17,6 +18,7 @@ const Header = () => (
   <header className="topbar">
     <span style={{ display: 'flex', color: 'var(--brand-ink)', paddingLeft: 4 }}><Icon name="flame" /></span>
     <h1 className="t-heading" style={{ flex: 1 }}>Badings du moment</h1>
+    <NotificationBell />
   </header>
 );
 

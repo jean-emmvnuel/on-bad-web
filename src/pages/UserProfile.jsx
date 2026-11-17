@@ -12,6 +12,7 @@ import * as account from '../services/account.js';
 import { toLocalId } from '../services/cache.js';
 import { BadingCard } from '../components/BadingCard.jsx';
 import { Avatar, Icon, Verified } from '../ui/icons.jsx';
+import { NotificationBell } from '../components/Shell.jsx';
 import { SheetItem, confirmSheet, openSheet } from '../ui/sheet.jsx';
 import { toast } from '../ui/toast.js';
 import { ErrorState, LoadingState, errorMessage, toastError, useRemote } from '../ui/remote.jsx';
@@ -57,6 +58,7 @@ function TopBar({ user }) {
       <button className="icon-btn" onClick={goBack} aria-label="Retour"><Icon name="arrowLeft" /></button>
       <h1 className="t-heading" style={{ flex: 1 }}>{user ? `@${user.pseudo}` : 'Profil'}</h1>
       {user ? <button className="icon-btn" onClick={openMenu} aria-label="Plus d'options"><Icon name="ellipsis" /></button> : null}
+      <NotificationBell />
     </header>
   );
 }

@@ -11,6 +11,7 @@ import * as badings from '../../services/badings.js';
 import { ActionsRow, BadingCard, BadingImage } from '../../components/BadingCard.jsx';
 import { openMore } from '../../components/badingSheets.jsx';
 import { Avatar, Icon, Rich, Verified } from '../../ui/icons.jsx';
+import { NotificationBell } from '../../components/Shell.jsx';
 import { openLightbox } from '../../ui/Lightbox.jsx';
 import { ErrorState, LoadingState, errorMessage, useRemote } from '../../ui/remote.jsx';
 import { CommentThreads } from './Comments.jsx';
@@ -26,6 +27,7 @@ function Header({ b }) {
       <button className="icon-btn" onClick={goBack} aria-label="Retour"><Icon name="arrowLeft" /></button>
       <h1 className="t-heading">Bading</h1>
       {b ? <button className="icon-btn" aria-label="Plus d'options" onClick={() => openMore(b, leaveToFeed)}><Icon name="ellipsis" /></button> : null}
+      <NotificationBell />
     </header>
   );
 }

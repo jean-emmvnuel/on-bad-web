@@ -96,6 +96,7 @@ export function Shell({ nav, guest = false, viewRef, children }) {
           <a className="brand" href="#/"><Logo size={32} /><span>on bade</span></a>
           <nav className="webnav" aria-label="Navigation principale">
             <a href="#/" aria-current={current(nav, 'feed')}><Icon name="house" /><span>Fil</span></a>
+            <a href="#/classement" aria-current={current(nav, 'leaderboard')}><Icon name="trophy" /><span>Classement</span></a>
             {guest ? (
               <>
                 <a href="#/auth/login"><Icon name="user" /><span>Connexion</span></a>
@@ -156,6 +157,7 @@ export function Shell({ nav, guest = false, viewRef, children }) {
             ? <a href="#/auth/signup"><Icon name="plus" />S'inscrire</a>
             : <a href="#/compose"><Icon name="plus" />Bader</a>}
         </div>
+        <a href="#/classement" aria-current={current(nav, 'leaderboard')}><Icon name="trophy" /><span>Classement</span></a>
         {/* Notifications : cloche en haut à droite du fil (NotificationBell), plus dans la barre du bas. */}
         {guest ? <a href="#/auth/login"><Icon name="user" /><span>Connexion</span></a> : null}
         {/* Visiteur : pas d'onglet Profil (il menait à l'inscription, déjà au centre) ; la barre garde de la place. */}

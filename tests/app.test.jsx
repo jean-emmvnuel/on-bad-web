@@ -180,7 +180,7 @@ describe('App React (mode démo)', () => {
 
   it('onglet « Du moment » : les badings les plus drôles, classés par rires', async () => {
     await nav('/', () => document.querySelector('.tabbar a[href="#/trending"]'));
-    expect([...document.querySelectorAll('.tabbar > a, .tabbar .bader a')].length).toBe(4); // Fil, Du moment, Bader/S'inscrire, Profil/Connexion
+    expect([...document.querySelectorAll('.tabbar > a, .tabbar .bader a')].length).toBe(5); // Fil, Du moment, Bader/S'inscrire, Classement, Profil/Connexion (comme l'app)
     // Les notifications : cloche en haut à droite du fil (compte connecté), plus dans la barre du bas.
     expect(document.querySelector('.tabbar a[href="#/notifications"]')).toBeNull();
     await until(() => document.querySelector('.topbar .logo'));
@@ -192,6 +192,21 @@ describe('App React (mode démo)', () => {
     expect(top.every((b, i) => i === 0 || top[i - 1].likes >= b.likes)).toBe(true);
     expect(top.some((b) => b.rebadeOf)).toBe(false);
     expect($('.tabbar a[href="#/trending"]').getAttribute('aria-current')).toBe('page');
+  });
+
+  it('onglet « Classement » : page « bientôt » comme sur l’app, « Préviens-moi » retenu', async () => {
+    await nav('/', () => document.querySelector('.tabbar a[href="#/classement"]'));
+    await click(document.querySelector('.tabbar a[href="#/classement"]'));
+    await until(() => location.hash === '#/classement' && $('#view [data-leaderboard]'));
+    expect($('.tabbar a[href="#/classement"]').getAttribute('aria-current')).toBe('page');
+    expect($('#view').textContent).toContain('On verra qui sera le meilleur Badeur');
+    expect(document.querySelectorAll('#view .lb-preview li').length).toBe(5);
+    const btn = $('#view .lb-actions button');
+    await click(btn);
+    expect(btn.getAttribute('aria-pressed')).toBe('true');
+    expect(localStorage.getItem('onbade.leaderboard.notify')).toBe('1');
+    await click(btn);
+    expect(localStorage.getItem('onbade.leaderboard.notify')).toBeNull();
   });
 
   it('notifications de l’équipe : titre et texte affichés, sans lien', async () => {

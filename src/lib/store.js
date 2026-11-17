@@ -183,6 +183,9 @@ const commentCounts = memo(() => {
 // Avec le backend, chaque bading porte son `commentCount` (le fil n'a pas chargé les commentaires).
 export const commentCount = (badingId) => bading(badingId)?.commentCount ?? commentCounts().get(badingId) ?? 0;
 /** Profondeur maximale d'imbrication des réponses : au-delà, elles se rangent au dernier niveau (« en réponse à @… »). */
+/** Niveaux de réponses imbriquées ; au-delà, les réponses se rangent au dernier niveau. */
+export const MAX_REPLY_DEPTH = 4;
+
 /**
  * Fils de commentaires d'un bading, en arbre : chaque réponse est imbriquée sous le commentaire auquel elle répond.
  * Renvoie [{ root, replies, children }] : `replies` = toutes les réponses du fil (à plat),
@@ -200,32 +203,15 @@ export function threads(badingId) {
   const byDate = (a, b) => a.createdAt - b.createdAt;
   // Descendants d'un commentaire, du plus ancien au plus récent.
   const descendants = (id) => (byParent.get(id) ?? []).flatMap((c) => [c, ...descendants(c.id)]);
-  // Aucune limite de profondeur : chaque réponse reste sous son commentaire, à tous les niveaux.
-  const build = (comment) => ({ comment, children: [...(byParent.get(comment.id) ?? [])].sort(byDate).map(build) });
-  return live.filter((c) => !c.parentId).sort((a, b) => b.likes - a.likes || a.createdAt - b.createdAt)
-    .map((root) => ({ root, replies: descendants(root.id).sort(byDate), children: build(root).children }));
-}
-
-/** Nœud { comment, children } d'un commentaire dans l'arbre de son bading (null s'il n'est pas visible). */
-export function threadNode(badingId, commentId) {
-  const find = (nodes) => {
-    for (const node of nodes) {
-      if (node.comment.id === commentId) return node;
-      const hit = find(node.children);
-      if (hit) return hit;
-    }
-    return null;
+  const build = (comment, depth) => {
+    // Au dernier niveau, toutes les réponses plus profondes se rangent à côté (à plat, « en réponse à @… »).
+    const kids = depth >= MAX_REPLY_DEPTH ? [] : depth === MAX_REPLY_DEPTH - 1
+      ? descendants(comment.id).sort(byDate).map((c) => ({ comment: c, children: [] }))
+      : [...(byParent.get(comment.id) ?? [])].sort(byDate).map((c) => build(c, depth + 1));
+    return { comment, children: kids };
   };
-  return find(threads(badingId).map(({ root, children }) => ({ comment: root, children })));
-}
-
-/** Ancêtres d'un commentaire, du parent direct jusqu'au commentaire racine (ids). */
-export function commentAncestors(commentId) {
-  const byId = new Map(state.comments.map((c) => [c.id, c]));
-  const out = [];
-  let parent = byId.get(commentId)?.parentId;
-  while (parent && !out.includes(parent)) { out.push(parent); parent = byId.get(parent)?.parentId; }
-  return out;
+  return live.filter((c) => !c.parentId).sort((a, b) => b.likes - a.likes || a.createdAt - b.createdAt)
+    .map((root) => ({ root, replies: descendants(root.id).sort(byDate), children: build(root, 0).children }));
 }
 export const searchPseudos = (q) => Object.values(state.users).filter((u) => u.id !== ME && !state.blocked.includes(u.id) && u.pseudo.toLowerCase().startsWith(q.toLowerCase())).slice(0, 5);
 export const countMentions = (t) => (t.match(/@[\w.]+/g) ?? []).length;

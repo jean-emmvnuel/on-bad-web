@@ -14,7 +14,7 @@ import { Avatar, Icon, Rich, Verified } from '../../ui/icons.jsx';
 import { NotificationBell } from '../../components/Shell.jsx';
 import { openLightbox } from '../../ui/Lightbox.jsx';
 import { ErrorState, LoadingState, errorMessage, useRemote } from '../../ui/remote.jsx';
-import { CommentThreads, focusFor } from './Comments.jsx';
+import { CommentThreads } from './Comments.jsx';
 import { Composer } from './Composer.jsx';
 import { openStickerSheet } from './StickerPicker.jsx';
 
@@ -107,7 +107,6 @@ function BadingContent({ id, focusComment }) {
   const [threadState, setThreadState] = useState({}); // repli des fils : true = ouvert, false = replié
   const [replyTo, setReplyTo] = useState(null);
   const [highlightId, setHighlightId] = useState(null);
-  const [focusId, setFocusId] = useState(null); // fil profond ouvert à partir de ce commentaire (« Voir la suite »)
   const textareaRef = useRef(null);
   const panelRef = useRef(null);
 
@@ -139,12 +138,6 @@ function BadingContent({ id, focusComment }) {
   const commentCount = S.commentCount(id);
   const rebades = S.feed().filter((r) => r.rebadeOf === id && r.text);
 
-  // Changer le point de départ du fil : on remonte en haut des commentaires.
-  const openThread = (commentId) => {
-    setFocusId(commentId);
-    requestAnimationFrame(() => panelRef.current?.scrollIntoView({ behavior: reduceMotion() ? 'auto' : 'smooth', block: 'start' }));
-  };
-
   const reply = (comment) => {
     setReplyTo(comment);
     focusComposer();
@@ -159,7 +152,7 @@ function BadingContent({ id, focusComment }) {
         {tab === 'comments' ? (
           <CommentThreads badingId={id} threadState={threadState}
             setOpen={(rootId, open) => setThreadState((s) => ({ ...s, [rootId]: open }))}
-            onReply={reply} onSticker={openStickerSheet} focusId={focusId} onFocus={openThread} />
+            onReply={reply} onSticker={openStickerSheet} />
         ) : rebades.length ? (
           rebades.map((r) => <BadingCard key={r.id} b={r} />)
         ) : (
@@ -168,7 +161,7 @@ function BadingContent({ id, focusComment }) {
       </div>
       {S.get().session
         ? <Composer badingId={id} parent={replyTo} onCancelReply={() => setReplyTo(null)} textareaRef={textareaRef}
-          onPosted={(comment) => { setTab('comments'); setFocusId((f) => focusFor(comment.id, f)); setHighlightId(comment.id); }} />
+          onPosted={(comment) => { setTab('comments'); setHighlightId(comment.id); }} />
         : <div className="composer"><button className="btn btn-primary btn-block" onClick={requireSession}>Connecte-toi pour commenter</button></div>}
     </>
   );

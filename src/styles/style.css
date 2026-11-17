@@ -353,12 +353,6 @@ textarea.plain { width: 100%; background: none; border: 0; outline: 0; resize: n
 .comment .c-actions .c-toggle[data-collapsed="true"] svg { transform: rotate(-90deg); }
 .c-children .comment .c-actions { gap: 12px; flex-wrap: wrap; }
 @media (max-width: 420px) { .c-children { --elbow: 20px; } .c-children .c-children .c-children { --elbow: 14px; } }
-/* Suite d'un fil profond : bouton « Voir la suite » et retour à tous les commentaires. */
-.c-more-btn[data-continue] { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; min-height: 36px; }
-.c-more-btn[data-continue] svg { width: 16px; height: 16px; }
-.c-back { align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 14px; border-radius: var(--r-pill); background: var(--surface-2); color: var(--text); font-weight: 600; font-size: 14px; }
-.c-back svg { width: 18px; height: 18px; }
-
 /* ───────────── Barre d'onglets mobile ───────────── */
 .tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 15; height: calc(68px + env(safe-area-inset-bottom)); padding: 6px 12px max(8px, env(safe-area-inset-bottom)); display: flex; align-items: center; background: var(--bg); border-top: 1px solid var(--line); }
 .tabbar a { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 3px; color: var(--text-3); text-decoration: none; font-size: 12px; font-weight: 500; white-space: nowrap; }

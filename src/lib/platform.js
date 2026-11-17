@@ -1,4 +1,5 @@
-// État de la plateforme réglé dans le back-office (GET /api/platform) : le mode maintenance et la durée maximale des vocaux.
+// État de la plateforme réglé dans le back-office (GET /api/platform) : le mode maintenance et les règles chiffrées
+// (longueurs, mentions, stickers, durée des vocaux…).
 // Lu au démarrage, puis chaque minute et au retour sur l'onglet ; une réponse « maintenance » (503)
 // du serveur à n'importe quelle requête bascule aussi tout de suite sur l'écran de maintenance.
 import { useSyncExternalStore } from 'react';
@@ -20,14 +21,26 @@ const set = (next) => {
 export const platformState = () => state;
 export const usePlatform = () => useSyncExternalStore((fn) => (listeners.add(fn), () => listeners.delete(fn)), platformState);
 
+/**
+ * Règles chiffrées réglées par l'équipe dans le back-office (GET /api/platform) : remplacent les valeurs par défaut de
+ * RULES (store.js), qui restent le repli si le serveur ne répond pas. Une valeur absente ou invalide est ignorée.
+ */
+const RULE_KEYS = ['minLength', 'maxLength', 'captionMax', 'opinionMax', 'commentMax', 'maxMentions', 'myStickersMax', 'voiceMaxSeconds', 'badgeRetryDays', 'deletionDays'];
+export function applyRules(rules) {
+  if (!rules || typeof rules !== 'object') return;
+  const num = (v) => (Number.isFinite(Number(v)) && Number(v) >= 0 ? Number(v) : null);
+  for (const k of RULE_KEYS) { const v = num(rules[k]); if (v !== null) RULES[k] = v; }
+  const active = num(rules.badgeActiveDays), laughs = num(rules.badgeMinLaughs);
+  if (active !== null) RULES.badge.activeDays = active;
+  if (laughs !== null) RULES.badge.minLaughs = laughs;
+}
+
 /** Relit l'état du serveur. Serveur injoignable : on garde l'état connu (le reste de l'app gère l'erreur). */
 export async function refreshPlatform() {
   if (!USE_BACKEND) return state;
   try {
     const { platform, rules } = await api.getPlatform();
-    // Durée maximale d'une note vocale, réglée par l'équipe dans le back-office.
-    const voiceMax = Number(rules?.voiceMaxSeconds);
-    if (Number.isFinite(voiceMax) && voiceMax > 0) RULES.voiceMaxSeconds = voiceMax;
+    applyRules(rules);
     set({ maintenance: !!platform?.maintenance, message: platform?.maintenanceMessage || DEFAULT_MESSAGE });
   } catch (error) {
     if (error?.code === 'maintenance') set({ maintenance: true, message: error.message || DEFAULT_MESSAGE });

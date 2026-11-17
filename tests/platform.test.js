@@ -55,3 +55,18 @@ describe('Proposer les notifications à la visite', () => {
     expect(shouldPropose({ session: true, status: 'undetermined' })).toBe(true);
   });
 });
+
+describe('Règles réglées par l’équipe', () => {
+  it('remplacent les valeurs par défaut, en ignorant les valeurs invalides', async () => {
+    const { applyRules } = await import('../src/lib/platform.js');
+    const S = await import('../src/lib/store.js');
+    const before = { ...S.RULES, badge: { ...S.RULES.badge } };
+    applyRules({ commentMax: 300, minLength: 'abc', voiceMaxSeconds: 90, badgeMinLaughs: 500, inconnue: 1 });
+    expect(S.RULES.commentMax).toBe(300);
+    expect(S.RULES.minLength).toBe(before.minLength);
+    expect(S.RULES.voiceMaxSeconds).toBe(90);
+    expect(S.RULES.badge.minLaughs).toBe(500);
+    expect(S.RULES.inconnue).toBeUndefined();
+    Object.assign(S.RULES, before);
+  });
+});

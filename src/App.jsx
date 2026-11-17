@@ -205,6 +205,7 @@ export function App() {
     closeSheet(true);
     window.scrollTo(0, 0);
     document.body.dataset.nav = route.nav ?? '';
+    document.body.dataset.page = route.page; // ex. masquer les onglets sur l'écriture et la page d'un bading (style.css)
     const prev = lastRoute.current;
     lastRoute.current = route;
     if (viewRef.current) animateEntry(viewRef.current, prev, route, viewAnim);

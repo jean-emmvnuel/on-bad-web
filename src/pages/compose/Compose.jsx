@@ -20,18 +20,21 @@ const PUBLISH_ERRORS = {
   too_many_mentions: `${S.RULES.maxMentions} mentions maximum par bading.`,
 };
 
-/** Anneau qui se remplit + caractères restants. */
-function CharMeter({ length, max, withImage }) {
+/** Anneau qui se remplit + caractères restants ; sous le minimum, dit combien il en manque (sinon « Publier » grisé sans raison). */
+function CharMeter({ length, max, min = 0, withImage }) {
   const remaining = max - length;
   const tooLong = length > max;
-  const state = tooLong ? 'over' : remaining <= Math.max(20, max * 0.1) ? 'near' : 'ok';
+  const missing = !withImage && length > 0 && length < min ? min - length : 0;
+  const state = tooLong ? 'over' : missing ? 'short' : remaining <= Math.max(20, max * 0.1) ? 'near' : 'ok';
   return (
     <div className="char-meter" data-state={state} aria-live="polite">
       <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
         <circle cx="12" cy="12" r="10" className="cm-track" />
         <circle cx="12" cy="12" r="10" className="cm-fill" pathLength="100" style={{ strokeDasharray: `${Math.min(100, (length / max) * 100)} 100` }} />
       </svg>
-      <span>{tooLong ? <><b>{-remaining}</b> en trop</> : <><b>{length}</b> / {max}{withImage ? ' · légende' : ''}</>}</span>
+      <span>{tooLong ? <><b>{-remaining}</b> en trop</>
+        : missing ? <>Encore <b>{missing}</b> caractère{missing > 1 ? 's' : ''}</>
+        : <><b>{length}</b> / {max}{withImage ? ' · légende' : ''}</>}</span>
     </div>
   );
 }
@@ -158,7 +161,7 @@ export default function Compose() {
               value={text}
               onChange={(e) => { setText(e.target.value); trackCaret(e); setError(''); }}
               onKeyUp={trackCaret} onClick={trackCaret} />
-            <CharMeter length={length} max={max} withImage={!!image} />
+            <CharMeter length={length} max={max} min={S.RULES.minLength} withImage={!!image} />
             <div>
               <Media image={image}
                 onRecrop={() => crop(original.current ?? image.src)}

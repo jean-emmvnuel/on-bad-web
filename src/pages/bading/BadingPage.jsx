@@ -42,22 +42,7 @@ function Unavailable() {
   );
 }
 
-const Stat = ({ value, label }) => <span className="t-meta"><b style={{ color: 'var(--text)' }}>{S.compact(value)}</b> {label}</span>;
-
-/** Compteurs sous le bading ; les vues ne sont montrées qu'à l'auteur. */
-function Counts({ b, commentCount }) {
-  return (
-    <div className="bub-counts" data-counts="">
-      <Stat value={b.likes} label="rires" />
-      <Stat value={commentCount} label="commentaires" />
-      <Stat value={b.rebades} label="rebades" />
-      <Stat value={b.shares || 0} label="partages" />
-      {b.authorId === S.ME ? <Stat value={b.views || 0} label="vues" /> : null}
-    </div>
-  );
-}
-
-function Hero({ b, commentCount, onComment }) {
+function Hero({ b, onComment }) {
   const ref = useRef(null);
   const { name, handle, user } = S.displayName(b);
   const date = new Date(b.createdAt).toLocaleString('fr-FR', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' });
@@ -85,8 +70,8 @@ function Hero({ b, commentCount, onComment }) {
           <BadingImage b={b} className="b-img-hero" />
         </button>
       ) : null}
-      <span className="t-meta">{date}</span>
-      <Counts b={b} commentCount={commentCount} />
+      {/* Les rires, commentaires, rebades et partages sont comptés une seule fois, sur les boutons ; les vues ne sont montrées qu'à l'auteur. */}
+      <span className="t-meta" data-meta="">{date}{b.authorId === S.ME ? ` · ${S.compact(b.views || 0)} vue${(b.views || 0) > 1 ? 's' : ''}` : ''}</span>
       <div><ActionsRow t={b} onComment={onComment} /></div>
     </section>
   );
@@ -161,7 +146,7 @@ function BadingContent({ id, focusComment }) {
   return (
     <>
       <Header b={b} />
-      <Hero b={b} commentCount={commentCount} onComment={focusComposer} />
+      <Hero b={b} onComment={focusComposer} />
       <Tabs tab={tab} setTab={setTab} commentCount={commentCount} rebadeCount={rebades.length} />
       <div data-panel="" ref={panelRef}>
         {tab === 'comments' ? (

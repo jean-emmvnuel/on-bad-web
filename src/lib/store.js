@@ -4,7 +4,7 @@
 const d = 86_400_000;
 export const ME = 'me';
 
-export const RULES = { minLength: 10, maxLength: 1000, captionMax: 280, myStickersMax: 1000, opinionMax: 280, commentMax: 500, maxMentions: 5, badge: { activeDays: 30, minLaughs: 1000 }, badgeRetryDays: 30, deletionDays: 30 };
+export const RULES = { minLength: 10, maxLength: 1000, captionMax: 280, myStickersMax: 1000, opinionMax: 280, commentMax: 500, voiceMaxSeconds: 60, maxMentions: 5, badge: { activeDays: 30, minLaughs: 1000 }, badgeRetryDays: 30, deletionDays: 30 };
 /** Identifiant unique, même pour deux actions dans la même milliseconde. */
 let seq = 0;
 export const uid = (prefix) => `${prefix}${Date.now().toString(36)}${(seq++).toString(36)}`;

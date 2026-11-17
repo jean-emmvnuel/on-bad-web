@@ -1,6 +1,6 @@
 {
   "title": "Politique de confidentialité de On Bade",
-  "version": "Version 1.3 — 16 novembre 2026",
+  "version": "Version 1.4 — 17 novembre 2026",
   "intro": "On Bade est un réseau social où l'on raconte, signé ou en anonyme, les histoires drôles du quotidien. Cette politique (site onbade.com et application) explique quelles données personnelles nous traitons, pourquoi, combien de temps, avec qui, et comment exercer tes droits. Elle s'appuie sur le droit ivoirien de la protection des données personnelles et sur les textes qui encadrent le numérique en Côte d'Ivoire.",
   "sections": [
     {
@@ -26,6 +26,7 @@
       "paragraphs": [
         "Compte : prénom et nom (visibles uniquement par l'équipe On Bade, jamais par les autres Badeurs), adresse e-mail, pseudo, mot de passe (stocké uniquement sous forme chiffrée irréversible, jamais en clair), photo de profil si tu en ajoutes une, date d'inscription, et confirmation que tu as 18 ans ou plus et que tu acceptes la charte du Badeur et cette politique.",
         "Contenus : badings (texte et photos), rebades et avis, commentaires et réponses, mentions (@pseudo), rires donnés, favoris (privés), signalements effectués, stickers que tu crées (à partir d'une photo, ou d'un extrait vidéo transformé en GIF directement sur ton téléphone : la vidéo elle-même ne nous est jamais envoyée).",
+        "Notes vocales : quand tu réponds par un vocal, nous enregistrons le son (60 secondes au plus) et une petite forme d'onde pour l'afficher. Ta voix est une donnée personnelle : le micro n'est utilisé que pendant que tu restes appuyé sur le bouton (ou jusqu'à ce que tu envoies ou annules), et rien n'est enregistré sans ton geste. Les autres Badeurs peuvent écouter tes vocaux comme ils lisent tes commentaires.",
         "Mode anonyme : quand tu publies en « Badeur anonyme », ton pseudo n'est jamais montré aux autres utilisateurs, mais le lien entre ton compte et ce bading est conservé (voir section 6).",
         "Badge vérifié (si tu le demandes) : copie d'une pièce d'identité ou d'un document d'entreprise, et liens vers tes réseaux sociaux.",
         "Paramètres : qui peut te mentionner, utilisateurs bloqués, et, si tu actives les notifications sur ton téléphone, l'adresse d'abonnement que ton navigateur crée pour les recevoir, avec le type de navigateur et d'appareil.",
@@ -53,6 +54,7 @@
       "paragraphs": [
         "Compte et contenus : tant que ton compte est actif. Quand tu demandes la suppression de ton compte, tes données sont effacées 30 jours après la demande (délai pendant lequel tu peux annuler), sauf obligation légale de conservation.",
         "Pièces d'identité du badge : supprimées dès que la demande est traitée (acceptée ou refusée).",
+        "Notes vocales supprimées : quand tu supprimes un vocal, il disparaît aussitôt pour tous les Badeurs ; l'équipe de modération peut encore l'écouter pendant 90 jours (pour traiter un signalement ou une plainte), puis il est effacé définitivement.",
         "Code de confirmation de l'adresse e-mail : 10 minutes (il n'est pas enregistré). Liens de réinitialisation du mot de passe : 1 heure. Abonnement aux notifications sur ton téléphone : jusqu'à ce que tu les désactives, que tu te déconnectes de cet appareil, ou que ton navigateur le fasse expirer.",
         "Journaux techniques et données de connexion : 12 mois au plus, ou la durée imposée par la réglementation sur la cybercriminalité.",
         "Signalements et décisions de modération : 2 ans, pour gérer les sanctions progressives et les recours.",

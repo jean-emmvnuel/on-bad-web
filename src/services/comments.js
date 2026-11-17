@@ -15,16 +15,19 @@ function rememberRecentSticker(stickerId) {
  * Publie un commentaire (texte) ou un sticker seul, en réponse éventuelle à `parent`.
  * Renvoie le commentaire. Lève 'blocked_word' si le texte est refusé.
  */
-export async function addComment(badingId, text, parent = null, stickerId = null) {
+/** `audio` = { dataUrl, durationMs, waveform } pour une note vocale (sans texte ni sticker). */
+export async function addComment(badingId, text, parent = null, stickerId = null, audio = null) {
   if (!USE_BACKEND) {
+    if (audio) fail('voice_offline');
     const comment = S.addComment(badingId, text, parent ?? undefined, stickerId);
     if (!comment) fail('blocked_word');
     return comment;
   }
 
   const { comment } = await api.createComment(badingId, {
-    text: stickerId ? '' : text.trim(),
+    text: stickerId || audio ? '' : text.trim(),
     stickerId,
+    ...(audio ? { audio } : {}),
     // La réponse s'imbrique sous le commentaire auquel elle répond.
     parentId: parent ? parent.id : null,
   });

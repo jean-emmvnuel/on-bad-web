@@ -704,3 +704,23 @@ body.scrolled .topbar { border-bottom-color: rgba(255, 255, 255, 0.06); box-shad
 .lb-rules li > span { font-size: 22px; line-height: 28px; }
 .lb-rules p { margin: 2px 0 0; }
 .lb-actions { display: flex; flex-direction: column; gap: 10px; }
+
+/* ───────────── Notes vocales ───────────── */
+.voice { display: flex; align-items: center; gap: 10px; max-width: 320px; padding: 6px 10px 6px 6px; border-radius: var(--r-pill); background: var(--surface-2); border: 1px solid var(--line); }
+.voice-play { flex: none; width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; background: var(--brand); color: #fff; }
+.voice-play svg { width: 16px; height: 16px; fill: currentColor; }
+.voice-wave { flex: 1; min-width: 0; height: 30px; display: flex; align-items: center; gap: 2px; cursor: pointer; touch-action: manipulation; }
+.voice-wave i { flex: 1; min-width: 2px; max-width: 4px; border-radius: 2px; background: var(--text-3); opacity: 0.6; }
+.voice-wave i[data-on] { background: var(--brand-ink); opacity: 1; }
+.voice-time { flex: none; font-size: 12px; color: var(--text-2); font-variant-numeric: tabular-nums; min-width: 30px; text-align: right; }
+.voice-speed { flex: none; min-width: 36px; height: 26px; padding: 0 6px; border-radius: var(--r-pill); background: var(--surface); color: var(--text-2); font-size: 12px; font-weight: 700; }
+.mic-btn { touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+.mic-btn.rec { background: var(--danger); transform: scale(1.15); }
+.rec-bar { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 6px 0 12px; border-radius: var(--r-pill); background: var(--surface-2); }
+.rec-bar.cancelling { opacity: 0.55; }
+.rec-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--danger); transition: transform 80ms linear; }
+.rec-time { font-variant-numeric: tabular-nums; font-weight: 700; }
+.rec-time small { color: var(--text-3); font-weight: 500; }
+.rec-wave { flex: 0 1 auto; display: flex; align-items: center; gap: 2px; height: 26px; min-width: 0; overflow: hidden; }
+.rec-wave i { width: 3px; flex: none; border-radius: 2px; background: var(--danger); }
+.rec-hint { flex: 1; text-align: right; font-size: 12px; color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

@@ -8,6 +8,7 @@ import { reduceMotion } from '../../lib/motion.js';
 import * as comments from '../../services/comments.js';
 import { Avatar, Icon, Rich, Verified } from '../../ui/icons.jsx';
 import { Sticker } from '../../ui/Sticker.jsx';
+import { VoiceNote } from '../../ui/VoiceNote.jsx';
 import { SheetItem, closeSheet, confirmSheet, openSheet } from '../../ui/sheet.jsx';
 import { toast } from '../../ui/toast.js';
 import { toastError } from '../../ui/remote.jsx';
@@ -59,7 +60,10 @@ async function likeComment(comment) {
 function deleteComment(comment, element) {
   if (!requireSession()) return;
   const hasReplies = S.get().comments.some((c) => c.parentId === comment.id && !c.deleted);
-  const warning = `${hasReplies ? 'Les réponses à ce commentaire seront aussi supprimées. ' : ''}C'est définitif.`;
+  // Un vocal supprimé disparaît pour tout le monde, mais l'équipe peut encore l'écouter quelque temps (modération).
+  const warning = comment.audio
+    ? `Il disparaît pour tout le monde${hasReplies ? ', avec ses réponses' : ''}. L’équipe de modération peut encore l’écouter pendant 90 jours, puis il est effacé.`
+    : `${hasReplies ? 'Les réponses à ce commentaire seront aussi supprimées. ' : ''}C'est définitif.`;
 
   confirmSheet('Supprimer ce commentaire ?', warning, 'Supprimer', async () => {
     // Le serveur confirme d'abord : si la suppression échoue, le commentaire reste affiché.
@@ -106,7 +110,9 @@ function Comment({ c, isReply, stem, showReplyTo, replyCount = 0, collapsed = fa
           <span className="t-small" style={{ color: 'var(--text-3)' }}>· {S.timeAgo(c.createdAt)}</span>
         </div>
         {showReplyTo && c.replyTo ? <span className="t-small" style={{ color: 'var(--text-3)' }}>en réponse à <span className="mention">@{c.replyTo}</span></span> : null}
-        {c.sticker ? (
+        {c.audio ? (
+          <VoiceNote audio={c.audio} />
+        ) : c.sticker ? (
           <button className="c-sticker" aria-label="Ajouter ce sticker à mes stickers" onClick={() => onSticker(c.sticker)}>
             <Sticker id={c.sticker} size={isReply ? 104 : 120} />
           </button>

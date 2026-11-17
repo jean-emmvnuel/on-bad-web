@@ -209,3 +209,53 @@ export async function renderShareImage(b, { sharer = S.me() } = {}) {
     try { c.toBlob((blob) => (blob ? resolve(blob) : reject(new Error('Image impossible à créer'))), 'image/png'); } catch (error) { reject(error); }
   });
 }
+
+// ─── Filigrane d'une image téléchargée ────────────────────
+// « Télécharger l'image » d'un bading : l'image garde sa taille, avec en bas à droite un cartouche
+// « on bade · onbade.com » qui montre d'où elle vient, même une fois repartagée ailleurs.
+
+/** Tailles du filigrane, proportionnelles au plus petit côté de l'image (lisible sur une miniature comme sur une grande photo). */
+export function watermarkLayout(w, h) {
+  const u = Math.max(14, Math.round(Math.min(w, h) * 0.04));
+  return {
+    logo: Math.round(u * 1.7),
+    pad: Math.round(u * 0.55),
+    margin: Math.round(u * 0.7),
+    title: `800 ${u}px "Bricolage Grotesque", Figtree, sans-serif`,
+    sub: `600 ${Math.round(u * 0.62)}px Figtree, sans-serif`,
+  };
+}
+
+/** L'image d'un bading avec le filigrane On Bade (JPEG). Lève une erreur si l'image ne peut pas être lue. */
+export async function watermarkedImage(src) {
+  const photo = await loadImage(src);
+  if (!photo) throw new Error('Image impossible à lire');
+  const w = photo.naturalWidth, h = photo.naturalHeight;
+  const c = document.createElement('canvas');
+  c.width = w; c.height = h;
+  const g = c.getContext('2d');
+  g.fillStyle = CARD; g.fillRect(0, 0, w, h); // fond des images transparentes (le JPEG n'a pas de transparence)
+  g.drawImage(photo, 0, 0, w, h);
+
+  const L = watermarkLayout(w, h);
+  g.font = L.title; const titleW = g.measureText('on bade').width;
+  g.font = L.sub; const siteW = g.measureText(SITE).width;
+  const boxW = L.pad * 3 + L.logo + Math.max(titleW, siteW);
+  const boxH = L.logo + L.pad * 2;
+  const x = w - L.margin - boxW, y = h - L.margin - boxH;
+
+  g.fillStyle = 'rgba(26,25,25,0.62)';
+  g.beginPath();
+  if (g.roundRect) g.roundRect(x, y, boxW, boxH, boxH / 2.4); else g.rect(x, y, boxW, boxH);
+  g.fill();
+  const logo = await svgImage(LOGO_SVG);
+  if (logo) g.drawImage(logo, x + L.pad, y + L.pad, L.logo, L.logo);
+  const tx = x + L.pad * 2 + L.logo;
+  g.textAlign = 'left'; g.textBaseline = 'middle';
+  g.fillStyle = '#fff'; g.font = L.title; g.fillText('on bade', tx, y + L.pad + L.logo * 0.34);
+  g.fillStyle = '#F1E4FF'; g.font = L.sub; g.fillText(SITE, tx, y + L.pad + L.logo * 0.8);
+
+  return new Promise((resolve, reject) => {
+    try { c.toBlob((blob) => (blob ? resolve(blob) : reject(new Error('Image impossible à créer'))), 'image/jpeg', 0.92); } catch (error) { reject(error); }
+  });
+}

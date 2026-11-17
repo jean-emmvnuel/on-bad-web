@@ -43,19 +43,16 @@ export function openMore(b, onRemoved) {
     toast('Lien copié');
   };
 
-  // Image du bading enregistrée sur l'appareil (si le fichier ne peut pas être lu, il s'ouvre dans un onglet).
+  // Image du bading enregistrée sur l'appareil, avec le filigrane On Bade (d'où vient l'image).
+  // Jamais l'image brute : si elle ne peut pas être lue, rien n'est téléchargé.
   const downloadImage = async () => {
     closeSheet();
-    const src = b.image.src;
     try {
-      const response = await fetch(src, { mode: 'cors' });
-      if (!response.ok) throw new Error(`http_${response.status}`);
-      const blob = await response.blob();
-      const ext = { 'image/png': 'png', 'image/webp': 'webp', 'image/gif': 'gif' }[blob.type] ?? 'jpg';
-      downloadBlob(blob, `onbade-${b.id}.${ext}`);
+      const { watermarkedImage } = await import('./shareImage.js');
+      downloadBlob(await watermarkedImage(b.image.src), `onbade-${b.id}.jpg`);
       toast('Image téléchargée');
     } catch {
-      open(src, '_blank', 'noopener');
+      toast('L’image n’a pas pu être téléchargée. Réessaie.');
     }
   };
 

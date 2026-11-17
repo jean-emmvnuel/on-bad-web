@@ -209,6 +209,7 @@ a.mention:hover, a.user-link:hover { text-decoration: underline; }
 .card-row .head .handle { color: var(--text-3); font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .card-row .rebaded { display: flex; align-items: center; gap: 6px; color: var(--text-3); font-size: 13px; font-weight: 500; margin: 0 0 4px 30px; }
 .card-row .rebaded svg { width: 14px; height: 14px; }
+.card-row .rebaded.pinned { color: var(--brand-ink); }
 .actions { display: flex; align-items: center; gap: 4px; margin: 2px 0 0 -10px; }
 .act { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 10px; border-radius: var(--r-pill); color: var(--text-2); font-size: 14px; font-variant-numeric: tabular-nums; position: relative; }
 .act:hover { color: var(--brand-ink); background: var(--brand-soft); }

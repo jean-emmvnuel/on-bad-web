@@ -7,10 +7,12 @@ import { save, storeBadings, storeCommentsOf, storeStickers, storeUsers, syncCom
 /** Charge le fil. */
 export async function loadFeed() {
   if (!USE_BACKEND) return;
-  const { badings, origins = [], users } = await api.getFeed();
+  const { badings, origins = [], users, pinned = [] } = await api.getFeed();
   storeUsers(users);
   pruneFeed(badings, api.FEED_PAGE_SIZE);
-  storeBadings([...badings, ...origins]);
+  storeBadings([...badings, ...origins, ...pinned]);
+  // Épingles de l'équipe : en tête du fil ; une épingle retirée disparaît au prochain chargement.
+  S.get().pins = pinned.filter(Boolean).map((b) => ({ id: b.id, ...(b.pinnedLabel ? { label: b.pinnedLabel } : {}) }));
   save();
 }
 

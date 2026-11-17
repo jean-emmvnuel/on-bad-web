@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { STORY_H, layoutCard, wrapLines } from '../src/components/shareImage.js';
+import { STORY_H, layoutCard, watermarkLayout, wrapLines } from '../src/components/shareImage.js';
 
 // Mesure factice : 10 px par caractère.
 const g = { measureText: (t) => ({ width: t.length * 10 }) };
@@ -32,5 +32,16 @@ describe('Image story d’un bading', () => {
     expect(r.cardH).toBeLessThanOrEqual(STORY_H - 330 - 250 - 40);
     expect(r.lines).toBeLessThan(60);
     expect(r.photoH).toBeGreaterThanOrEqual(320);
+  });
+});
+
+describe('Filigrane d’une image téléchargée', () => {
+  it('suit la taille de l’image, reste lisible sur une petite image', () => {
+    const grande = watermarkLayout(4000, 3000);
+    const petite = watermarkLayout(200, 150);
+    expect(grande.logo).toBeGreaterThan(petite.logo);
+    expect(grande.logo).toBeLessThan(3000 * 0.1); // discret : moins d’un dixième du petit côté
+    expect(petite.title).toMatch(/^800 14px/); // jamais en dessous de 14 px
+    expect(watermarkLayout(1000, 2000)).toEqual(watermarkLayout(2000, 1000)); // basé sur le petit côté
   });
 });

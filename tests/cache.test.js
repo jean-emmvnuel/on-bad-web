@@ -84,6 +84,22 @@ describe('Cache des badings', () => {
     expect(S.bading('origine')).toBeDefined();
   });
 
+  it('badings épinglés par l’équipe : tout en haut du fil avec leur étiquette, retirés quand l’épingle l’est', async () => {
+    const now = Date.now();
+    let pinned = [bading('vieux', now - 9_000_000, { pinned: true, pinnedLabel: 'Bading du jour' })];
+    const { S, badings } = await boot(savedState(), {
+      routes: { '/feed': () => ok({ badings: [bading('n1', now - 10), bading('n2', now - 20)], users: [], pinned }) },
+    });
+    await badings.loadFeed();
+    expect(S.feedWithPins().map((b) => b.id)).toEqual(['vieux', 'n1', 'n2']);
+    expect(S.pinLabel('vieux')).toBe('Bading du jour');
+    expect(S.pinLabel('n1')).toBeUndefined();
+
+    pinned = [];
+    await badings.loadFeed();
+    expect(S.feedWithPins().map((b) => b.id)).toEqual(['n1', 'n2']);
+  });
+
   it('bading introuvable (404) à l’ouverture : retiré du cache', async () => {
     const { S, badings } = await boot(savedState({ badings: [bading('zzz', Date.now())] }));
     expect(await badings.loadBading('zzz')).toBe(false);

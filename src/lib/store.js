@@ -149,6 +149,16 @@ export function bading(id) {
 export const orphanRebade = (b) => !!b.rebadeOf && !!bading(b.rebadeOf)?.deleted;
 export const feed = memo(() => state.badings.filter((b) => !b.deleted && !state.blocked.includes(b.authorId) && !orphanRebade(b)).sort((a, b) => b.createdAt - a.createdAt));
 /** Badings du moment : les plus drôles du fil (rires reçus), hors rebades ; le plus récent d'abord à égalité. */
+/** Badings épinglés par l'équipe (« bading du jour »), envoyés par le serveur avec la première page du fil : [{ id, label }]. */
+export const pins = () => state.pins ?? [];
+/** Le fil avec les badings épinglés tout en haut (dans l'ordre des épingles), puis les autres du plus récent au plus ancien. */
+export const feedWithPins = memo(() => {
+  const list = feed();
+  const rank = new Map(pins().map((p, i) => [p.id, i]));
+  if (!rank.size) return list;
+  return [...list.filter((b) => rank.has(b.id)).sort((a, b) => rank.get(a.id) - rank.get(b.id)), ...list.filter((b) => !rank.has(b.id))];
+});
+export const pinLabel = (id) => { const p = pins().find((x) => x.id === id); return p ? (p.label ?? '') : undefined; };
 export const moment = (limit = 20) => feed().filter((b) => !b.rebadeOf).sort((a, b) => (b.likes - a.likes) || (b.createdAt - a.createdAt)).slice(0, limit);
 export function displayName(b) {
   if (b.anonymous) return { name: 'Badeur anonyme', handle: null, user: null };

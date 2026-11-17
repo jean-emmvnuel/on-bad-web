@@ -123,7 +123,8 @@ export function ActionsRow({ t, onComment }) {
  * Carte « bulle » : un récit dans une bulle arrondie, l'auteur en tête, le texte sur toute la largeur.
  * Une rebade sans avis montre directement le bading d'origine, avec « X a rebadé » au-dessus.
  */
-export function BadingCard({ b }) {
+/** `pin` : bading épinglé par l'équipe en tête du fil ; la chaîne est son étiquette (vide : « Épinglé »). */
+export function BadingCard({ b, pin }) {
   const isRebade = !!b.rebadeOf;
   const plain = isRebade && !b.text;
   const origin = isRebade ? S.bading(b.rebadeOf) : b;
@@ -154,6 +155,7 @@ export function BadingCard({ b }) {
 
   return (
     <article className={`card-row bub ${t.anonymous ? 'anon' : ''}`} data-go="" tabIndex={0} onClick={goOnClick(path)} onKeyDown={goOnEnter(path)}>
+      {pin !== undefined ? <div className="rebaded pinned" data-pinned><Icon name="pin" /> {pin || 'Épinglé'}</div> : null}
       {plain ? <div className="rebaded"><Icon name="repeat" /> {who} {mine ? 'as rebadé' : 'a rebadé'}</div> : null}
       <header className="bub-head">
         {author

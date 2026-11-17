@@ -88,11 +88,11 @@ export default function Feed() {
   const ready = remote.status === 'ready';
   useLayoutEffect(() => { if (ready) animateCards(listRef.current); }, [ready]);
 
-  const items = S.feed();
+  const items = S.feedWithPins();
   let list;
   if (remote.status === 'loading') list = <Skeleton />;
   else if (remote.status === 'error') list = <ErrorState message={errorMessage(remote.error)} onRetry={remote.retry} />;
-  else list = items.length ? items.map((b) => <BadingCard key={b.id} b={b} />) : <EmptyFeed />;
+  else list = items.length ? items.map((b) => <BadingCard key={b.id} b={b} pin={S.pinLabel(b.id)} />) : <EmptyFeed />;
 
   const onRefreshed = (count) => {
     animateCards(listRef.current);

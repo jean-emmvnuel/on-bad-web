@@ -19,6 +19,8 @@ export default defineConfig({
     setupFiles: ['./tests/setup.js'],
     include: ['tests/**/*.test.{js,jsx}'],
     restoreMocks: true,
+    // Certains tests rechargent tous les modules (vi.resetModules) : sur une machine chargée ou en CI, 5 s peuvent manquer.
+    testTimeout: 20_000,
     env: { VITE_USE_BACKEND: 'false' },
   },
 });

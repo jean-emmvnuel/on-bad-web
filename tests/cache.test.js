@@ -42,7 +42,9 @@ function savedState(o = {}) {
 }
 
 beforeEach(() => { vi.spyOn(console, 'warn').mockImplementation(() => {}); });
-afterEach(() => { vi.unstubAllEnvs(); vi.unstubAllGlobals(); });
+// Le store enregistre dans le navigateur 150 ms après un changement. Sans ce « pagehide », la sauvegarde différée d'un test
+// pouvait tomber pendant le démarrage du test suivant et écraser ses données (échecs au hasard) : on la force tout de suite.
+afterEach(() => { dispatchEvent(new Event('pagehide')); vi.unstubAllEnvs(); vi.unstubAllGlobals(); });
 
 describe('Cache des badings', () => {
   it('un bading supprimé sur le serveur disparaît du fil au chargement', async () => {

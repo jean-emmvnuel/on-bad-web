@@ -174,7 +174,9 @@ export async function startVoice({ maxMs = 60_000, onTick, onLimit } = {}) {
       recorder.onstop = async () => {
         release();
         if (durationMs < MIN_VOICE_MS || !chunks.length) return resolve(null);
-        const blob = new Blob(chunks, { type: recorder.mimeType || type || 'audio/webm' });
+        // Type simple (« audio/mp4 ») : Safari annonce « audio/mp4; codecs=… » voire « video/mp4 » pour un enregistrement audio.
+        const clean = (recorder.mimeType || type || 'audio/webm').split(';')[0].trim().replace(/^video\//, 'audio/');
+        const blob = new Blob(chunks, { type: clean });
         try {
           const waveform = (await waveformOf(blob)) ?? barsFromLevels(levels);
           resolve({ dataUrl: await blobToDataUrl(blob), durationMs, waveform });

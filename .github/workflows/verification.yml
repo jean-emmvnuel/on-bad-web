@@ -1,0 +1,23 @@
+# Vérification automatique du site à chaque push et pull request : lint, tests (mode démo, sans serveur), compilation.
+name: Vérification
+on:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  verifier:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Lint
+        run: npm run lint
+      - name: Tests
+        run: npx vitest run
+      - name: Compilation
+        run: npm run build

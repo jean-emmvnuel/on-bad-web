@@ -17,6 +17,13 @@ const current = (nav, key) => (nav === key ? 'page' : undefined);
 const UNREAD_EVERY_MS = 60_000;
 
 /** Pastille des notifications non lues (« 99+ » au-delà de 99). */
+/** Cloche des notifications en haut à droite (téléphone et PWA), avec la pastille des non lues. */
+export function NotificationBell() {
+  const unread = S.unread();
+  const label = unread ? `Notifications, ${unread > 99 ? 'plus de 99' : unread} non lue${unread > 1 ? 's' : ''}` : 'Notifications';
+  return <a className="icon-btn only-mobile notif-bell" href="#/notifications" aria-label={label}><Icon name="bell" /><UnreadDot count={unread} /></a>;
+}
+
 export function UnreadDot({ count }) {
   const label = count ? `${count > 99 ? 'plus de 99' : count} notification${count > 1 ? 's' : ''} non lue${count > 1 ? 's' : ''}` : undefined;
   return <b className="dot" hidden={!count} aria-label={label}>{count ? (count > 99 ? '99+' : count) : null}</b>;
@@ -149,9 +156,8 @@ export function Shell({ nav, guest = false, viewRef, children }) {
             ? <a href="#/auth/signup"><Icon name="plus" />S'inscrire</a>
             : <a href="#/compose"><Icon name="plus" />Bader</a>}
         </div>
-        {guest
-          ? <a href="#/auth/login"><Icon name="user" /><span>Connexion</span></a>
-          : <a href="#/notifications" aria-current={current(nav, 'notifications')}><span className="tb-ic"><Icon name="bell" /><UnreadDot count={unread} /></span><span>Notifs</span></a>}
+        {/* Notifications : cloche en haut à droite du fil (NotificationBell), plus dans la barre du bas. */}
+        {guest ? <a href="#/auth/login"><Icon name="user" /><span>Connexion</span></a> : null}
         {/* Visiteur : pas d'onglet Profil (il menait à l'inscription, déjà au centre) ; la barre garde de la place. */}
         {guest ? null : <a href="#/profile" aria-current={current(nav, 'profile')}><Icon name="user" /><span>Profil</span></a>}
       </nav>

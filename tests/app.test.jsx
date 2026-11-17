@@ -180,7 +180,11 @@ describe('App React (mode démo)', () => {
 
   it('onglet « Du moment » : les badings les plus drôles, classés par rires', async () => {
     await nav('/', () => document.querySelector('.tabbar a[href="#/trending"]'));
-    expect([...document.querySelectorAll('.tabbar > a, .tabbar .bader a')].length).toBe(5);
+    expect([...document.querySelectorAll('.tabbar > a, .tabbar .bader a')].length).toBe(4); // Fil, Du moment, Bader/S'inscrire, Profil/Connexion
+    // Les notifications : cloche en haut à droite du fil (compte connecté), plus dans la barre du bas.
+    expect(document.querySelector('.tabbar a[href="#/notifications"]')).toBeNull();
+    await until(() => document.querySelector('.topbar .logo'));
+    expect(!!document.querySelector('.topbar .notif-bell[href="#/notifications"]')).toBe(!!S.get().session);
     await click(document.querySelector('.tabbar a[href="#/trending"]'));
     await until(() => location.hash === '#/trending' && $('#view [data-trending]'));
     const top = S.moment(20);

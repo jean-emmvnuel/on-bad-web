@@ -1,7 +1,7 @@
 // PWA : service worker, installation, liens dynamiques et partage vers On Bade.
 import * as S from './store.js';
 import { toast } from '../ui/toast.js';
-import { openIosInstallSheet } from '../components/InstallSheet.jsx';
+import { openInstallPrompt, openIosInstallSheet } from '../components/InstallSheet.jsx';
 import { refresh } from './router.js';
 
 let deferred = null;
@@ -27,6 +27,35 @@ export async function install() {
   }
   if (isIOS()) openIosInstallSheet();
   return 'ios';
+}
+
+// ─── Invitation à installer ───────────────────────────────
+const ASKED_KEY = 'onbade-install-asked';
+const ASK_AGAIN_MS = 7 * 24 * 3600 * 1000;
+const asked = () => { try { return Date.now() - Number(localStorage.getItem(ASKED_KEY) || 0) < ASK_AGAIN_MS; } catch { return true; } };
+const markAsked = () => { try { localStorage.setItem(ASKED_KEY, String(Date.now())); } catch { /* stockage indisponible */ } };
+/** Pas pendant l'inscription, la connexion, l'écriture d'un bading ou l'accueil. */
+const busyScreen = () => /^#\/(auth|onboarding|compose|reset-password)/.test(location.hash);
+
+/**
+ * Fenêtre « Installe On Bade » après `delay` sur le site, si l'app peut être installée (Chrome, Edge, Android : invite
+ * du navigateur ; iPhone : mode d'emploi). Une fois par semaine au plus : « Plus tard » ou une fermeture comptent.
+ */
+export function scheduleInstallPrompt(delay = 20_000) {
+  if (isStandalone() || asked()) return;
+  setTimeout(() => {
+    const tryShow = () => {
+      if (!canInstall() || asked() || document.hidden || busyScreen() || document.querySelector('.sheet')) return false;
+      markAsked();
+      openInstallPrompt({ ios: !deferred && isIOS(), onInstall: install });
+      return true;
+    };
+    if (tryShow()) return;
+    // L'invite du navigateur arrive parfois plus tard, ou l'utilisateur était sur un écran occupé : on réessaie.
+    const off = onInstallChange(() => { if (tryShow()) off(); });
+    const retry = setInterval(() => { if (tryShow() || asked()) { clearInterval(retry); off(); } }, 15_000);
+    setTimeout(() => { clearInterval(retry); off(); }, 10 * 60_000);
+  }, delay);
 }
 
 /** Lien public d'un bading. `?b=<id>` reste dans la portée de la PWA : il s'ouvre dans l'app installée. */

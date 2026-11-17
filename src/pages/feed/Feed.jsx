@@ -8,7 +8,7 @@ import { USE_BACKEND } from '../../services/mode.js';
 import { install } from '../../lib/pwa.js';
 import * as badings from '../../services/badings.js';
 import { BadingCard } from '../../components/BadingCard.jsx';
-import { useCanInstall } from '../../components/Shell.jsx';
+import { NotificationBell, useCanInstall } from '../../components/Shell.jsx';
 import { Avatar, Icon, Logo } from '../../ui/icons.jsx';
 import { toast } from '../../ui/toast.js';
 import { ErrorState, errorMessage, useRemote } from '../../ui/remote.jsx';
@@ -105,6 +105,7 @@ export default function Feed() {
         <div className="logo only-mobile"><Logo size={28} /><span>On Bade</span></div>
         <h1 className="t-heading" style={{ flex: 1 }} hidden={!desktop}>Fil d'actualité</h1>
         <button className="icon-btn only-mobile" aria-label="Installer l'app" hidden={!showInstall} onClick={install}><Icon name="download" /></button>
+        {S.get().session ? <NotificationBell /> : null}
       </header>
       <a className="prompt-card desk-only" href={S.get().session ? '#/compose' : '#/auth/login'}>
         <Avatar user={S.me()} size={44} />

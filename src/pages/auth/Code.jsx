@@ -69,7 +69,7 @@ export default function Code() {
       step={2}
       total={3}
       title="Vérifie ton e-mail"
-      subtitle={<>On a envoyé un code à 6 chiffres à <strong>{auth.pendingEmail()}</strong>. Pense à regarder dans les spams.</>}
+      subtitle={<>On a envoyé un code à 6 chiffres à <strong>{auth.pendingEmail()}</strong>. Pense à regarder dans les spams. Si cette adresse a déjà un compte, tu reçois à la place un e-mail pour te connecter.</>}
       onBack={() => back('/auth/signup')}
       foot={(
         <button className="btn btn-primary btn-block" disabled={code.length !== 6 || pending} aria-busy={pending || undefined} onClick={() => submit()}>

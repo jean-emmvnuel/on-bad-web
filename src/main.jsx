@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { gsap } from 'gsap';
 import './styles/style.css';
 import { reduceMotion } from './lib/motion.js';
-import { consumeLaunchParams, isStandalone, registerSW } from './lib/pwa.js';
+import { consumeLaunchParams, isStandalone, registerSW, scheduleInstallPrompt } from './lib/pwa.js';
 import { App, preloadPages } from './App.jsx';
 import { watchPlatform } from './lib/platform.js';
 
@@ -23,6 +23,8 @@ watchPlatform(); // mode maintenance réglé dans le back-office
 
 // Service worker seulement sur le site construit (en développement, il garderait d'anciens fichiers en cache).
 if (import.meta.env.PROD) registerSW();
+// Invitation à installer l'app (une fois par semaine au plus).
+scheduleInstallPrompt();
 
 // Bord de défilement : la séparation sous la barre du haut n'apparaît que quand le contenu passe dessous.
 let edgeRaf = 0;

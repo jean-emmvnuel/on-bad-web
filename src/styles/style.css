@@ -538,6 +538,8 @@ button.c-sticker:hover .stk { transform: rotate(var(--rot, 0deg)) scale(1.04); }
 
 /* Onglet Notifications de la barre du bas (mobile) */
 .tabbar .tb-ic { position: relative; display: inline-flex; }
+.notif-bell { position: relative; color: var(--text); }
+.notif-bell .dot { position: absolute; top: 2px; left: 20px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--brand); color: #fff; font-size: 11px; font-weight: 700; line-height: 18px; text-align: center; border: 2px solid var(--bg); box-sizing: content-box; }
 .tabbar .tb-ic .dot { position: absolute; top: -5px; left: 14px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--brand); color: #fff; font-size: 11px; font-weight: 700; line-height: 18px; text-align: center; border: 2px solid var(--bg); box-sizing: content-box; }
 
 /* ───────────── Profil : carte d'identité sobre, onglets en segments ───────────── */
@@ -654,3 +656,12 @@ body.scrolled .topbar { border-bottom-color: rgba(255, 255, 255, 0.06); box-shad
 .otp-input { font-size: 28px; font-weight: 700; letter-spacing: 0.4em; font-variant-numeric: tabular-nums; text-align: center; }
 .otp-resend { color: var(--brand-ink); font: inherit; font-weight: 600; padding: 0; background: none; border: 0; cursor: pointer; }
 .otp-resend:disabled { color: var(--text-3); cursor: default; }
+
+/* Invitation à installer l'app (PWA) */
+.install-prompt { text-align: center; align-items: center; padding-bottom: 8px; }
+.install-hero { width: 88px; height: 88px; border-radius: 24px; background: var(--surface-2); display: grid; place-items: center; }
+.install-perks { list-style: none; display: flex; flex-direction: column; gap: 10px; text-align: left; color: var(--text-2); width: 100%; }
+.install-perks li { display: flex; gap: 10px; align-items: center; }
+.install-perks svg { width: 18px; height: 18px; color: var(--brand-ink); flex: none; }
+.install-actions { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+.install-prompt .steps { text-align: left; width: 100%; }

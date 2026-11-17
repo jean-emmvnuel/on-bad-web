@@ -52,7 +52,7 @@ let S;
 
 beforeAll(async () => {
   vi.stubEnv('VITE_USE_BACKEND', 'true');
-  vi.stubEnv('VITE_BACKEND_CONTENT', 'true'); // routes du contenu proposées dans API.md
+  vi.stubEnv('VITE_BACKEND_CONTENT', 'true'); // routes du contenu (docs/API.md du serveur)
   vi.resetModules();
   window.scrollTo = () => {};
   vi.stubGlobal('fetch', vi.fn(async (url, init = {}) => {

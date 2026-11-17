@@ -43,6 +43,17 @@ Ce dépôt est la **version web** de l'app mobile ([jean-emmvnuel/jebade](https:
 | 🔗 | **Liens dynamiques** `…/?b=<id>` : ils s'ouvrent dans l'app installée, sinon sur le site, directement sur le bading |
 | ♿ | Clavier, focus visibles, libellés ARIA, `prefers-reduced-motion` respecté |
 
+## 🧩 Les 4 projets On Bade
+
+| Projet | Dépôt |
+|---|---|
+| Serveur / API | [`growthman7/onbad-backend`](https://github.com/growthman7/onbad-backend) |
+| **Site web** (ce dépôt) | [`jean-emmvnuel/on-bad-web`](https://github.com/jean-emmvnuel/on-bad-web) |
+| Back-office | [`jean-emmvnuel/on-bade-admin`](https://github.com/jean-emmvnuel/on-bade-admin) |
+| App mobile | [`jean-emmvnuel/on-bade-mobile`](https://github.com/jean-emmvnuel/on-bade-mobile) |
+
+📐 Comment ils s'articulent : [ARCHITECTURE.md](https://github.com/growthman7/onbad-backend/blob/main/docs/ARCHITECTURE.md) · 🔌 Toutes les routes de l'API : [API.md](https://github.com/growthman7/onbad-backend/blob/main/docs/API.md) (générée depuis le code du serveur).
+
 ## 🚀 Lancer
 
 ```bash
@@ -58,7 +69,7 @@ Réglages dans un fichier `.env` (copie de [`.env.example`](.env.example)) ; `np
 |---|---|
 | `VITE_API_URL` | Adresse du backend (par défaut `http://localhost:3000/api`) |
 | `VITE_USE_BACKEND` | `true` : connexion et inscription par le backend Next.js ; `false` : mode démo, tout est simulé dans le navigateur (`localStorage`) |
-| `VITE_BACKEND_CONTENT` | `true` (par défaut) : le fil, les commentaires, le profil… viennent aussi du backend (routes décrites dans [`API.md`](API.md)) ; `false` : seule la connexion passe par le backend |
+| `VITE_BACKEND_CONTENT` | `true` (par défaut) : le fil, les commentaires, le profil… viennent aussi du backend (routes décrites dans la [référence de l'API](https://github.com/growthman7/onbad-backend/blob/main/docs/API.md)) ; `false` : seule la connexion passe par le backend |
 
 En mode démo, crée un compte avec n'importe quel e-mail. Pour repartir de zéro : `localStorage.removeItem('jebade-web-v1')` dans la console.
 
@@ -116,3 +127,10 @@ npm run test:watch  # en continu
 | `tests/helpers.test.jsx` | Choix d’image (formats, 10 Mo), stickers, échappement du HTML, avatars |
 | `tests/app.test.jsx` | Parcours complet de l’app React en mode démo : accueil, inscription, fil, rire, commentaire, publication, profil, notifications, paramètres, déconnexion |
 | `tests/backend.test.jsx` | L’app branchée sur un faux backend : connexion, fil chargé du serveur, rire envoyé, bading introuvable (404), erreur serveur puis « Réessayer » |
+
+## Ce qui reste dans le navigateur
+
+- **Copie de mes données (PDF)** (`src/lib/export.js`) : générée dans le navigateur, après avoir chargé `GET /me/export`.
+- **Brouillon** et **fin de l'onboarding** : restent volontairement dans le navigateur.
+- Les actions des cartes (rire, rebade, partage, favori, signalement, blocage, suppression) passent par le serveur : l'écran
+  change tout de suite, puis revient en arrière si le serveur refuse.

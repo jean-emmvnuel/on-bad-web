@@ -20,7 +20,7 @@ export const USE_BACKEND = env.VITE_USE_BACKEND !== 'false';
 
 /**
  * Fil, badings, commentaires, profil, notifications, stickers… servis par le backend (toutes les routes
- * de API.md existent). VITE_BACKEND_CONTENT=false garde ce contenu simulé dans le navigateur (démo).
+ * de la référence docs/API.md du serveur existent). VITE_BACKEND_CONTENT=false garde ce contenu simulé dans le navigateur (démo).
  */
 export const BACKEND_CONTENT = USE_BACKEND && env.VITE_BACKEND_CONTENT !== 'false';
 
@@ -169,7 +169,7 @@ const del = (path) => request(path, { method: 'DELETE' });
 const id = encodeURIComponent;
 
 // ─── Routes ───────────────────────────────────────────────
-// Le format attendu de chaque réponse est décrit dans API.md.
+// Le format attendu de chaque réponse est décrit dans docs/API.md du serveur (générée depuis ses routes).
 
 // Authentification
 export const register = (userData) => post('/register', userData); // { firstname, lastname, username, email, password, emailToken } → { token, user }

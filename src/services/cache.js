@@ -1,6 +1,6 @@
 // Range les réponses du backend dans le store, qui sert de cache local.
 // Les vues continuent de lire le store de façon synchrone (S.feed(), S.bading(id)…) : seules les
-// données changent de provenance. Les objets du serveur ont la même forme que ceux du store (voir API.md).
+// données changent de provenance. Les objets du serveur ont la même forme que ceux du store (voir docs/API.md du serveur).
 import * as S from '../lib/store.js';
 import { BACKEND_CONTENT, USE_BACKEND as AUTH_ON_SERVER, getToken, setToken, tokenExpired } from '../lib/api.js';
 

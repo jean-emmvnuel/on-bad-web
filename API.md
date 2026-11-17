@@ -47,7 +47,7 @@ Codes métier reconnus par les écrans :
 | `taken` | 409 | Changement de pseudo |
 | `invalid_pseudo`, `invalid_email`, `weak_password`, `invalid_name` | 400 | Inscription |
 | `session_expired`, `invalid_token`, `unauthorized` | 401 | Toute route connectée |
-| `too_short`, `too_long`, `caption_too_long`, `too_many_mentions`, `blocked_word`, `daily_limit` | 422 | Publication d'un bading |
+| `too_short`, `too_long`, `caption_too_long`, `too_many_mentions`, `blocked_word` | 422 | Publication d'un bading |
 | `blocked_word` | 422 | Commentaire |
 | `full` | 422 | Stickers : collection pleine |
 | `not_eligible`, `too_soon`, `invalid_links`, `missing_document` | 422 | Demande de badge vérifié |

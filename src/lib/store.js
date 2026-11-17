@@ -4,7 +4,7 @@
 const d = 86_400_000;
 export const ME = 'me';
 
-export const RULES = { minLength: 10, maxLength: 1000, captionMax: 280, myStickersMax: 1000, opinionMax: 280, commentMax: 500, dailyLimit: 20, maxMentions: 5, badge: { activeDays: 30, minLaughs: 1000 }, badgeRetryDays: 30, deletionDays: 30 };
+export const RULES = { minLength: 10, maxLength: 1000, captionMax: 280, myStickersMax: 1000, opinionMax: 280, commentMax: 500, maxMentions: 5, badge: { activeDays: 30, minLaughs: 1000 }, badgeRetryDays: 30, deletionDays: 30 };
 /** Identifiant unique, même pour deux actions dans la même milliseconde. */
 let seq = 0;
 export const uid = (prefix) => `${prefix}${Date.now().toString(36)}${(seq++).toString(36)}`;
@@ -205,13 +205,12 @@ export function threads(badingId) {
 export const searchPseudos = (q) => Object.values(state.users).filter((u) => u.id !== ME && !state.blocked.includes(u.id) && u.pseudo.toLowerCase().startsWith(q.toLowerCase())).slice(0, 5);
 export const countMentions = (t) => (t.match(/@[\w.]+/g) ?? []).length;
 
-/** F1 RG1 : le texte est obligatoire (10 caractères min.) seulement s'il n'y a pas d'image. */
+/** F1 RG1 : le texte est obligatoire (10 caractères min.) seulement s'il n'y a pas d'image. Pas de limite de badings par jour. */
 export function validate(text, hasImage = false) {
   const t = text.trim();
   if (!hasImage && t.length < RULES.minLength) return 'too_short';
   if (t.length > (hasImage ? RULES.captionMax : RULES.maxLength)) return hasImage ? 'caption_too_long' : 'too_long';
   if (countMentions(t) > RULES.maxMentions) return 'too_many_mentions';
-  if (state.postedToday >= RULES.dailyLimit) return 'daily_limit';
   if (BANNED.some((w) => t.toLowerCase().includes(w))) return 'blocked_word';
   return null;
 }

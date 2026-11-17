@@ -28,9 +28,9 @@ describe('Publication d’un bading (F1)', () => {
     expect(S.validate('@a @b @c @d @e bonjour à tous')).toBeNull();
     expect(S.validate('@a @b @c @d @e @f bonjour à tous')).toBe('too_many_mentions');
   });
-  it('limite à 20 badings par jour', () => {
-    S.get().postedToday = 20;
-    expect(S.validate('Une histoire assez longue')).toBe('daily_limit');
+  it('aucune limite de badings par jour', () => {
+    S.get().postedToday = 500;
+    expect(S.validate('Une histoire assez longue')).toBeNull();
   });
   it('publie en tête du fil, avec compteurs à zéro, et vide le brouillon', () => {
     S.setDraft({ text: 'brouillon', anonymous: true, image: null });

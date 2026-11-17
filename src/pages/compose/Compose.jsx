@@ -16,7 +16,6 @@ const PUBLISH_ERRORS = {
   too_short: `Encore un peu : un bading fait au moins ${S.RULES.minLength} caractères.`,
   too_long: `Trop long : ${S.RULES.maxLength} caractères maximum.`,
   caption_too_long: `Avec une image, la légende fait ${S.RULES.captionMax} caractères maximum.`,
-  daily_limit: `Tu as atteint ${S.RULES.dailyLimit} badings aujourd'hui. Reviens demain !`,
   blocked_word: 'Un mot de ton bading n’est pas accepté par la charte. Reformule-le.',
   too_many_mentions: `${S.RULES.maxMentions} mentions maximum par bading.`,
 };
@@ -95,7 +94,6 @@ export default function Compose() {
   const length = text.trim().length;
   const tooLong = length > max;
   const canPublish = image ? !tooLong : length >= S.RULES.minLength && !tooLong;
-  const left = S.RULES.dailyLimit - S.get().postedToday;
 
   // ─── @mentions ───
 
@@ -192,7 +190,7 @@ export default function Compose() {
           </div>
           <div className="t-small">
             <span style={{ color: 'var(--text-3)' }}>
-              {left <= 5 ? `Encore ${Math.max(0, left)} bading${left > 1 ? 's' : ''} aujourd'hui` : 'Tape @ pour mentionner quelqu’un'}
+              Tape @ pour mentionner quelqu’un
             </span>
           </div>
         </div>

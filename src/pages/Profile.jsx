@@ -113,7 +113,7 @@ function usePhotoActions(fileRef) {
     e.target.value = '';
     try {
       const src = await readImageFile(file);
-      const result = await openCropper(src, {}, { ratios: ['1:1'], outMax: 400, title: 'Photo de profil', round: true });
+      const result = await openCropper(src, {}, { ratios: ['1:1'], outMax: 256, title: 'Photo de profil', round: true });
       if (!result) return;
       toast('Envoi de la photo…');
       await account.setPhoto(result.dataUrl);

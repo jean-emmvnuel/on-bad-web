@@ -8,9 +8,12 @@ export const VIDEO_ACCEPT = 'video/mp4,video/webm,video/quicktime,video/*';
 export const MAX_VIDEO_BYTES = 200 * 1024 * 1024;
 export const GIF_MAX_SECONDS = 4;
 export const GIF_MIN_SECONDS = 0.5;
-/** Le serveur accepte 5 Mo par image : on vise moins, et on réduit si besoin. */
-const TARGET_BYTES = 4.5 * 1024 * 1024;
-const ATTEMPTS = [{ side: 320, fps: 10 }, { side: 256, fps: 8 }, { side: 200, fps: 7 }];
+/**
+ * Un sticker est affiché en petit mais rechargé par tous ceux qui le voient : on vise 1 Mo (le serveur refuse au-delà
+ * de 1,5 Mo), et on réduit taille et fluidité si besoin.
+ */
+export const TARGET_BYTES = 1024 * 1024;
+export const ATTEMPTS = [{ side: 240, fps: 10 }, { side: 200, fps: 8 }, { side: 160, fps: 7 }, { side: 128, fps: 6 }];
 
 const fail = (message) => Object.assign(new Error(message), { userMessage: message });
 

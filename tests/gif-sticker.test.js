@@ -29,3 +29,12 @@ describe('Sticker GIF', () => {
     expect(new TextDecoder().decode(gif.bytes().slice(0, 6))).toBe('GIF89a');
   });
 });
+
+describe('Sticker GIF léger', () => {
+  it('vise 1 Mo au plus, en commençant à 240 px', async () => {
+    const { TARGET_BYTES, ATTEMPTS } = await import('../src/ui/gifSticker.js');
+    expect(TARGET_BYTES).toBeLessThanOrEqual(1024 * 1024);
+    expect(ATTEMPTS[0].side).toBeLessThanOrEqual(240);
+    expect(ATTEMPTS.map((a) => a.side)).toEqual([...ATTEMPTS.map((a) => a.side)].sort((a, b) => b - a));
+  });
+});

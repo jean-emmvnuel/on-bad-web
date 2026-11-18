@@ -20,7 +20,7 @@ export function readImageFile(file) {
 
 /**
  * Ouvre l'éditeur plein écran. `src` = data URL de l'original.
- * `opts.ratios` (['4:5', '1:1'] ; ['libre', '1:1'] pour un sticker ; ['1:1'] pour une photo de profil), `opts.outMax` (1 080 ; 512 sticker ; 400 photo),
+ * `opts.ratios` (['4:5', '1:1'] ; ['libre', '1:1'] pour un sticker ; ['1:1'] pour une photo de profil), `opts.outMax` (1 080 ; 512 sticker ; 256 photo),
  * `opts.fitLongest` (outMax s'applique au plus grand côté, pas à la largeur : sticker),
  * `opts.title`, `opts.round` (aperçu rond pour la photo de profil).
  * Résout { dataUrl, ratio, w, h, crop } (crop = réglages pour rouvrir l'éditeur) ou null si annulé.

@@ -1,13 +1,14 @@
 // État de la plateforme réglé dans le back-office (GET /api/platform) : le mode maintenance et les règles chiffrées
 // (longueurs, mentions, stickers, durée des vocaux…).
-// Lu au démarrage, puis chaque minute et au retour sur l'onglet ; une réponse « maintenance » (503)
+// Lu au démarrage, puis toutes les 5 minutes et au retour sur l'onglet ; une réponse « maintenance » (503)
 // du serveur à n'importe quelle requête bascule aussi tout de suite sur l'écran de maintenance.
 import { useSyncExternalStore } from 'react';
 import * as api from './api.js';
 import { RULES } from './store.js';
 import { USE_BACKEND } from '../services/mode.js';
 
-const EVERY_MS = 60_000;
+// Toutes les 5 minutes suffisent : une requête qui reçoit « maintenance » (503) bascule déjà l'écran sans attendre.
+const EVERY_MS = 5 * 60_000;
 const DEFAULT_MESSAGE = 'On Bade fait une petite pause, on revient vite 😅';
 
 let state = { maintenance: false, message: DEFAULT_MESSAGE };
@@ -53,8 +54,15 @@ let started = false;
 export function watchPlatform() {
   if (started || !USE_BACKEND) return;
   started = true;
+  let last = Date.now();
+  const refresh = (minGap) => {
+    if (document.visibilityState !== 'visible' || Date.now() - last < minGap) return;
+    last = Date.now();
+    refreshPlatform();
+  };
   refreshPlatform();
-  setInterval(() => { if (document.visibilityState === 'visible') refreshPlatform(); }, EVERY_MS);
-  addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') refreshPlatform(); });
+  setInterval(() => refresh(0), EVERY_MS);
+  // Retour sur l'onglet : relu seulement si la dernière lecture date d'au moins une minute (allers-retours rapides).
+  addEventListener('visibilitychange', () => refresh(60_000));
   addEventListener('onbade:maintenance', (e) => set({ maintenance: true, message: e.detail?.message || DEFAULT_MESSAGE }));
 }

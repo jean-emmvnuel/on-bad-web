@@ -64,16 +64,21 @@ self.addEventListener('fetch', (e) => {
   }
 });
 
-// Notification push du serveur (app fermée ou en arrière-plan) : { title, body, path, tag }.
+// Notification push du serveur (app fermée ou en arrière-plan) : { title, body, path, tag, requireInteraction?, important? }.
+// Annonce de l'équipe (important) : reste à l'écran jusqu'à ce qu'on la touche ou la ferme, vibre et sonne même si une
+// notification du même sujet était déjà là. iPhone : ces options sont ignorées par Safari (affichage normal).
 self.addEventListener('push', (e) => {
   let data = {};
   try { data = e.data ? e.data.json() : {}; } catch { data = { body: e.data?.text() }; }
   const title = data.title || 'On Bade';
+  const important = !!data.important;
   e.waitUntil(self.registration.showNotification(title, {
     body: data.body || '',
     icon: 'assets/icon-192.png',
     badge: 'assets/icon-192.png',
     tag: data.tag,
+    requireInteraction: !!data.requireInteraction,
+    ...(important ? { renotify: !!data.tag, vibrate: [200, 100, 200, 100, 300], actions: [{ action: 'open', title: 'Lire l’annonce' }] } : {}),
     data: { path: data.path || '/notifications' },
   }));
 });

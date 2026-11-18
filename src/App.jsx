@@ -7,6 +7,7 @@ import { syncPush } from './lib/push.js';
 import { usePlatform } from './lib/platform.js';
 import { Maintenance } from './components/Maintenance.jsx';
 import { NotifPrompt } from './components/NotifPrompt.jsx';
+import { AnnouncementGate } from './components/AnnouncementGate.jsx';
 import { isStandalone } from './lib/pwa.js';
 import { project, reduceMotion, spring, velocityTracker } from './lib/motion.js';
 import { logOut } from './services/auth.js';
@@ -255,5 +256,5 @@ export function App() {
 }
 
 function Hosts() {
-  return <><SheetHost /><ToastHost /><OverlayHost /><NotifPrompt /></>;
+  return <><SheetHost /><ToastHost /><OverlayHost /><NotifPrompt /><AnnouncementGate /></>;
 }

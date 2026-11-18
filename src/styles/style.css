@@ -719,3 +719,13 @@ body.scrolled .topbar { border-bottom-color: rgba(255, 255, 255, 0.06); box-shad
 .rec-wave { flex: 0 1 auto; display: flex; align-items: center; gap: 2px; height: 26px; min-width: 0; overflow: hidden; }
 .rec-wave i { width: 3px; flex: none; border-radius: 2px; background: var(--danger); }
 .rec-hint { flex: 1; text-align: right; font-size: 12px; color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Annonce de l'équipe non lue : en grand, ne se ferme que par « J'ai compris » (components/AnnouncementGate.jsx) */
+.announce-scrim { position: fixed; inset: 0; z-index: 90; display: grid; place-items: center; padding: 20px; background: rgba(8, 6, 12, 0.72); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); animation: announce-in .2s ease-out; }
+.announce-card { width: min(100%, 440px); max-height: calc(100dvh - 40px); overflow: auto; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; padding: 28px 22px 22px; border-radius: var(--r-xl, 28px); background: var(--surface); border: 1px solid var(--line); box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6); }
+.announce-icon { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; background: var(--brand); color: #fff; box-shadow: 0 10px 30px rgba(152, 16, 230, 0.5); margin-bottom: 4px; }
+.announce-icon svg { width: 30px; height: 30px; }
+.announce-kicker { font-size: 12px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--brand-ink); }
+.announce-body { color: var(--text-2); line-height: 1.5; white-space: pre-line; overflow-wrap: anywhere; margin-bottom: 8px; }
+@keyframes announce-in { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .announce-scrim { animation: none; } }

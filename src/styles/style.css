@@ -54,6 +54,10 @@ a.mention:hover, a.user-link:hover { text-decoration: underline; }
 /* ───────────── Splash ───────────── */
 #splash { position: fixed; inset: 0; z-index: 100; background: var(--bg); display: grid; place-items: center; }
 #splash-mouth { transform-origin: 57% 57%; transform-box: view-box; }
+#splash { overflow: hidden; }
+#splash-mark { position: relative; z-index: 1; }
+/* Les « ha ha » du b qui traversent l'écran (créés par main.jsx) */
+.splash-ha { position: absolute; left: 50%; top: 50%; font-family: var(--font-display); font-weight: 800; letter-spacing: -0.02em; white-space: nowrap; pointer-events: none; z-index: 2; will-change: transform, opacity; text-shadow: 0 4px 18px rgba(0, 0, 0, 0.35); }
 
 /* ───────────── Layout ───────────── */
 /* Mobile : une colonne + barre d'onglets (comme l'app). Ordinateur : barre du haut + 3 colonnes. */

@@ -15,7 +15,7 @@ const PAD = 20;
 const HANDLES = ['nw', 'ne', 'sw', 'se'];
 
 export function Cropper({ img, initial = {}, opts = {}, onClose }) {
-  const { ratios = ['4:5', '1:1'], outMax = 1080, fitLongest = false, title = 'Recadrer', round = false, minRatio = 0, maxRatio = Infinity } = opts;
+  const { ratios = ['4:5', '1:1'], outMax = 1080, fitLongest = false, title = 'Recadrer', round = false, minRatio = 0, maxRatio = Infinity, format = 'image/jpeg' } = opts;
   const bound = (r) => Math.min(maxRatio, Math.max(minRatio, r));
   const RATIOS = ALL_RATIOS.filter((r) => ratios.includes(r[0]));
 
@@ -100,12 +100,15 @@ export function Cropper({ img, initial = {}, opts = {}, onClose }) {
     out.width = ow; out.height = oh;
     const o = out.getContext('2d');
     o.imageSmoothingQuality = 'high';
-    o.fillStyle = '#1a1919';
-    o.fillRect(0, 0, ow, oh);
+    // JPEG : fond sombre derrière les zones transparentes. WebP (sticker) : la transparence est gardée.
+    if (format === 'image/jpeg') { o.fillStyle = '#1a1919'; o.fillRect(0, 0, ow, oh); }
     o.drawImage(full, sx, sy, sw, sh, 0, 0, ow, oh);
+    let dataUrl = out.toDataURL(format, format === 'image/jpeg' ? 0.84 : 0.9);
+    // Navigateur qui ne sait pas écrire ce format (WebP sur un vieux Safari) : PNG, transparent aussi.
+    if (!dataUrl.startsWith(`data:${format}`)) dataUrl = out.toDataURL('image/png');
     // rect : zone choisie dans l'image tournée (pixels d'origine), pour appliquer le même recadrage
     // à toutes les images d'une vidéo (sticker GIF).
-    return { dataUrl: out.toDataURL('image/jpeg', 0.84), ratio: bound(ow / oh), w: ow, h: oh, rect: { sx, sy, sw, sh }, crop: { ratioKey: m.ratioKey, rot: m.rot } };
+    return { dataUrl, ratio: bound(ow / oh), w: ow, h: oh, rect: { sx, sy, sw, sh }, crop: { ratioKey: m.ratioKey, rot: m.rot } };
   }
 
   const close = (value) => {

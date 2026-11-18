@@ -8,7 +8,8 @@ import { requireSession } from '../../lib/access.js';
 import { reduceMotion } from '../../lib/motion.js';
 import { STICKERS, THEMES, sticker as builtinSticker } from '../../lib/stickers.js';
 import * as stickers from '../../services/stickers.js';
-import { ACCEPT, openCropper, readImageFile } from '../../ui/cropper.js';
+import { openCropper } from '../../ui/cropper.js';
+import { STICKER_ACCEPT, readStickerFile } from '../../ui/stickerFile.js';
 import { VIDEO_ACCEPT, frameDataUrl, loadVideo, makeGif, openVideoTrim } from '../../ui/gifSticker.js';
 import { Icon } from '../../ui/icons.jsx';
 import { Sticker } from '../../ui/Sticker.jsx';
@@ -19,6 +20,7 @@ import { toastError, toastFileOrServerError } from '../../ui/remote.jsx';
 const stickerErrors = () => ({
   full: `${S.compact(S.RULES.myStickersMax)} stickers maximum : retire-en un d’abord.`,
   storage: 'Plus de place dans ce navigateur pour un nouveau sticker : retire-en quelques-uns.',
+  invalid_sticker: 'Format non accepté : WebP, PNG ou GIF.',
 });
 
 // ─── Fiche d'un sticker touché dans un commentaire ────────
@@ -87,18 +89,24 @@ export function StickerPicker({ onPick }) {
     stickers.load().catch((error) => console.warn('[stickers]', error));
   }, []);
 
-  const createFromPhoto = async (e) => {
+  // Sticker à partir d'un fichier : WebP, PNG ou GIF (stickers WhatsApp, GIF…), ou une photo.
+  // Animé : envoyé tel quel (animation et transparence gardées). Fixe : recadré, puis enregistré en WebP transparent.
+  const createFromFile = async (e) => {
     const file = e.target.files?.[0];
     e.target.value = '';
     try {
-      const src = await readImageFile(file);
-      // Forme libre (cadre réglable), ou carré si on le choisit ; 512 px au plus sur le plus grand côté.
-      const cropped = await openCropper(src, {}, { ratios: ['libre', '1:1'], outMax: 512, fitLongest: true, title: 'Créer un sticker' });
-      if (!cropped) return;
+      const picked = await readStickerFile(file);
+      let dataUrl = picked.dataUrl;
+      if (!picked.animated) {
+        // Forme libre (cadre réglable), ou carré si on le choisit ; 512 px au plus sur le plus grand côté.
+        const cropped = await openCropper(picked.src, {}, { ratios: ['libre', '1:1'], outMax: 512, fitLongest: true, title: 'Créer un sticker', format: 'image/webp' });
+        if (!cropped) return;
+        dataUrl = cropped.dataUrl;
+      }
       toast('Création du sticker…');
-      await stickers.create(cropped.dataUrl);
+      await stickers.create(dataUrl);
       setTab('mine');
-      toast('Sticker créé et ajouté à tes stickers');
+      toast(picked.animated ? 'Sticker animé ajouté à tes stickers' : 'Sticker créé et ajouté à tes stickers');
     } catch (error) {
       toastFileOrServerError(error, stickerErrors());
     }
@@ -142,7 +150,7 @@ export function StickerPicker({ onPick }) {
   let empty = null;
   if (!ids.length) {
     empty = isMine
-      ? <p className="t-small muted sp-empty">Crée un sticker avec une photo ou un GIF à partir d’une vidéo, ou touche le sticker d’un Badeur dans les commentaires pour l’ajouter ici.</p>
+      ? <p className="t-small muted sp-empty">Importe un sticker (WebP, PNG ou GIF, ceux de WhatsApp par exemple), crée-en un avec une photo ou un GIF à partir d’une vidéo, ou touche le sticker d’un Badeur dans les commentaires pour l’ajouter ici.</p>
       : <p className="t-small muted sp-empty">Tes stickers récents apparaîtront ici.</p>;
   }
 
@@ -158,9 +166,9 @@ export function StickerPicker({ onPick }) {
       <div className="sp-grid">
         {isMine ? (
           <>
-            <label className="sp-create" title="Créer un sticker à partir d'une photo">
-              <Icon name="plus" /><span>Photo</span>
-              <input type="file" accept={ACCEPT} hidden onChange={createFromPhoto} />
+            <label className="sp-create" title="Importer un sticker (WebP, PNG, GIF) ou créer à partir d'une photo">
+              <Icon name="plus" /><span>Image</span>
+              <input type="file" accept={STICKER_ACCEPT} hidden onChange={createFromFile} />
             </label>
             <label className="sp-create" title="Créer un sticker GIF à partir d'un extrait vidéo">
               <b className="sp-gif">GIF</b><span>Vidéo</span>

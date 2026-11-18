@@ -302,7 +302,14 @@ export function toggleFavorite(id) {
 }
 export function block(uid) { if (!state.blocked.includes(uid)) state.blocked.push(uid); commit(); }
 export function unblock(uid) { state.blocked = state.blocked.filter((x) => x !== uid); commit(); }
-export function changePseudo(p) { state.users[ME].pseudo = p; state.users[ME].verified = false; syncMe(); commit(); }
+export function changePseudo(p) {
+  const me = state.users[ME];
+  if (p.toLowerCase() !== me.pseudo.toLowerCase()) me.pseudoChangeableAt = Date.now() + PSEUDO_CHANGE_GAP_MS;
+  me.pseudo = p; me.verified = false; syncMe(); commit();
+}
+export function changeName(firstName, lastName) { Object.assign(state.users[ME], { firstName, lastName }); syncMe(); commit(); }
+/** Délai entre deux changements de pseudo (même règle que le serveur). */
+export const PSEUDO_CHANGE_GAP_MS = 48 * 3_600_000;
 /** Photo de profil : JPEG carré 400 px (data URL) ou null pour la retirer. En prod : upload puis URL du CDN. */
 export function setPhoto(src) { if (src) state.users[ME].photo = src; else delete state.users[ME].photo; syncMe(); commit(); }
 /**

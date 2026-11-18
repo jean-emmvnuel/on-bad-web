@@ -43,6 +43,8 @@ export function fromServerUser(u) {
   if (photo) user.photo = photo;
   if (u.firstName) user.firstName = u.firstName;
   if (u.lastName) user.lastName = u.lastName;
+  // Mon profil seulement : pseudo changé il y a moins de 48 h → date du prochain changement possible (0 = tout de suite).
+  if ('email' in u) user.pseudoChangeableAt = Number(u.pseudoChangeableAt) || 0;
   if (Number.isFinite(joinedAt)) user.joinedAt = joinedAt;
   return user;
 }

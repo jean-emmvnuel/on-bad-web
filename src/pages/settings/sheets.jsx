@@ -1,4 +1,4 @@
-// Feuilles des Paramètres : modifier le pseudo, demander le badge vérifié, supprimer son compte.
+// Feuilles des Paramètres : modifier le pseudo, le prénom et le nom, demander le badge vérifié, supprimer son compte.
 import { useEffect, useState } from 'react';
 import * as S from '../../lib/store.js';
 import * as account from '../../services/account.js';
@@ -22,6 +22,9 @@ function PseudoSheet() {
   const [check, setCheck] = useState({ ok: false, message: '', error: false });
   const [pending, run] = usePending();
   const pseudo = value.trim();
+  // Pseudo changé il y a moins de 48 h : seul un changement de majuscules reste possible d'ici là.
+  const waitUntil = me.pseudoChangeableAt > Date.now() ? me.pseudoChangeableAt : 0;
+  const blocked = !!waitUntil && pseudo.toLowerCase() !== me.pseudo.toLowerCase();
 
   // Le format se vérifie tout de suite ; la disponibilité est demandée au serveur après une courte pause.
   useEffect(() => {
@@ -66,17 +69,66 @@ function PseudoSheet() {
           <input id="np" maxLength={20} autoCapitalize="off" value={value} onChange={(e) => setValue(e.target.value)} />
         </div>
         <p className={check.error ? 'error' : 'hint'}>{check.message}</p>
-        {check.error ? null : <p className="hint">{PSEUDO_RULES}</p>}
+        {check.error ? null : <p className="hint">{PSEUDO_RULES} Un changement tous les 2 jours au plus.</p>}
       </div>
+      {waitUntil ? <p className="error" data-pseudo-wait>Tu as changé de pseudo récemment : prochain changement possible {nextChange(waitUntil)}.</p> : null}
       {me.verified ? <p className="error">Ton badge vérifié sera retiré : il faudra le redemander.</p> : null}
-      <button className="btn btn-primary btn-block" disabled={!check.ok || pending} aria-busy={pending || undefined} onClick={save}>
+      <button className="btn btn-primary btn-block" disabled={!check.ok || blocked || pending} aria-busy={pending || undefined} onClick={save}>
         {pending ? 'Enregistrement…' : 'Enregistrer'}
       </button>
     </div>
   );
 }
 
+/** « le 20 novembre à 14:05 » */
+export const nextChange = (ms) => `le ${new Date(ms).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })} à ${new Date(ms).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`;
+
 export const openPseudoSheet = () => openSheet(<PseudoSheet />, { title: 'Modifier le pseudo' });
+
+// ─── Prénom et nom ────────────────────────────────────────
+
+const NAME_MAX = 50;
+
+function NameSheet() {
+  const me = S.me();
+  const [first, setFirst] = useState(me.firstName ?? '');
+  const [last, setLast] = useState(me.lastName ?? '');
+  const [error, setError] = useState('');
+  const [pending, run] = usePending();
+  const f = first.trim(), l = last.trim();
+  const changed = f !== (me.firstName ?? '') || l !== (me.lastName ?? '');
+  const valid = f.length > 0 && l.length > 0;
+
+  const save = () => run(async () => {
+    try {
+      await account.changeName(f, l);
+    } catch (e) {
+      setError(errorMessage(e));
+      return;
+    }
+    closeSheet();
+    toast('Prénom et nom modifiés');
+  });
+
+  return (
+    <div className="pad">
+      <div className="field">
+        <label htmlFor="fn">Prénom</label>
+        <div className={`input ${!f ? 'err' : ''}`}><input id="fn" maxLength={NAME_MAX} autoComplete="given-name" value={first} onChange={(e) => { setFirst(e.target.value); setError(''); }} /></div>
+      </div>
+      <div className="field">
+        <label htmlFor="ln">Nom</label>
+        <div className={`input ${!l ? 'err' : ''}`}><input id="ln" maxLength={NAME_MAX} autoComplete="family-name" value={last} onChange={(e) => { setLast(e.target.value); setError(''); }} /></div>
+        <p className={error ? 'error' : 'hint'}>{error || 'Visibles seulement par toi : sur On Bade, les autres voient ton pseudo.'}</p>
+      </div>
+      <button className="btn btn-primary btn-block" data-save-name disabled={!valid || !changed || pending} aria-busy={pending || undefined} onClick={save}>
+        {pending ? 'Enregistrement…' : 'Enregistrer'}
+      </button>
+    </div>
+  );
+}
+
+export const openNameSheet = () => openSheet(<NameSheet />, { title: 'Prénom et nom' });
 
 // ─── Badge vérifié ────────────────────────────────────────
 

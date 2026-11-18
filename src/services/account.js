@@ -33,6 +33,14 @@ export async function changePseudo(pseudo) {
   save();
 }
 
+/** Prénom et nom (privés : visibles seulement par moi). */
+export async function changeName(firstName, lastName) {
+  if (!USE_BACKEND) return S.changeName(firstName, lastName);
+  const { user } = await api.updateMe({ firstName, lastName });
+  storeMe(user);
+  save();
+}
+
 /**
  * Copie de mes données : charge depuis le serveur tout ce qui concerne mon compte (mes badings, ceux qui
  * m'ont fait rire, mes favoris, mes commentaires et ceux reçus) pour que le PDF soit complet.

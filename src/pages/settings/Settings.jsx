@@ -12,7 +12,7 @@ import { Avatar, Icon, Logo } from '../../ui/icons.jsx';
 import { NotificationBell } from '../../components/Shell.jsx';
 import { toast } from '../../ui/toast.js';
 import { ErrorState, LoadingState, errorMessage, toastError, useRemote } from '../../ui/remote.jsx';
-import { DAY, openBadgeSheet, openDeletionSheet, openPseudoSheet } from './sheets.jsx';
+import { DAY, nextChange, openBadgeSheet, openDeletionSheet, openNameSheet, openPseudoSheet } from './sheets.jsx';
 
 
 const BADGE_STATUS_LABELS = {
@@ -143,7 +143,8 @@ function SettingsContent() {
       <TopBar />
       <div style={{ display: 'flex', flexDirection: 'column', gap: 24, padding: '24px 0' }}>
         <Section title="Compte">
-          <SettingRow icon="userPen" label={`@${me.pseudo}`} detail="Modifier le pseudo" onClick={openPseudoSheet} />
+          <SettingRow icon="userPen" label={`@${me.pseudo}`} detail={me.pseudoChangeableAt > Date.now() ? `Modifiable de nouveau ${nextChange(me.pseudoChangeableAt)}` : 'Modifier le pseudo'} onClick={openPseudoSheet} />
+          <SettingRow icon="user" label={[me.firstName, me.lastName].filter(Boolean).join(' ') || 'Prénom et nom'} detail="Modifier le prénom et le nom" onClick={openNameSheet} />
           <SettingRow icon="badgeCheck" label="Demander le badge vérifié" detail={BADGE_STATUS_LABELS[state.badge.status](state.badge.reason)} onClick={openBadgeSheet} />
         </Section>
 

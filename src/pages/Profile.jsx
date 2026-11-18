@@ -15,6 +15,7 @@ import { SheetItem, closeSheet, openSheet } from '../ui/sheet.jsx';
 import { toast } from '../ui/toast.js';
 import { ErrorState, LoadingState, errorMessage, toastError, toastFileOrServerError, useRemote } from '../ui/remote.jsx';
 import { shareProfile } from '../lib/pwa.js';
+import { nextChange, openNameSheet, openPseudoSheet } from './settings/sheets.jsx';
 
 const TABS = [
   { key: 'public', label: 'Badings' },
@@ -103,6 +104,20 @@ function BadingList({ tab }) {
   );
 }
 
+// ─── Modifier mon profil : pseudo (une fois tous les 2 jours) ou prénom et nom ───
+
+function openEditProfile() {
+  const me = S.me();
+  const wait = me.pseudoChangeableAt > Date.now() ? me.pseudoChangeableAt : 0;
+  openSheet(
+    <div className="pad" style={{ gap: 0 }}>
+      <SheetItem label={wait ? `Pseudo : modifiable ${nextChange(wait)}` : 'Modifier le pseudo'} icon="userPen" onClick={() => { closeSheet(); openPseudoSheet(); }} />
+      <SheetItem label="Modifier le prénom et le nom" icon="user" onClick={() => { closeSheet(); openNameSheet(); }} />
+    </div>,
+    { title: 'Modifier mon profil' },
+  );
+}
+
 // ─── Photo de profil : choisie, recadrée en carré, affichée en rond partout ───
 
 function usePhotoActions(fileRef) {
@@ -168,6 +183,7 @@ function ProfileContent() {
         </div>
         <div className="pf-actions">
           <button className="btn btn-secondary btn-sm pf-btn" onClick={openPhotoMenu}><Icon name="image" /> {me.photo ? 'Changer ma photo' : 'Ajouter une photo'}</button>
+          <button className="btn btn-secondary btn-sm pf-btn" data-edit-profile onClick={openEditProfile}><Icon name="userPen" /> Modifier</button>
           <button className="btn btn-secondary btn-sm pf-btn" data-share-profile onClick={() => shareProfile(me.pseudo, { mine: true })}><Icon name="share" /> Partager mon profil</button>
         </div>
         <input type="file" accept={ACCEPT} hidden ref={fileRef} onChange={onPhotoFile} />

@@ -15,8 +15,9 @@ const SERVER_MESSAGES = {
   taken: 'Un compte existe déjà avec cet e-mail. Connecte-toi plutôt.',
   mail_unavailable: 'L’e-mail avec ton code n’a pas pu partir. Réessaie dans un instant.',
   too_many_attempts: 'Trop de codes demandés. Patiente un peu avant de réessayer.',
+  disposable_email: 'Les adresses e-mail jetables ne sont pas acceptées : utilise ta vraie adresse.',
 };
-const ERROR_FIELDS = { taken: 'email' };
+const ERROR_FIELDS = { taken: 'email', disposable_email: 'email' };
 
 export default function Signup({ query }) {
   // Anciens liens « #/auth/signup?mode=login » : la connexion a sa propre page.

@@ -102,6 +102,17 @@ export function ErrorState({ message, onRetry }) {
  *
  * Renvoie { status: 'loading' | 'ready' | 'error', result, error, retry }.
  */
+// ─── Tirer pour rafraîchir sur toutes les pages ───
+// Chaque écran affiché qui charge des données (useRemote) s'inscrit ici ; tirer vers le bas les recharge toutes.
+const refreshers = new Map();
+let refresherId = 0;
+
+/** Recharge les données des écrans affichés. Échec réseau : la promesse est rejetée (l'écran garde ses données). */
+export async function refreshVisible() {
+  await Promise.all([...refreshers.values()].map((refresh) => refresh()));
+  return 0;
+}
+
 export function useRemote(key, load, { cached = false, maxAge = 30_000 } = {}) {
   const hasCache = cached || wasLoaded(key);
   const [state, setState] = useState(() => ({ status: hasCache ? 'ready' : 'loading' }));
@@ -129,6 +140,18 @@ export function useRemote(key, load, { cached = false, maxAge = 30_000 } = {}) {
     // `state.status` n'est lu qu'au lancement : le changer ne doit pas relancer le chargement.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key, attempt, maxAge]);
+
+  // Rechargement demandé par « tirer pour rafraîchir » : en arrière-plan, l'écran reste affiché pendant ce temps.
+  useEffect(() => {
+    refresherId += 1;
+    const id = refresherId;
+    refreshers.set(id, async () => {
+      const result = await loadRef.current();
+      markFresh(key);
+      setState({ status: 'ready', result });
+    });
+    return () => { refreshers.delete(id); };
+  }, [key]);
 
   const retry = useCallback(() => {
     setState({ status: 'loading' });

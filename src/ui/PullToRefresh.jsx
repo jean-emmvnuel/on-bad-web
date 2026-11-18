@@ -1,18 +1,29 @@
-// Tirer pour rafraîchir le fil (doigt ou souris, en haut de page), avec le logo qui rit.
-// Pendant le geste, tout est appliqué directement aux éléments (une mise à jour par image, sans redessiner).
+// Tirer pour rafraîchir (en haut de page), avec le logo qui rit : le fil (doigt ou souris) et toutes les autres pages
+// (doigt seulement, voir Shell.jsx). Pendant le geste, tout est appliqué directement aux éléments (une mise à jour
+// par image, sans redessiner).
 import { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
-import { reduceMotion } from '../../lib/motion.js';
-import * as badings from '../../services/badings.js';
-import { LaughingMark } from '../../ui/icons.jsx';
-import { confetti } from '../../ui/effects.js';
+import { reduceMotion } from '../lib/motion.js';
+import { LaughingMark } from './icons.jsx';
+import { confetti } from './effects.js';
 
+/** Textes du fil (nouveaux badings). */
 export const PTR_LABELS = {
   pull: 'Tire pour voir les nouveaux badings',
   release: 'Lâche, ça va bader !',
   loading: 'On ramène les badings…',
   done: 'Nouveaux badings !',
   empty: "C'est à jour, rien de neuf",
+  error: 'Pas de réseau, réessaie plus tard',
+};
+
+/** Textes des autres pages (profil, notifications, un bading…). */
+export const PTR_PAGE_LABELS = {
+  pull: 'Tire pour actualiser',
+  release: 'Lâche pour actualiser',
+  loading: 'On actualise…',
+  done: 'À jour !',
+  empty: 'À jour !',
   error: 'Pas de réseau, réessaie plus tard',
 };
 
@@ -24,14 +35,19 @@ const RESULT_DISPLAY = 700;
 
 /**
  * Indicateur + geste, branché sur l'écran (#view) qui le contient.
- * `onRefreshed(count)` est appelé une fois le fil rechargé (pas en cas d'échec), quand l'indicateur repart.
+ * `onRefresh()` recharge (promesse ; nombre de nouveautés, ou 0) ; `onRefreshed(count)` est appelé une fois rechargé
+ * (pas en cas d'échec), quand l'indicateur repart. `mouse` : le geste marche aussi à la souris (fil sur ordinateur).
  */
-export function PullToRefresh({ onRefreshed }) {
+export function PullToRefresh({ onRefresh, onRefreshed, labels = PTR_LABELS, mouse = true }) {
   const ptrRef = useRef(null);
   const labelRef = useRef(null);
   const confettiRef = useRef(null);
   const onRefreshedRef = useRef(onRefreshed);
   onRefreshedRef.current = onRefreshed;
+  const onRefreshRef = useRef(onRefresh);
+  onRefreshRef.current = onRefresh;
+  const labelsRef = useRef(labels);
+  labelsRef.current = labels;
 
   useEffect(() => {
     const ptr = ptrRef.current;
@@ -48,7 +64,7 @@ export function PullToRefresh({ onRefreshed }) {
     let alive = true;
     let resultTimer = null;
 
-    const setLabel = (key) => { labelRef.current.textContent = PTR_LABELS[key]; };
+    const setLabel = (key) => { labelRef.current.textContent = labelsRef.current[key]; };
 
     const paint = () => {
       const progress = Math.min(1, pull / TRIGGER);
@@ -123,7 +139,7 @@ export function PullToRefresh({ onRefreshed }) {
       let count = 0;
       let failed = false;
       try {
-        count = await badings.refreshFeed();
+        count = Number(await onRefreshRef.current()) || 0;
       } catch (error) {
         console.warn(error);
         failed = true;
@@ -138,11 +154,12 @@ export function PullToRefresh({ onRefreshed }) {
       }
       resultTimer = setTimeout(() => {
         tweenPull(0, { duration: 0.45, ease: 'expo.out', onComplete() { busy = false; setLabel('pull'); } });
-        if (!failed) onRefreshedRef.current(count);
+        if (!failed) onRefreshedRef.current?.(count);
       }, RESULT_DISPLAY);
     };
 
-    const onTouchStart = (e) => onStart(e.touches[0].clientY);
+    // Un geste qui commence dans un champ de saisie (commentaire en cours…) reste au champ.
+    const onTouchStart = (e) => { if (!e.target.closest?.('textarea, input, [contenteditable="true"], .voice-rec')) onStart(e.touches[0].clientY); };
     const onTouchMove = (e) => onMove(e.touches[0].clientY, e);
     const onMouseDown = (e) => { if (e.button === 0 && !e.target.closest('button, a, textarea, input')) onStart(e.clientY); };
     const onMouseMove = (e) => { if (startY !== null) onMove(e.clientY, e); };
@@ -151,9 +168,11 @@ export function PullToRefresh({ onRefreshed }) {
     root.addEventListener('touchstart', onTouchStart, { passive: true });
     root.addEventListener('touchmove', onTouchMove, { passive: false });
     root.addEventListener('touchend', onEnd);
-    root.addEventListener('mousedown', onMouseDown);
-    addEventListener('mousemove', onMouseMove);
-    addEventListener('mouseup', onEnd);
+    if (mouse) {
+      root.addEventListener('mousedown', onMouseDown);
+      addEventListener('mousemove', onMouseMove);
+      addEventListener('mouseup', onEnd);
+    }
     return () => {
       alive = false;
       clearTimeout(resultTimer);
@@ -167,6 +186,8 @@ export function PullToRefresh({ onRefreshed }) {
       laughTimeline?.kill();
       gsap.killTweensOf([ptr, mark, mouth]);
     };
+    // `mouse` est fixé au montage.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -175,7 +196,7 @@ export function PullToRefresh({ onRefreshed }) {
         <LaughingMark size={44} />
         <span className="confetti-host" ref={confettiRef} style={{ position: 'absolute', left: '50%', top: '50%' }} />
       </div>
-      <span ref={labelRef}>{PTR_LABELS.pull}</span>
+      <span ref={labelRef}>{labels.pull}</span>
     </div>
   );
 }

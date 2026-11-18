@@ -7,6 +7,13 @@ import { canInstall, install, onInstallChange } from '../lib/pwa.js';
 import { goOnClick, goOnEnter } from '../lib/router.js';
 import { Avatar, Icon, Logo } from '../ui/icons.jsx';
 import { refreshUnread } from '../services/notifications.js';
+import { PTR_PAGE_LABELS, PullToRefresh } from '../ui/PullToRefresh.jsx';
+import { refreshVisible } from '../ui/remote.jsx';
+
+// Tirer pour rafraîchir sur les autres pages (le fil a le sien) : données de l'écran + pastille des notifications.
+// Pas sur l'écran d'écriture (formulaire en cours). Au doigt seulement : sur ordinateur, la page se recharge autrement.
+const NO_PULL = new Set(['feed', 'compose']);
+const refreshPage = (signedIn) => Promise.all([refreshVisible(), signedIn ? refreshUnread() : null]).then(() => 0);
 
 
 /** Le bouton « Installer » a-t-il un sens ici ? (suit l'invite d'installation du navigateur) */
@@ -140,7 +147,10 @@ export function Shell({ nav, guest = false, viewRef, children }) {
             </>
           )}
         </aside>
-        <main className="main" id="view" ref={viewRef}>{children}</main>
+        <main className="main" id="view" ref={viewRef}>
+          {NO_PULL.has(nav) ? null : <PullToRefresh mouse={false} labels={PTR_PAGE_LABELS} onRefresh={() => refreshPage(!guest && !!S.get().session)} />}
+          {children}
+        </main>
         <aside className="aside" aria-label="Suggestions">
           <div className="card">
             <h2 className="t-heading">Badings du moment</h2>

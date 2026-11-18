@@ -12,7 +12,7 @@ import { NotificationBell, useCanInstall } from '../../components/Shell.jsx';
 import { Avatar, Icon, Logo } from '../../ui/icons.jsx';
 import { toast } from '../../ui/toast.js';
 import { ErrorState, errorMessage, useRemote } from '../../ui/remote.jsx';
-import { PullToRefresh } from './PullToRefresh.jsx';
+import { PullToRefresh } from '../../ui/PullToRefresh.jsx';
 
 const HEADER_HIDE_AFTER = 60;
 
@@ -112,7 +112,7 @@ export default function Feed() {
         <span className="ph">{S.get().session ? "Qu'est-ce qui t'est arrivé aujourd'hui ?" : 'Connecte-toi pour raconter ta galère'}</span>
         <Icon name="image" />
       </a>
-      <PullToRefresh onRefreshed={onRefreshed} />
+      <PullToRefresh onRefresh={badings.refreshFeed} onRefreshed={onRefreshed} />
       <div ref={listRef}>{list}</div>
     </>
   );

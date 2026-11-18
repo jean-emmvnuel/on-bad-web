@@ -6,7 +6,7 @@ import { useStore } from '../../lib/useStore.js';
 import { reduceMotion } from '../../lib/motion.js';
 import { back, go } from '../../lib/router.js';
 import * as badings from '../../services/badings.js';
-import { ACCEPT, openCropper, readImageFile } from '../../ui/cropper.js';
+import { ACCEPT, IMAGE_RATIO, openCropper, readImageFile } from '../../ui/cropper.js';
 import { Avatar, Icon, Verified } from '../../ui/icons.jsx';
 import { toast } from '../../ui/toast.js';
 import { MentionList, useMentions } from '../../ui/mentions.jsx';
@@ -105,7 +105,8 @@ export default function Compose() {
   // ─── Image : choix, recadrage, retrait ───
 
   const crop = async (src) => {
-    const result = await openCropper(src, cropSettings.current);
+    // Forme libre par défaut (portrait et carré restent proposés), entre 1:2 et 2:1 comme l'accepte le serveur.
+    const result = await openCropper(src, cropSettings.current, { ratios: ['libre', '4:5', '1:1'], minRatio: IMAGE_RATIO.min, maxRatio: IMAGE_RATIO.max });
     if (!result) return;
     cropSettings.current = result.crop;
     setImage({ src: result.dataUrl, ratio: result.ratio });

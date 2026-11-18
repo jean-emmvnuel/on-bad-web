@@ -7,14 +7,16 @@ import { gsap } from 'gsap';
 import { reduceMotion } from '../lib/motion.js';
 import { Icon } from './icons.jsx';
 
-// « libre » : pas de proportion imposée, le cadre se règle librement avec ses poignées (stickers).
+// « libre » : pas de proportion imposée, le cadre se règle librement avec ses poignées (bading, sticker).
+// `opts.minRatio` / `opts.maxRatio` bornent alors la forme (largeur / hauteur), ex. 1:2 à 2:1 pour un bading.
 const ALL_RATIOS = [['libre', 'Libre', null], ['4:5', 'Portrait', 4 / 5], ['1:1', 'Carré', 1]];
 const MIN_FRAME = 72;
 const PAD = 20;
 const HANDLES = ['nw', 'ne', 'sw', 'se'];
 
 export function Cropper({ img, initial = {}, opts = {}, onClose }) {
-  const { ratios = ['4:5', '1:1'], outMax = 1080, fitLongest = false, title = 'Recadrer', round = false } = opts;
+  const { ratios = ['4:5', '1:1'], outMax = 1080, fitLongest = false, title = 'Recadrer', round = false, minRatio = 0, maxRatio = Infinity } = opts;
+  const bound = (r) => Math.min(maxRatio, Math.max(minRatio, r));
   const RATIOS = ALL_RATIOS.filter((r) => ratios.includes(r[0]));
 
   const rootRef = useRef(null);
@@ -52,7 +54,7 @@ export function Cropper({ img, initial = {}, opts = {}, onClose }) {
     m.SW = stageRef.current.clientWidth;
     m.SH = stageRef.current.clientHeight;
     // Libre : le cadre part de l'image entière.
-    const r = ratioOf() ?? m.W / m.H, aw = m.SW - 2 * PAD, ah = m.SH - 2 * PAD;
+    const r = ratioOf() ?? bound(m.W / m.H), aw = m.SW - 2 * PAD, ah = m.SH - 2 * PAD;
     const fw = Math.min(aw, ah * r), fh = fw / r;
     m.f = { x: (m.SW - fw) / 2, y: (m.SH - fh) / 2, w: fw, h: fh };
     m.minS = Math.max(m.f.w / m.W, m.f.h / m.H);
@@ -70,11 +72,14 @@ export function Cropper({ img, initial = {}, opts = {}, onClose }) {
     let w = Math.max(MIN_FRAME, f0.w + (h.includes('w') ? -dx : dx));
     let hh = Math.max(MIN_FRAME, f0.h + (h.includes('n') ? -dy : dy));
     if (r) { if (w / hh > r) w = hh * r; else hh = w / r; }
+    // Libre : forme bornée (ex. ni plus haute que 1:2, ni plus large que 2:1).
+    else if (w / hh > maxRatio) w = hh * maxRatio;
+    else if (w / hh < minRatio) hh = w / minRatio;
     const imgL = m.cx - (m.W * m.s) / 2, imgT = m.cy - (m.H * m.s) / 2, imgR = imgL + m.W * m.s, imgB = imgT + m.H * m.s;
     const maxW = h.includes('w') ? ax - Math.max(PAD / 2, imgL) : Math.min(m.SW - PAD / 2, imgR) - ax;
     const maxH = h.includes('n') ? ay - Math.max(PAD / 2, imgT) : Math.min(m.SH - PAD / 2, imgB) - ay;
-    if (w > maxW) { w = maxW; if (r) hh = w / r; }
-    if (hh > maxH) { hh = maxH; if (r) w = hh * r; }
+    if (w > maxW) { w = maxW; if (r) hh = w / r; else if (w / hh < minRatio) hh = w / minRatio; }
+    if (hh > maxH) { hh = maxH; if (r) w = hh * r; else if (w / hh > maxRatio) w = hh * maxRatio; }
     m.f = { x: h.includes('w') ? ax - w : ax, y: h.includes('n') ? ay - hh : ay, w, h: hh };
   }
 
@@ -100,7 +105,7 @@ export function Cropper({ img, initial = {}, opts = {}, onClose }) {
     o.drawImage(full, sx, sy, sw, sh, 0, 0, ow, oh);
     // rect : zone choisie dans l'image tournée (pixels d'origine), pour appliquer le même recadrage
     // à toutes les images d'une vidéo (sticker GIF).
-    return { dataUrl: out.toDataURL('image/jpeg', 0.84), ratio: ow / oh, w: ow, h: oh, rect: { sx, sy, sw, sh }, crop: { ratioKey: m.ratioKey, rot: m.rot } };
+    return { dataUrl: out.toDataURL('image/jpeg', 0.84), ratio: bound(ow / oh), w: ow, h: oh, rect: { sx, sy, sw, sh }, crop: { ratioKey: m.ratioKey, rot: m.rot } };
   }
 
   const close = (value) => {

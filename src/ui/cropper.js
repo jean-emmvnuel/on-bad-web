@@ -1,9 +1,10 @@
-// Recadrage d'image avant publication (F1, RG2). Pour un fil uniforme, deux formats seulement :
-// portrait 4:5 (par défaut) et carré 1:1. L'éditeur lui-même est le composant <Cropper/> (Cropper.jsx).
+// Recadrage d'image avant publication (F1, RG2) : forme libre par défaut (de 1:2 à 2:1), ou portrait 4:5 / carré 1:1. L'éditeur lui-même est le composant <Cropper/> (Cropper.jsx).
 import { pushOverlay, removeOverlay } from './overlays.js';
 
 export const MAX_BYTES = 10 * 1024 * 1024;
 export const ACCEPT = 'image/jpeg,image/png,image/webp';
+/** Forme d'une image de bading (largeur / hauteur) : de 1:2 (très haute) à 2:1 (très large), comme le serveur. */
+export const IMAGE_RATIO = { min: 0.5, max: 2 };
 
 /** Lit un fichier choisi : refuse les formats et tailles hors règle. */
 export function readImageFile(file) {

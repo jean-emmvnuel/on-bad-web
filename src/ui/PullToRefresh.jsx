@@ -81,15 +81,20 @@ export function PullToRefresh({ onRefresh, onRefreshed, labels = PTR_LABELS, mou
       onUpdate() { pull = this.targets()[0].v; paint(); },
     });
 
-    // Un glisser n'est pas un clic : n'ouvre pas la carte sous la souris.
+    // Un glisser n'est pas un clic : n'ouvre pas la carte sous la souris. Seulement le clic qui suit AUSSITÔT le geste :
+    // sinon (geste sans clic, ex. petit glissement en haut de page), le vrai clic suivant était avalé (il fallait toucher
+    // deux fois les boutons).
+    let dragEndedAt = 0;
     const swallowClickAfterDrag = (e) => {
       if (!dragged) return;
+      dragged = false;
+      if (performance.now() - dragEndedAt > 350) return;
       e.stopPropagation();
       e.preventDefault();
-      dragged = false;
     };
 
     const onStart = (y) => {
+      dragged = false; // chaque nouveau geste repart de zéro
       if (busy || scrollY > 0) return;
       startY = y;
     };
@@ -127,6 +132,7 @@ export function PullToRefresh({ onRefresh, onRefreshed, labels = PTR_LABELS, mou
     const onEnd = async () => {
       if (startY === null) return;
       startY = null;
+      if (dragged) dragEndedAt = performance.now();
       if (pull < TRIGGER) { tweenPull(0, { duration: 0.35, ease: 'power3.out' }); return; }
 
       busy = true;

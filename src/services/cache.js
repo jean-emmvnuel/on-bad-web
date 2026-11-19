@@ -41,6 +41,7 @@ export function fromServerUser(u) {
   };
   const photo = u.photo ?? u.avatarUrl;
   if (photo) user.photo = photo;
+  user.photoLarge = u.photoLarge || undefined; // photo en grand (vue plein écran), absente pour les anciennes photos
   if (u.firstName) user.firstName = u.firstName;
   if (u.lastName) user.lastName = u.lastName;
   // Mon profil seulement : pseudo changé il y a moins de 48 h → date du prochain changement possible (0 = tout de suite).

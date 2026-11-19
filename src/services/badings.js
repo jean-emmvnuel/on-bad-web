@@ -7,13 +7,55 @@ import { save, storeBadings, storeCommentsOf, storeStickers, storeUsers, syncCom
 /** Charge le fil. */
 export async function loadFeed() {
   if (!USE_BACKEND) return;
-  const { badings, origins = [], users, pinned = [] } = await api.getFeed();
+  const { badings, origins = [], users, pinned = [], hasMore = false, nextBefore } = await api.getFeed();
   storeUsers(users);
   pruneFeed(badings, api.FEED_PAGE_SIZE);
   storeBadings([...badings, ...origins, ...pinned]);
   // Épingles de l'équipe : en tête du fil ; une épingle retirée disparaît au prochain chargement.
   S.get().pins = pinned.filter(Boolean).map((b) => ({ id: b.id, ...(b.pinnedLabel ? { label: b.pinnedLabel } : {}) }));
+  // Fil affiché : la première page. Déjà plus loin dans cette visite (retour sur le fil) : on garde ce qui était chargé.
+  // Toujours borné au plus ancien bading renvoyé : un vieux bading resté dans le cache du navigateur (supprimé depuis,
+  // ou vu sur un profil) n'apparaît pas dans le fil.
+  const pageFrom = badings.length ? Math.min(...badings.map((b) => b.createdAt)) : Infinity;
+  const { from } = S.feedPaging();
+  if (from == null || pageFrom < from) S.setFeedWindow({ from: pageFrom, hasMore, nextBefore });
+  else S.setFeedWindow({ hasMore: S.feedPaging().hasMore && hasMore });
   save();
+}
+
+let loadingMore = null;
+/**
+ * Page suivante du fil (en arrivant en bas). Renvoie le nombre de badings ajoutés ; une seule demande à la fois.
+ * Échec réseau : la promesse est rejetée, le fil garde ce qu'il affiche (on pourra réessayer).
+ */
+export function loadMoreFeed() {
+  if (!USE_BACKEND) return Promise.resolve(0);
+  const { hasMore, nextBefore, from } = S.feedPaging();
+  if (!hasMore) return Promise.resolve(0);
+  loadingMore ??= (async () => {
+    try {
+      const before = nextBefore ?? from;
+      const page = await api.getFeedPage(before);
+      // Même nettoyage que pour la première page : dans la tranche de dates de cette page, un bading du cache que le
+      // serveur n'a pas renvoyé n'existe plus (ou n'est plus visible) ; dernière page : tout ce qui est plus ancien aussi.
+      const returned = new Set(page.badings.map((b) => b.id));
+      const quoted = new Set(page.badings.map((b) => b.rebadeOf).filter(Boolean));
+      const pageOldest = page.badings.length ? Math.min(...page.badings.map((b) => b.createdAt)) : -Infinity;
+      const lowest = page.hasMore ? pageOldest : -Infinity;
+      S.forgetBadings(S.get().badings
+        .filter((b) => b.createdAt < before && b.createdAt >= lowest && !returned.has(b.id) && !quoted.has(b.id))
+        .map((b) => b.id));
+      storeUsers(page.users);
+      storeBadings([...page.badings, ...(page.origins ?? [])]);
+      const oldest = page.badings.length ? Math.min(...page.badings.map((b) => b.createdAt)) : from;
+      S.setFeedWindow({ from: oldest, hasMore: !!page.hasMore, nextBefore: page.nextBefore });
+      save();
+      return page.badings.length;
+    } finally {
+      loadingMore = null;
+    }
+  })();
+  return loadingMore;
 }
 
 /** Récupère les badings publiés depuis le dernier chargement. Renvoie leur nombre. */

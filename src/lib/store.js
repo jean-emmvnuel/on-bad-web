@@ -151,10 +151,22 @@ export const feed = memo(() => state.badings.filter((b) => !b.deleted && !state.
 /** Badings du moment : les plus drôles du fil (rires reçus), hors rebades ; le plus récent d'abord à égalité. */
 /** Badings épinglés par l'équipe (« bading du jour »), envoyés par le serveur avec la première page du fil : [{ id, label }]. */
 export const pins = () => state.pins ?? [];
+/**
+ * Partie du fil chargée pendant cette visite : la première page, puis une page de plus à chaque arrivée en bas.
+ * `from` : date du plus ancien bading chargé (null = tout afficher : mode démo, ou tout le fil est déjà là).
+ * Pas gardée dans le navigateur : à chaque ouverture du site, le fil repart de la première page (léger et fluide),
+ * même si le cache contient des badings plus anciens (vus sur un profil, par exemple).
+ */
+let feedWindow = { from: null, hasMore: false };
+export const feedPaging = () => feedWindow;
+export function setFeedWindow(next) { feedWindow = { ...feedWindow, ...next }; commit(); }
+
 /** Le fil avec les badings épinglés tout en haut (dans l'ordre des épingles), puis les autres du plus récent au plus ancien. */
 export const feedWithPins = memo(() => {
-  const list = feed();
+  const from = feedWindow.from;
   const rank = new Map(pins().map((p, i) => [p.id, i]));
+  // Les épinglés restent en tête même s'ils sont plus anciens que la partie chargée.
+  const list = from == null ? feed() : feed().filter((b) => b.createdAt >= from || rank.has(b.id));
   if (!rank.size) return list;
   return [...list.filter((b) => rank.has(b.id)).sort((a, b) => rank.get(a.id) - rank.get(b.id)), ...list.filter((b) => !rank.has(b.id))];
 });
@@ -329,7 +341,12 @@ export function changeName(firstName, lastName) { Object.assign(state.users[ME],
 /** Délai entre deux changements de pseudo (même règle que le serveur). */
 export const PSEUDO_CHANGE_GAP_MS = 48 * 3_600_000;
 /** Photo de profil : JPEG carré 400 px (data URL) ou null pour la retirer. En prod : upload puis URL du CDN. */
-export function setPhoto(src) { if (src) state.users[ME].photo = src; else delete state.users[ME].photo; syncMe(); commit(); }
+export function setPhoto(src, large = null) {
+  const me = state.users[ME];
+  if (src) me.photo = src; else delete me.photo;
+  if (src && large) me.photoLarge = large; else delete me.photoLarge;
+  syncMe(); commit();
+}
 /**
  * Certification (F6) : on peut demander le badge seulement si l'on est actif (un bading signé
  * publié dans les 30 derniers jours) et qu'on a reçu au moins 1 000 rires sur ses badings signés.

@@ -18,6 +18,8 @@ import { toast } from '../ui/toast.js';
 import { ErrorState, LoadingState, errorMessage, toastError, useRemote } from '../ui/remote.jsx';
 import { CountUp, statsOf } from './Profile.jsx';
 import { profileUrl, shareProfile } from '../lib/pwa.js';
+import { useProgressive } from '../ui/progressive.js';
+import { openLightbox } from '../ui/Lightbox.jsx';
 
 const goBack = () => back('/');
 
@@ -63,16 +65,18 @@ function TopBar({ user }) {
   );
 }
 
-function BadingList({ items }) {
+function BadingList({ items, listKey }) {
   const ref = useRef(null);
+  const [shown, sentinelRef] = useProgressive(listKey, items.length);
   useLayoutEffect(() => {
-    if (!reduceMotion()) gsap.from(ref.current.querySelectorAll('.card-row'), { y: 10, opacity: 0, duration: 0.35, stagger: 0.04, ease: 'expo.out', clearProps: 'transform,opacity' });
+    if (!reduceMotion()) gsap.from([...ref.current.querySelectorAll('.card-row')].slice(0, 6), { y: 10, opacity: 0, duration: 0.35, stagger: 0.04, ease: 'expo.out', clearProps: 'transform,opacity' });
   }, []);
   return (
     <div ref={ref}>
       {items.length
-        ? items.map((b) => <BadingCard key={b.id} b={b} />)
+        ? items.slice(0, shown).map((b) => <BadingCard key={b.id} b={b} />)
         : <div className="empty"><h2 className="t-heading">Aucun bading signé pour l’instant</h2><p className="muted">Ses prochaines galères apparaîtront ici.</p></div>}
+      {shown < items.length ? <div ref={sentinelRef} className="list-sentinel" aria-hidden="true" /> : null}
     </div>
   );
 }
@@ -95,7 +99,10 @@ function UserContent({ id }) {
     <>
       <TopBar user={user} />
       <section className="profile-hero pf-card">
-        <div className="pf-avatar"><Avatar user={user} size={96} /></div>
+        {/* Photo de profil : toucher pour la voir en grand (sans photo, rien à agrandir). */}
+        {user.photo
+          ? <button className="pf-avatar" aria-label={`Voir la photo de profil de @${user.pseudo} en grand`} data-view-photo onClick={() => openLightbox(user.photoLarge || user.photo)}><Avatar user={user} size={96} /></button>
+          : <div className="pf-avatar"><Avatar user={user} size={96} /></div>}
         <div className="pf-name"><span className="t-title">{user.pseudo}</span>{user.verified ? <Verified /> : null}</div>
         <span className="t-meta">@{user.pseudo}{joined ? ` · Badeur depuis ${joined}` : ''}</span>
         {blocked ? null : (
@@ -113,7 +120,7 @@ function UserContent({ id }) {
           <p className="muted">Ses badings sont masqués.</p>
           <button className="btn btn-secondary btn-sm" onClick={unblock}>Débloquer</button>
         </div>
-      ) : <BadingList items={signed} />}
+      ) : <BadingList items={signed} listKey={`user:${id}`} />}
     </>
   );
 }

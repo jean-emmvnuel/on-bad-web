@@ -613,7 +613,9 @@ a, button, [role="button"], [data-go], label { touch-action: manipulation; }
 .tabbar a:active { transform: scale(0.92); }
 .sheet .item:active, .srow:active { background: var(--surface-2); }
 .card-row.bub { transition: transform 120ms ease-out, border-color 150ms; }
-.card-row.bub:active:not(:has(button:active, a:active)) { transform: scale(0.99); }
+/* Carte enfoncée : seulement avec une souris. Au doigt, chaque début de défilement « enfonçait » la carte touchée
+   (petit sursaut visuel), et le sélecteur :has() était recalculé sur tout le fil. */
+@media (hover: hover) and (pointer: fine) { .card-row.bub:active { transform: scale(0.99); } }
 .btn:active { transform: scale(0.97); transition-duration: 100ms; }
 
 /* 2. Matières : barres translucides, le contenu défile dessous. Bord lumineux plutôt qu'un trait gris. */
@@ -624,6 +626,20 @@ body.scrolled .topbar { border-bottom-color: rgba(255, 255, 255, 0.06); box-shad
 .sheet .grab { width: 36px; height: 5px; border-radius: 3px; background: rgba(255, 255, 255, 0.22); margin: 2px auto 14px; }
 .sheet.dragging { cursor: grabbing; user-select: none; }
 .scrim { backdrop-filter: blur(1px); -webkit-backdrop-filter: blur(1px); }
+/* Téléphone : pas de flou derrière les barres. Le recalculer à chaque image du défilement saccadait sur les téléphones
+   modestes ; une barre presque opaque garde le même aspect. */
+@media (max-width: 899px) {
+  .topbar, .tabbar { background: rgba(26, 25, 25, 0.97); backdrop-filter: none; -webkit-backdrop-filter: none; }
+  .scrim { backdrop-filter: none; -webkit-backdrop-filter: none; }
+}
+.list-sentinel { height: 1px; }
+/* Bas du fil : suite en cours de chargement, ou fin du fil */
+.feed-more { display: flex; justify-content: center; padding: 24px 0 32px; min-height: 80px; }
+.feed-loading { display: inline-flex; align-items: center; gap: 10px; color: var(--text-2); font-size: 14px; }
+.feed-spinner { flex: none; width: 22px; height: 22px; border-radius: 50%; border: 3px solid var(--line); border-top-color: var(--brand-ink); animation: feed-spin 0.8s linear infinite; }
+@keyframes feed-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .feed-spinner { animation-duration: 2.4s; } }
+.feed-end { text-align: center; padding: 24px 16px 40px; font-size: 14px; }
 @media (min-width: 900px) { .webbar { background: rgba(26, 25, 25, 0.72); backdrop-filter: blur(20px) saturate(170%); -webkit-backdrop-filter: blur(20px) saturate(170%); border-bottom-color: rgba(255, 255, 255, 0.06); } }
 
 /* 3. Typographie : interlettrage selon la taille (serré en grand, légèrement ouvert en petit). */

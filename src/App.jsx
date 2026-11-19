@@ -2,7 +2,8 @@
 import { Suspense, lazy, useEffect, useLayoutEffect, useRef, useSyncExternalStore } from 'react';
 import { gsap } from 'gsap';
 import * as S from './lib/store.js';
-import { back, go, useLocation } from './lib/router.js';
+import { back, go, navKind, useLocation } from './lib/router.js';
+import { restoreScroll } from './lib/scroll.js';
 import { syncPush } from './lib/push.js';
 import { usePlatform } from './lib/platform.js';
 import { Maintenance } from './components/Maintenance.jsx';
@@ -200,11 +201,11 @@ export function App() {
     go(redirect, { replace: true });
   }, [redirect, resolved.pendingLink, location.raw]);
 
-  // À chaque nouvel écran : feuille fermée, haut de page, onglet actif, transition d'entrée.
+  // À chaque nouvel écran : feuille fermée, haut de page (ou position retrouvée au retour), onglet actif, transition.
   useLayoutEffect(() => {
     if (!route) return;
     closeSheet(true);
-    window.scrollTo(0, 0);
+    if (navKind() !== 'pop' || !restoreScroll(location.raw)) window.scrollTo(0, 0);
     document.body.dataset.nav = route.nav ?? '';
     document.body.dataset.page = route.page; // ex. masquer les onglets sur l'écriture et la page d'un bading (style.css)
     const prev = lastRoute.current;

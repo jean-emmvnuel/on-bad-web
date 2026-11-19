@@ -16,6 +16,8 @@ import { toast } from '../ui/toast.js';
 import { ErrorState, LoadingState, errorMessage, toastError, toastFileOrServerError, useRemote } from '../ui/remote.jsx';
 import { shareProfile } from '../lib/pwa.js';
 import { nextChange, openNameSheet, openPseudoSheet } from './settings/sheets.jsx';
+import { useProgressive } from '../ui/progressive.js';
+import { openLightbox } from '../ui/Lightbox.jsx';
 
 const TABS = [
   { key: 'public', label: 'Badings' },
@@ -88,9 +90,10 @@ export function CountUp({ value }) {
 function BadingList({ tab }) {
   const ref = useRef(null);
   const items = badingsForTab(tab);
+  const [shown, sentinelRef] = useProgressive(`profile:${tab}`, items.length);
 
   useLayoutEffect(() => {
-    if (!reduceMotion()) gsap.from(ref.current.querySelectorAll('.card-row'), { y: 10, opacity: 0, duration: 0.35, stagger: 0.04, ease: 'expo.out', clearProps: 'transform,opacity' });
+    if (!reduceMotion()) gsap.from([...ref.current.querySelectorAll('.card-row')].slice(0, 6), { y: 10, opacity: 0, duration: 0.35, stagger: 0.04, ease: 'expo.out', clearProps: 'transform,opacity' });
   }, [tab]);
 
   const empty = EMPTY_STATES[tab];
@@ -98,8 +101,9 @@ function BadingList({ tab }) {
     <div ref={ref}>
       {TAB_NOTES[tab] ? <p className="pf-note"><Icon name="lock" /><span>{TAB_NOTES[tab]}</span></p> : null}
       {items.length
-        ? items.map((b) => <BadingCard key={b.id} b={b} />)
+        ? items.slice(0, shown).map((b) => <BadingCard key={b.id} b={b} />)
         : <div className="empty"><h2 className="t-heading">{empty.title}</h2><p className="muted">{empty.text}</p>{empty.cta}</div>}
+      {shown < items.length ? <div ref={sentinelRef} className="list-sentinel" aria-hidden="true" /> : null}
     </div>
   );
 }
@@ -120,6 +124,23 @@ function openEditProfile() {
 
 // ─── Photo de profil : choisie, recadrée en carré, affichée en rond partout ───
 
+/** Réduit une image carrée (data URL) à `size` px de côté, en JPEG. */
+function shrink(dataUrl, size) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const c = document.createElement('canvas');
+      c.width = size; c.height = size;
+      const g = c.getContext('2d');
+      g.imageSmoothingQuality = 'high';
+      g.drawImage(img, 0, 0, size, size);
+      resolve(c.toDataURL('image/jpeg', 0.84));
+    };
+    img.onerror = () => reject(new Error('Lecture impossible.'));
+    img.src = dataUrl;
+  });
+}
+
 function usePhotoActions(fileRef) {
   const pickPhoto = () => fileRef.current.click();
 
@@ -128,10 +149,11 @@ function usePhotoActions(fileRef) {
     e.target.value = '';
     try {
       const src = await readImageFile(file);
-      const result = await openCropper(src, {}, { ratios: ['1:1'], outMax: 256, title: 'Photo de profil', round: true });
+      // Deux tailles : 720 px pour la voir en grand, 256 px (légère) pour toutes les petites pastilles.
+      const result = await openCropper(src, {}, { ratios: ['1:1'], outMax: 720, title: 'Photo de profil', round: true });
       if (!result) return;
       toast('Envoi de la photo…');
-      await account.setPhoto(result.dataUrl);
+      await account.setPhoto(await shrink(result.dataUrl, 256), result.dataUrl);
       toast('Photo de profil enregistrée');
     } catch (error) {
       toastFileOrServerError(error);
@@ -148,6 +170,7 @@ function usePhotoActions(fileRef) {
     if (!S.me().photo) return pickPhoto();
     openSheet(
       <div className="pad" style={{ gap: 0 }}>
+        <SheetItem label="Voir ma photo en grand" icon="search" onClick={() => { closeSheet(); openLightbox(S.me().photoLarge || S.me().photo); }} />
         <SheetItem label="Choisir une autre photo" icon="image" onClick={() => { closeSheet(); pickPhoto(); }} />
         <SheetItem label="Retirer la photo" icon="trash" danger onClick={removePhoto} />
       </div>,

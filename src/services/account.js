@@ -18,9 +18,9 @@ export async function loadProfile() {
 }
 
 /** Photo de profil : data URL d'un JPEG carré, ou null pour la retirer. */
-export async function setPhoto(dataUrl) {
-  if (!USE_BACKEND) return S.setPhoto(dataUrl);
-  const { user } = await api.updatePhoto(dataUrl);
+export async function setPhoto(dataUrl, large = null) {
+  if (!USE_BACKEND) return S.setPhoto(dataUrl, large);
+  const { user } = await api.updatePhoto(dataUrl, large);
   storeMe(user);
   save();
 }

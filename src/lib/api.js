@@ -185,8 +185,10 @@ export const requestPasswordReset = (email) => post('/password-reset', { email }
 export const confirmPasswordReset = (token, password) => post('/password-reset/confirm', { token, password });
 
 // Badings
-export const FEED_PAGE_SIZE = 50;
-export const getFeed = (since) => get('/feed', { since, limit: FEED_PAGE_SIZE }); // → { badings, origins, users }
+// Le fil arrive par pages de 20 : la première au chargement, les suivantes en arrivant en bas (getFeedPage).
+export const FEED_PAGE_SIZE = 20;
+export const getFeed = (since) => get('/feed', { since, limit: FEED_PAGE_SIZE }); // → { badings, origins, users, hasMore, nextBefore }
+export const getFeedPage = (before) => get('/feed', { before, limit: FEED_PAGE_SIZE }); // page suivante (plus anciens que `before`)
 export const getBading = (badingId) => get(`/badings/${id(badingId)}`); // → { bading, origins, users, comments, rebades, stickers }
 export const createBading = (payload) => post('/badings', payload); // { text, anonymous, image } → { bading }
 export const addBadingView = (badingId) => post(`/badings/${id(badingId)}/views`);
@@ -218,7 +220,8 @@ export const unsaveSticker = (stickerId) => del(`/me/stickers/${id(stickerId)}`)
 export const getProfile = () => get('/me/profile'); // → { user, badings, favorites, origins, users }
 export const getExport = () => get('/me/export'); // → { user, badings, liked, favorites, origins, comments, users }
 export const updateMe = (changes) => patch('/me', changes); // { pseudo } → { user }
-export const updatePhoto = (image) => put('/me/photo', { image }); // image = data URL ou null → { user }
+// image = petite photo (256 px, data URL) ou null ; large = la même en grand (720 px) pour la vue plein écran → { user }
+export const updatePhoto = (image, large) => put('/me/photo', image ? { image, ...(large ? { large } : {}) } : { image: null });
 export const getSettings = () => get('/me/settings'); // → { mentionPolicy, blocked, badge, deletion }
 export const updateSettings = (changes) => patch('/me/settings', changes); // { mentionPolicy? }
 

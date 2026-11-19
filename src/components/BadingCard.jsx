@@ -1,5 +1,5 @@
 // Carte d'un bading (fil, profil, rebades) et sa rangée d'actions : rire, commenter, rebader, partager, favori.
-import { useRef } from 'react';
+import { memo, useRef } from 'react';
 import { gsap } from 'gsap';
 import * as S from '../lib/store.js';
 import { haptic, reduceMotion } from '../lib/motion.js';
@@ -124,7 +124,13 @@ export function ActionsRow({ t, onComment }) {
  * Une rebade sans avis montre directement le bading d'origine, avec « X a rebadé » au-dessus.
  */
 /** `pin` : bading épinglé par l'équipe en tête du fil ; la chaîne est son étiquette (vide : « Épinglé »). */
-export function BadingCard({ b, pin }) {
+// Une carte n'est redessinée que si le store a changé depuis son dernier dessin (un rire, un commentaire…) ou si ses
+// propriétés ont changé. Ajouter 20 cartes en bas du fil ne redessine donc plus toutes celles déjà affichées.
+const renderedAt = new WeakMap(); // props du dernier dessin → version du store à ce moment-là
+
+function Card(props) {
+  renderedAt.set(props, S.getVersion());
+  const { b, pin } = props;
   const isRebade = !!b.rebadeOf;
   const plain = isRebade && !b.text;
   const origin = isRebade ? S.bading(b.rebadeOf) : b;
@@ -154,7 +160,7 @@ export function BadingCard({ b, pin }) {
   }
 
   return (
-    <article className={`card-row bub ${t.anonymous ? 'anon' : ''}`} data-go="" tabIndex={0} onClick={goOnClick(path)} onKeyDown={goOnEnter(path)}>
+    <article className={`card-row bub ${t.anonymous ? 'anon' : ''}`} data-key={b.id} data-go="" tabIndex={0} onClick={goOnClick(path)} onKeyDown={goOnEnter(path)}>
       {pin !== undefined ? <div className="rebaded pinned" data-pinned><Icon name="pin" /> {pin || 'Épinglé'}</div> : null}
       {plain ? <div className="rebaded"><Icon name="repeat" /> {who} {mine ? 'as rebadé' : 'a rebadé'}</div> : null}
       <header className="bub-head">
@@ -180,3 +186,5 @@ export function BadingCard({ b, pin }) {
     </article>
   );
 }
+
+export const BadingCard = memo(Card, (prev, next) => prev.b === next.b && prev.pin === next.pin && renderedAt.get(prev) === S.getVersion());

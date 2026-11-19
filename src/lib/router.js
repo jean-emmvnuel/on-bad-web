@@ -1,6 +1,7 @@
 // Routeur par hash (#/chemin?param=…), comme la version précédente du site : les liens partagés
 // et l'app installée continuent de fonctionner sans configuration du serveur.
 import { useSyncExternalStore } from 'react';
+import { saveScroll } from './scroll.js';
 
 function parse() {
   const raw = location.hash.slice(1) || '/';
@@ -10,6 +11,10 @@ function parse() {
 
 let current = parse();
 let depth = 0; // navigations internes depuis l'arrivée sur le site
+// Dernière navigation : 'push' (lien, bouton : nouvel écran en haut de page) ou 'pop' (retour / avance de l'historique :
+// l'écran revient là où on l'avait laissé, voir scroll.js).
+let lastKind = 'push';
+export const navKind = () => lastKind;
 const listeners = new Set();
 
 /** Relit l'adresse et prévient les composants si elle a changé. */
@@ -28,8 +33,21 @@ export const refresh = sync;
 
 addEventListener('hashchange', () => {
   depth += 1;
+  // Adresse déjà appliquée par go() : rien à faire. Sinon c'est un lien <a href="#…"> ou l'historique (retour).
+  if (parse().raw === current.raw) return;
+  lastKind = performance.now() - linkClickAt < 800 ? 'push' : 'pop';
+  linkClickAt = -1e9;
+  saveScroll(current.raw); // l'ancien écran est encore affiché : on retient sa position
   sync();
 });
+
+// Clic sur un lien interne <a href="#…"> : c'est une navigation vers un nouvel écran (pas un retour).
+let linkClickAt = -1e9;
+if (typeof addEventListener === 'function') {
+  addEventListener('click', (e) => {
+    if (e.target.closest?.('a[href^="#"]') && !e.defaultPrevented) linkClickAt = performance.now();
+  });
+}
 
 const subscribe = (fn) => (listeners.add(fn), () => listeners.delete(fn));
 const snapshot = () => current;
@@ -39,6 +57,8 @@ export const useLocation = () => useSyncExternalStore(subscribe, snapshot);
 
 export function go(path, { replace = false } = {}) {
   const hash = `#${path}`;
+  lastKind = 'push';
+  saveScroll(current.raw);
   if (replace) location.replace(hash);
   else location.hash = hash;
   // Le navigateur prévient (hashchange) un peu plus tard : on applique la nouvelle adresse tout de suite,

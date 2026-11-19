@@ -1,5 +1,5 @@
 // Fil d'actualité : liste des badings, installation PWA, en-tête masquable, tirer pour rafraîchir.
-import { useEffect, useLayoutEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 import * as S from '../../lib/store.js';
 import { useStore } from '../../lib/useStore.js';
@@ -47,9 +47,12 @@ function Skeleton() {
 }
 
 /** Les cartes arrivent l'une après l'autre. */
+// Seulement les premières cartes (celles qu'on voit) : animer tout le fil gardait les dernières cartes invisibles
+// plusieurs secondes et occupait le téléphone pour rien.
 function animateCards(list) {
   if (!list || reduceMotion()) return;
-  gsap.from(list.querySelectorAll('.card-row'), { y: 14, opacity: 0, duration: 0.45, stagger: 0.045, ease: 'expo.out', clearProps: 'transform,opacity' });
+  const cards = [...list.querySelectorAll('.card-row')].slice(0, 6);
+  if (cards.length) gsap.from(cards, { y: 14, opacity: 0, duration: 0.4, stagger: 0.04, ease: 'expo.out', clearProps: 'transform,opacity' });
 }
 
 /** En-tête façon X sur mobile : disparaît en descendant, revient au moindre retour vers le haut. */
@@ -71,6 +74,42 @@ function useHidingHeader(topbarRef) {
     addEventListener('scroll', onScroll, { passive: true });
     return () => { removeEventListener('scroll', onScroll); gsap.killTweensOf(topbar); };
   }, [topbarRef]);
+}
+
+// ─── Bas du fil : page suivante chargée à l'approche ──────
+
+/** Repère en bas du fil : à ~1,5 écran du bas, on demande la page suivante au serveur. */
+function FeedEnd() {
+  useStore();
+  const ref = useRef(null);
+  const [state, setState] = useState('idle'); // idle | loading | error
+  const { hasMore } = S.feedPaging();
+
+  const more = () => {
+    setState('loading');
+    badings.loadMoreFeed().then(() => setState('idle'), () => setState('error'));
+  };
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || !hasMore || state !== 'idle' || typeof IntersectionObserver !== 'function') return undefined;
+    const io = new IntersectionObserver((entries) => {
+      if (!entries.some((e) => e.isIntersecting)) return;
+      io.disconnect();
+      more();
+    }, { rootMargin: '0px 0px 1500px 0px' });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [hasMore, state]);
+
+  if (!hasMore) return <p className="feed-end muted" data-feed-end>Tu as tout vu. Reviens plus tard pour de nouveaux badings 😄</p>;
+  return (
+    <div ref={ref} className="feed-more" data-feed-more={state}>
+      {state === 'error'
+        ? <button className="btn btn-secondary btn-sm" onClick={more}>Pas de réseau · Réessayer</button>
+        : <span className="feed-loading" role="status"><span className="feed-spinner" aria-hidden="true" />On ramène les badings suivants…</span>}
+    </div>
+  );
 }
 
 export default function Feed() {
@@ -114,6 +153,8 @@ export default function Feed() {
       </a>
       <PullToRefresh onRefresh={badings.refreshFeed} onRefreshed={onRefreshed} />
       <div ref={listRef}>{list}</div>
+      {/* Suite du fil : chargée en arrivant en bas (seulement une fois la première page affichée). */}
+      {ready && items.length ? <FeedEnd /> : null}
     </>
   );
 }

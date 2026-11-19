@@ -57,6 +57,7 @@ export function Lightbox({ src, onClose }) {
       if (closed) return;
       closed = true;
       stopSprings();
+      box.style.pointerEvents = 'none'; // pendant la fermeture, l'écran dessous répond déjà au doigt
       if (reduceMotion() || !velocity) {
         gsap.to(box, { opacity: 0, duration: 0.16, onComplete: onClose });
         return;

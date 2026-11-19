@@ -98,6 +98,10 @@ function SheetView({ sheet }) {
         if (st.closing) return;
         st.closing = true;
         st.anim?.stop();
+        // Pendant l'animation de fermeture, le voile et la feuille laissent passer les touchers : sinon le toucher
+        // suivant (juste après avoir choisi une option) tombait sur le voile invisible et ne faisait rien.
+        scrim.style.pointerEvents = 'none';
+        panel.style.pointerEvents = 'none';
         const done = () => finish(sheet.id);
         if (desktop || reduceMotion()) {
           gsap.to(scrim, { opacity: 0, duration: 0.18 });

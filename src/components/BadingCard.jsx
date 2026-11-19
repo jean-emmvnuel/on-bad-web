@@ -177,7 +177,7 @@ function Card(props) {
           )}
           <span className="t-meta">{n.handle && !t.anonymous ? `${n.handle} · ` : ''}{S.timeAgo(t.createdAt)}</span>
         </div>
-        <button className="icon-btn" style={{ width: 36, height: 36 }} aria-label="Plus d'options" onClick={(e) => { e.stopPropagation(); openMore(t); }}>
+        <button className="icon-btn hit-44" style={{ width: 36, height: 36 }} aria-label="Plus d'options" onClick={(e) => { e.stopPropagation(); openMore(t); }}>
           <Icon name="ellipsis" />
         </button>
       </header>

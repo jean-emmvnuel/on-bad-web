@@ -85,7 +85,7 @@ function deleteComment(comment, element) {
  * `stem` : trait vertical sous l'avatar, vers les réponses ; `showReplyTo` : rappelle à qui l'on répond ;
  * `replyCount` / `collapsed` / `onToggle` : bouton qui replie ou déplie les réponses de ce commentaire.
  */
-function Comment({ c, isReply, stem, showReplyTo, replyCount = 0, collapsed = false, onToggle, onReply, onSticker }) {
+function Comment({ c, isReply, stem, showReplyTo, replyCount = 0, collapsed = false, onToggle, onReply, onSticker, first = false }) {
   const ref = useRef(null);
   const author = S.user(c.authorId);
   const mine = c.authorId === S.ME;
@@ -100,9 +100,10 @@ function Comment({ c, isReply, stem, showReplyTo, replyCount = 0, collapsed = fa
         {stem ? <span className="c-stem" aria-hidden="true" /> : null}
       </div>
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 3 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
           {author ? <a className="user-link" href={`#${S.profilePath(c.authorId)}`}><b style={{ fontSize: 14 }}>{author.pseudo}</b></a> : <b style={{ fontSize: 14 }}>Badeur</b>}{author?.verified ? <Verified /> : null}
           <span className="t-small" style={{ color: 'var(--text-3)' }}>· {S.timeAgo(c.createdAt)}</span>
+          {first ? <span className="c-first" title="Premier à avoir commenté ce bading">🥇 Premier commentaire</span> : null}
         </div>
         {showReplyTo && c.replyTo ? <span className="t-small" style={{ color: 'var(--text-3)' }}>en réponse à <span className="mention">@{c.replyTo}</span></span> : null}
         {c.audio ? (
@@ -150,7 +151,7 @@ const involvesMe = (nodes) => nodes.some((node) => node.comment.authorId === S.M
  * `threadState[id]` : true = réponses ouvertes, false = repliées (bouton ⌄ du commentaire), undefined = automatique
  * (toutes si j'y participe, sinon les premières).
  */
-function Node({ c, children, depth, parent, threadState, setOpen, onReply, onSticker }) {
+function Node({ c, children, depth, parent, threadState, setOpen, onReply, onSticker, firstId }) {
   const openState = threadState[c.id];
   const collapsed = openState === false;
   const expanded = openState ?? (c.authorId === S.ME || involvesMe(children));
@@ -168,12 +169,12 @@ function Node({ c, children, depth, parent, threadState, setOpen, onReply, onSti
   return (
     <div className={`cnode ${depth === 0 ? 'root' : ''}`}>
       <Comment c={c} isReply={depth > 0} stem={hasBranches} showReplyTo={showReplyTo} onReply={onReply} onSticker={onSticker}
-        replyCount={countAll(children)} collapsed={collapsed} onToggle={toggle} />
+        replyCount={countAll(children)} collapsed={collapsed} onToggle={toggle} first={c.id === firstId} />
       {hasBranches ? (
         <div className="c-children">
           {shown.map((node) => (
             <Node key={node.comment.id} c={node.comment} children={node.children} depth={depth + 1} parent={c}
-              threadState={threadState} setOpen={setOpen} onReply={onReply} onSticker={onSticker} />
+              threadState={threadState} setOpen={setOpen} onReply={onReply} onSticker={onSticker} firstId={firstId} />
           ))}
           {hiddenCount > 0 ? (
             <div className="cnode c-more">
@@ -186,14 +187,24 @@ function Node({ c, children, depth, parent, threadState, setOpen, onReply, onSti
   );
 }
 
-export function CommentThreads({ badingId, threadState, setOpen, onReply, onSticker }) {
+/**
+ * `onFirstComment` : bouton de l'état vide (pas encore de commentaire) qui ouvre la saisie.
+ * Le premier commentaire du bading porte la médaille « 🥇 Premier commentaire ».
+ */
+export function CommentThreads({ badingId, threadState, setOpen, onReply, onSticker, onFirstComment }) {
   const threads = S.threads(badingId);
+  const firstId = S.firstCommentId(badingId);
 
   if (!threads.length) {
+    const signedIn = !!S.get().session;
     return (
-      <div className="empty" style={{ alignItems: 'center', textAlign: 'center' }}>
-        <h2 className="t-heading">Pas encore de commentaire</h2>
-        <p className="muted">Lance la discussion, dis ce que ça t'a fait.</p>
+      <div className="empty c-empty" style={{ alignItems: 'center', textAlign: 'center' }}>
+        <span className="c-empty-medal" aria-hidden="true">🥇</span>
+        <h2 className="t-heading">Personne n'a encore commenté</h2>
+        <p className="muted">Sois le premier à réagir : le premier commentaire porte la médaille.</p>
+        <button className="btn btn-primary btn-sm" data-first-comment onClick={signedIn ? onFirstComment : requireSession}>
+          {signedIn ? 'Écrire le premier commentaire' : 'Connecte-toi pour commenter'}
+        </button>
       </div>
     );
   }
@@ -201,7 +212,7 @@ export function CommentThreads({ badingId, threadState, setOpen, onReply, onStic
     <div className="c-threads">
       {threads.map(({ root, children }) => (
         <Node key={root.id} c={root} children={children} depth={0} parent={null}
-          threadState={threadState} setOpen={setOpen} onReply={onReply} onSticker={onSticker} />
+          threadState={threadState} setOpen={setOpen} onReply={onReply} onSticker={onSticker} firstId={firstId} />
       ))}
     </div>
   );

@@ -157,7 +157,7 @@ export function Composer({ badingId, parent, onCancelReply, textareaRef, onPoste
       <MentionList users={suggestions} onPick={insert} compact />
       <div className="row">
         <Avatar user={S.me()} size={32} />
-        <textarea ref={textareaRef} rows={1} maxLength={600} placeholder={parent ? 'Ta réponse…' : 'Ton commentaire…'} aria-label="Ton commentaire"
+        <textarea ref={textareaRef} rows={1} maxLength={600} placeholder={parent ? 'Ta réponse…' : S.commentCount(badingId) ? 'Ton commentaire…' : 'Écris le 1er commentaire 🥇'} aria-label="Ton commentaire"
           value={text}
           onChange={(e) => { setText(e.target.value); trackCaret(e); setError(''); }}
           onKeyUp={trackCaret} onClick={trackCaret}

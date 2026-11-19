@@ -192,6 +192,13 @@ export const MAX_REPLY_DEPTH = 4;
  * `children` = nœuds { comment, children } du premier niveau. Une réponse dont le commentaire parent n'est plus
  * visible (supprimé, masqué, auteur bloqué) disparaît avec lui.
  */
+/** Premier commentaire encore visible d'un bading (le plus ancien, réponses comprises) : il porte la médaille 🥇. */
+export function firstCommentId(badingId) {
+  let first = null;
+  for (const c of liveComments(badingId)) if (!first || c.createdAt < first.createdAt) first = c;
+  return first?.id ?? null;
+}
+
 /** Commentaire visible (pas supprimé, auteur pas bloqué) et ses ancêtres, du plus proche au commentaire racine. */
 export function commentPath(badingId, commentId) {
   const live = liveComments(badingId);

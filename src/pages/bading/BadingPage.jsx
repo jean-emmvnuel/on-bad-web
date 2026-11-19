@@ -181,7 +181,7 @@ function BadingContent({ id, focusComment, commentId, commentsLoaded }) {
         {tab === 'comments' ? (
           <CommentThreads badingId={id} threadState={threadState}
             setOpen={(rootId, open) => setThreadState((s) => ({ ...s, [rootId]: open }))}
-            onReply={reply} onSticker={openStickerSheet} />
+            onReply={reply} onSticker={openStickerSheet} onFirstComment={focusComposer} />
         ) : rebades.length ? (
           rebades.map((r) => <BadingCard key={r.id} b={r} />)
         ) : (

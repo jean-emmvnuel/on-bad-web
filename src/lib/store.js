@@ -192,6 +192,17 @@ export const MAX_REPLY_DEPTH = 4;
  * `children` = nœuds { comment, children } du premier niveau. Une réponse dont le commentaire parent n'est plus
  * visible (supprimé, masqué, auteur bloqué) disparaît avec lui.
  */
+/** Commentaire visible (pas supprimé, auteur pas bloqué) et ses ancêtres, du plus proche au commentaire racine. */
+export function commentPath(badingId, commentId) {
+  const live = liveComments(badingId);
+  const byId = new Map(live.map((c) => [c.id, c]));
+  const target = byId.get(commentId);
+  if (!target) return null;
+  const ancestors = [];
+  for (let c = byId.get(target.parentId); c; c = byId.get(c.parentId)) ancestors.push(c.id);
+  return { comment: target, ancestors };
+}
+
 export function threads(badingId) {
   const live = liveComments(badingId);
   const byParent = new Map();

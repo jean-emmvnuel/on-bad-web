@@ -14,6 +14,7 @@ import { Avatar, Icon, Rich, Verified } from '../../ui/icons.jsx';
 import { NotificationBell } from '../../components/Shell.jsx';
 import { openLightbox } from '../../ui/Lightbox.jsx';
 import { ErrorState, LoadingState, errorMessage, useRemote } from '../../ui/remote.jsx';
+import { toast } from '../../ui/toast.js';
 import { CommentThreads } from './Comments.jsx';
 import { Composer } from './Composer.jsx';
 import { openStickerSheet } from './StickerPicker.jsx';
@@ -100,13 +101,20 @@ function Tabs({ tab, setTab, commentCount, rebadeCount }) {
   );
 }
 
-function BadingContent({ id, focusComment }) {
+/**
+ * `commentId` (notification d'un commentaire, d'une réponse ou d'une mention) : le fil s'ouvre sur ce commentaire,
+ * ses réponses parentes dépliées, et il est mis en valeur. `commentsLoaded` : la liste du serveur est arrivée
+ * (sans elle, un commentaire introuvable n'est peut-être pas encore chargé).
+ */
+function BadingContent({ id, focusComment, commentId, commentsLoaded }) {
   useStore();
   const b = S.bading(id);
   const [tab, setTab] = useState('comments');
   const [threadState, setThreadState] = useState({}); // repli des fils : true = ouvert, false = replié
   const [replyTo, setReplyTo] = useState(null);
   const [highlightId, setHighlightId] = useState(null);
+  const [targetId, setTargetId] = useState(null); // commentaire ouvert depuis une notification (mise en valeur plus longue)
+  const targetDone = useRef(false);
   const textareaRef = useRef(null);
   const panelRef = useRef(null);
 
@@ -123,6 +131,21 @@ function BadingContent({ id, focusComment }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Ouvert depuis une notification : on déplie les réponses qui le contiennent, puis on le montre.
+  useEffect(() => {
+    if (!commentId || targetDone.current) return;
+    const found = S.commentPath(id, commentId);
+    if (!found) {
+      if (commentsLoaded) { targetDone.current = true; toast('Ce commentaire a été supprimé.'); }
+      return;
+    }
+    targetDone.current = true;
+    setTab('comments');
+    setThreadState((s) => ({ ...s, ...Object.fromEntries(found.ancestors.map((a) => [a, true])) }));
+    setTargetId(commentId);
+    setHighlightId(commentId);
+  }, [id, commentId, commentsLoaded]);
+
   // Commentaire qui vient d'être publié : on le montre et il s'illumine.
   useLayoutEffect(() => {
     if (!highlightId) return;
@@ -130,9 +153,15 @@ function BadingContent({ id, focusComment }) {
     setHighlightId(null);
     if (!el) return;
     el.scrollIntoView({ behavior: reduceMotion() ? 'auto' : 'smooth', block: 'center' });
-    gsap.from(el, { backgroundColor: 'rgba(152,16,230,.25)', duration: 1.2 });
+    // Depuis une notification : cadre violet qui reste un moment, pour repérer le commentaire du premier coup d'œil.
+    if (highlightId === targetId) {
+      el.classList.add('c-target');
+      setTimeout(() => el.classList.remove('c-target'), 4000);
+    }
+    gsap.from(el, { backgroundColor: 'rgba(152,16,230,.25)', duration: highlightId === targetId ? 2.4 : 1.2 });
     const stickerEl = el.querySelector('.stk');
     if (stickerEl && !reduceMotion()) gsap.from(stickerEl, { scale: 0.4, rotation: -20, duration: 0.6, ease: 'back.out(2.2)' });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [highlightId]);
 
   const commentCount = S.commentCount(id);
@@ -183,5 +212,5 @@ export default function BadingPage({ params, query }) {
   if (remote.status === 'error') return <><Header /><ErrorState message={errorMessage(remote.error)} onRetry={remote.retry} /></>;
   if (remote.result === false || !b || b.deleted) return <><Header /><Unavailable /></>;
 
-  return <BadingContent id={id} focusComment={query.focus === 'comment'} />;
+  return <BadingContent id={id} focusComment={query.focus === 'comment'} commentId={query.comment} commentsLoaded={!USE_BACKEND || remote.result !== undefined} />;
 }

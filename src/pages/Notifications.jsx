@@ -48,6 +48,8 @@ const TEAM_KINDS = new Set(['announcement', 'admin_message', 'warning']);
 function destination(n) {
   if (TEAM_KINDS.has(n.kind)) return null;
   if (!n.badingId) return '/settings';
+  // Commentaire, réponse, mention dans un commentaire : le bading s'ouvre sur ce commentaire précis.
+  if (n.commentId) return `/bading/${n.badingId}?comment=${n.commentId}`;
   const focusComment = n.kind === 'reply' || n.kind === 'comment';
   return `/bading/${n.badingId}${focusComment ? '?focus=comment' : ''}`;
 }

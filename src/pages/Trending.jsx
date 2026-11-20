@@ -1,6 +1,6 @@
 // Badings du moment (#/trending) : les plus drôles du fil, classés par rires.
 // Sur ordinateur, ils sont aussi dans la colonne de droite ; sur téléphone, cet écran est le 5e onglet.
-import { useLayoutEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 import * as S from '../lib/store.js';
 import { useStore } from '../lib/useStore.js';
@@ -8,7 +8,8 @@ import { reduceMotion } from '../lib/motion.js';
 import { USE_BACKEND } from '../services/mode.js';
 import * as badings from '../services/badings.js';
 import { BadingCard } from '../components/BadingCard.jsx';
-import { Icon } from '../ui/icons.jsx';
+import { Icon, tagPath } from '../ui/icons.jsx';
+import * as api from '../lib/api.js';
 import { NotificationBell } from '../components/Shell.jsx';
 import { ErrorState, LoadingState, errorMessage, useRemote } from '../ui/remote.jsx';
 
@@ -21,6 +22,26 @@ const Header = () => (
     <NotificationBell />
   </header>
 );
+
+/** Hashtags les plus utilisés ces 7 derniers jours (rien en cas d'échec : la liste des badings suffit). */
+function TrendingTags() {
+  const [tags, setTags] = useState([]);
+  useEffect(() => {
+    if (!USE_BACKEND) return undefined;
+    let alive = true;
+    api.getTrendingHashtags().then((r) => { if (alive) setTags(r.hashtags ?? []); }, () => {});
+    return () => { alive = false; };
+  }, []);
+  if (!tags.length) return null;
+  return (
+    <section className="trend-tags" aria-label="Hashtags du moment" data-trend-tags>
+      <h2 className="t-label">Hashtags du moment</h2>
+      <div className="chips">
+        {tags.map((t) => <a key={t.tag} className="tag-chip" href={`#${tagPath(t.tag)}`}>#{t.tag}<small>{t.uses}</small></a>)}
+      </div>
+    </section>
+  );
+}
 
 function TrendingList() {
   useStore();
@@ -55,5 +76,5 @@ export default function Trending() {
   if (remote.status === 'loading') content = <LoadingState />;
   else if (remote.status === 'error') content = <ErrorState message={errorMessage(remote.error)} onRetry={remote.retry} />;
   else content = <TrendingList />;
-  return <><Header />{content}</>;
+  return <><Header /><TrendingTags />{content}</>;
 }

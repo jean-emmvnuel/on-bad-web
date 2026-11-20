@@ -641,6 +641,14 @@ body.scrolled .topbar { border-bottom-color: rgba(255, 255, 255, 0.06); box-shad
 .feed-spinner { flex: none; width: 22px; height: 22px; border-radius: 50%; border: 3px solid var(--line); border-top-color: var(--brand-ink); animation: feed-spin 0.8s linear infinite; }
 @keyframes feed-spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .feed-spinner { animation-duration: 2.4s; } }
+/* Hashtags : liens dans le texte, pastilles des tendances, titre de la page d'un hashtag */
+a.hashtag { color: var(--brand-ink); font-weight: 600; text-decoration: none; }
+@media (hover: hover) { a.hashtag:hover { text-decoration: underline; } }
+.trend-tags { padding: 12px 16px 4px; display: flex; flex-direction: column; gap: 8px; }
+.trend-tags .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.tag-chip { display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 12px; border-radius: var(--r-pill); background: var(--brand-soft); color: var(--brand-ink); font-weight: 700; font-size: 14px; text-decoration: none; }
+.tag-chip small { color: var(--text-2); font-weight: 600; font-size: 12px; }
+.hashtag-title { color: var(--brand-ink); }
 .feed-end { text-align: center; padding: 24px 16px 40px; font-size: 14px; }
 @media (min-width: 900px) { .webbar { background: rgba(26, 25, 25, 0.72); backdrop-filter: blur(20px) saturate(170%); -webkit-backdrop-filter: blur(20px) saturate(170%); border-bottom-color: rgba(255, 255, 255, 0.06); } }
 

@@ -73,12 +73,24 @@ export function Avatar({ user, size = 44 }) {
   );
 }
 
-const MENTION = /(@[\w.]+)/g;
+// @mention ou #hashtag. Un hashtag : 2 à 30 lettres (accents compris), chiffres ou _, pas collé à une lettre avant
+// (« page#ancre » n'en est pas un). Pas de « lookbehind » dans l'expression : les anciens iPhone ne le comprennent pas.
+const TOKENS = /(@[\w.]+|#[\p{L}\p{N}_]{2,30}(?![\p{L}\p{N}_]))/u;
+const BEFORE_TAG = /[\p{L}\p{N}_&/]$/u;
+/** Lien vers la page d'un hashtag (#/tag/gbaka). */
+export const tagPath = (tag) => `/tag/${encodeURIComponent(tag.toLowerCase())}`;
 
 /** Texte d'un utilisateur avec les @mentions colorées (React échappe tout le reste). */
 export function Rich({ text = '' }) {
-  return text.split(MENTION).map((part, i) => {
+  const parts = text.split(new RegExp(TOKENS.source, 'gu'));
+  return parts.map((part, i) => {
     if (!(i % 2)) return part;
+    if (part.startsWith('#')) {
+      // Collé à une lettre ou à « / » avant : ce n'est pas un hashtag (adresse web, e-mail…).
+      const before = parts[i - 1] || parts[i - 2] || ''; // texte juste avant (ou mention collée : « a@b.ci#x »)
+      if (BEFORE_TAG.test(before)) return part;
+      return <a key={i} className="hashtag" href={`#${tagPath(part.slice(1))}`}>{part}</a>;
+    }
     const u = S.userByPseudo(part.slice(1).replace(/\.+$/, ''));
     return u
       ? <a key={i} className="mention" href={`#${S.profilePath(u.id)}`}>{part}</a>

@@ -189,6 +189,10 @@ export const confirmPasswordReset = (token, password) => post('/password-reset/c
 export const FEED_PAGE_SIZE = 20;
 export const getFeed = (since) => get('/feed', { since, limit: FEED_PAGE_SIZE }); // → { badings, origins, users, hasMore, nextBefore }
 export const getFeedPage = (before) => get('/feed', { before, limit: FEED_PAGE_SIZE }); // page suivante (plus anciens que `before`)
+/** Badings d'un hashtag, par pages : { tag, badings, origins, users, hasMore, nextBefore }. */
+export const getHashtag = (tag, before) => get(`/hashtags/${encodeURIComponent(tag)}`, { before, limit: FEED_PAGE_SIZE });
+/** Hashtags les plus utilisés ces 7 derniers jours : { hashtags: [{ tag, uses, badings, laughs, authors }] }. */
+export const getTrendingHashtags = () => get('/hashtags/trending', { days: 7, limit: 10 });
 export const getBading = (badingId) => get(`/badings/${id(badingId)}`); // → { bading, origins, users, comments, rebades, stickers }
 export const createBading = (payload) => post('/badings', payload); // { text, anonymous, image } → { bading }
 export const addBadingView = (badingId) => post(`/badings/${id(badingId)}/views`);

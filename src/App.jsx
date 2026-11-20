@@ -35,6 +35,7 @@ const LOADERS = {
   profile: () => import('./pages/Profile.jsx'),
   user: () => import('./pages/UserProfile.jsx'),
   trending: () => import('./pages/Trending.jsx'),
+  hashtag: () => import('./pages/Hashtag.jsx'),
   leaderboard: () => import('./pages/Leaderboard.jsx'),
   notifications: () => import('./pages/Notifications.jsx'),
   settings: () => import('./pages/settings/Settings.jsx'),
@@ -65,6 +66,7 @@ const ROUTES = [
   { path: /^\/u\/([\w-]+)$/, page: 'user', keys: ['id'], level: 2, public: true },
   { path: /^\/@([A-Za-z0-9_.]{3,20})$/, page: 'user', keys: ['pseudo'], level: 2, public: true },
   { path: /^\/trending$/, page: 'trending', nav: 'trending', public: true },
+  { path: /^\/tag\/([^/?]+)$/, page: 'hashtag', keys: ['tag'], level: 2, public: true },
   { path: /^\/classement$/, page: 'leaderboard', nav: 'leaderboard', public: true },
   { path: /^\/notifications$/, page: 'notifications', nav: 'notifications' },
   { path: /^\/settings$/, page: 'settings', nav: 'settings', level: 2 },
@@ -245,7 +247,7 @@ export function App() {
   );
 
   let layout;
-  if (route.bare || (!access.session && route.public && !['feed', 'bading', 'user', 'trending', 'leaderboard'].includes(route.page))) {
+  if (route.bare || (!access.session && route.public && !['feed', 'bading', 'user', 'trending', 'leaderboard', 'hashtag'].includes(route.page))) {
     layout = location.path.startsWith('/auth/')
       ? <div className="auth-split"><AuthBrand /><main id="view" ref={viewRef}>{page}</main></div>
       : <main id="view" ref={viewRef}>{page}</main>;

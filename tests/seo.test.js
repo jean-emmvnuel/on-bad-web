@@ -106,13 +106,26 @@ describe('Page publique d’un profil', () => {
 });
 
 describe('Sitemap', () => {
-  it('accueil, badings et profils ; identifiants douteux écartés', () => {
+  it('accueil et badings, plus aucun profil ; identifiants douteux écartés', () => {
     const xml = sitemapXml({ badings: [{ id: 'b1', updatedAt: '2026-11-14T00:00:00.000Z' }, { id: 'x<y' }], users: [{ id: 'u1', username: 'zero', updatedAt: null }, { id: 'u2', username: null }] });
     expect(xml).toContain('<loc>https://www.onbade.com/</loc>');
     expect(xml).toContain('<loc>https://www.onbade.com/b/b1</loc><lastmod>2026-11-14T00:00:00.000Z</lastmod>');
-    expect(xml).toContain('<loc>https://www.onbade.com/@zero</loc>');
+    expect(xml).not.toContain('@zero');
     expect(xml).not.toContain('/u/');
     expect(xml).not.toContain('x<y');
+  });
+});
+
+describe('Liste du sitemap privée', () => {
+  it('la fonction Vercel envoie le secret au serveur, sans quoi elle reçoit une liste vide', async () => {
+    const { loadSitemap } = await import('../api/_lib/seo.js');
+    process.env.SITEMAP_SECRET = 'cle-de-test';
+    let sent;
+    const data = await loadSitemap(async (_url, init) => { sent = init.headers['x-sitemap-key']; return new Response(JSON.stringify({ data: { badings: [{ id: 'b1' }], users: [] } })); });
+    expect(sent).toBe('cle-de-test');
+    expect(data.badings).toHaveLength(1);
+    expect((await loadSitemap(async () => new Response('', { status: 404 }))).badings).toEqual([]);
+    delete process.env.SITEMAP_SECRET;
   });
 });
 

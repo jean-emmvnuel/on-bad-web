@@ -227,17 +227,25 @@ export function notFoundPage(html) {
   return html.replace(/<head>(\s*<meta charset="[^"]*" \/>)?/, (open) => `${open}\n  <base href="/" />\n  <meta name="robots" content="noindex" />`);
 }
 
-/** Sitemap XML (badings et profils), à partir de GET /api/sitemap du backend. */
-export function sitemapXml({ badings = [], users = [] }) {
+/**
+ * Sitemap XML : accueil et badings, à partir de GET /api/sitemap du backend. Plus de profils : la liste de tous les
+ * pseudos ne doit pas pouvoir être téléchargée d'un coup (un profil reste accessible par son lien).
+ */
+export function sitemapXml({ badings = [] }) {
   const url = (loc, lastmod, priority) => `<url><loc>${escapeHtml(loc)}</loc>${lastmod ? `<lastmod>${lastmod}</lastmod>` : ''}<priority>${priority}</priority></url>`;
   const rows = [
     url(`${SITE_URL}/`, null, '1.0'),
     ...badings.filter((b) => ID.test(b.id)).map((b) => url(`${SITE_URL}${badingPath(b.id)}`, b.updatedAt, '0.7')),
-    ...users.filter((u) => u.username && PSEUDO.test(u.username)).map((u) => url(`${SITE_URL}${userPath(u)}`, u.updatedAt, '0.5')),
   ];
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${rows.join('\n')}\n</urlset>\n`;
 }
 
 export async function loadSitemap(fetchImpl = fetch) {
-  return (await getJson('/sitemap', fetchImpl)) ?? { badings: [], users: [] };
+  // Liste privée côté serveur : la fonction Vercel s'identifie avec SITEMAP_SECRET (variable d'environnement Vercel,
+  // jamais envoyée au navigateur).
+  const secret = process.env.SITEMAP_SECRET;
+  const res = await fetchImpl(`${API_URL}/sitemap`, { headers: { accept: 'application/json', ...(secret ? { 'x-sitemap-key': secret } : {}) } });
+  if (!res.ok) return { badings: [], users: [] };
+  const body = await res.json();
+  return body?.data ?? body ?? { badings: [], users: [] };
 }

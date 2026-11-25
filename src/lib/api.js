@@ -200,7 +200,8 @@ export const getHashtag = (tag, before) => get(`/hashtags/${encodeURIComponent(t
 export const getTrendingHashtags = () => get('/hashtags/trending', { days: 7, limit: 10 });
 /** Recherche : { q, type, accounts, badings, origins, users, hasMore, nextBefore }. `type` all | badings | users. */
 /** Classement de la saison par flammes : { season, badeurs: [{ rank, user, streak, seasonDays }], me, total } (30 premiers). */
-export const getLeaderboard = () => get('/leaderboard');
+/** Classement public : `type` 'flames' (saison, par défaut) ou 'badescore'. */
+export const getLeaderboard = (type = 'flames') => get('/leaderboard', type === 'badescore' ? { type } : undefined);
 export const search = (q, type = 'all', before) => get('/search', { q, ...(type !== 'all' ? { type } : {}), before });
 export const getBading = (badingId) => get(`/badings/${id(badingId)}`); // → { bading, origins, users, comments, rebades, stickers }
 export const createBading = (payload) => post('/badings', payload); // { text, anonymous, image } → { bading }

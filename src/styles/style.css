@@ -875,3 +875,7 @@ a.hashtag { color: var(--brand-ink); font-weight: 600; text-decoration: none; }
 .announce-body { color: var(--text-2); line-height: 1.5; white-space: pre-line; overflow-wrap: anywhere; margin-bottom: 8px; }
 @keyframes announce-in { from { opacity: 0; } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .announce-scrim { animation: none; } }
+.lb-switch { margin: 0 16px; }
+.lb-switch button { height: 40px; }
+.lb-bs { background: linear-gradient(160deg, rgba(152, 16, 230, 0.16), rgba(255, 201, 60, 0.08)); border-color: rgba(183, 107, 255, 0.35); }
+.lb-points b { color: var(--brand-ink); }

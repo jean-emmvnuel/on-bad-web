@@ -1,4 +1,5 @@
-// Classement (#/classement) : la saison en cours (30 jours), par FLAMMES — la série de jours actifs consécutifs en cours.
+// Classement (#/classement) : deux classements, au choix (bascule en haut) — FLAMMES (par défaut) ou BADESCORE.
+// Flammes : la saison en cours (30 jours) — la série de jours actifs consécutifs en cours.
 // 1 jour d'activité = 1 flamme ; à égalité, les jours actifs de la saison. Les 30 premiers, et mon rang (GET /api/leaderboard).
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
@@ -11,6 +12,7 @@ import { storeUsers, toLocalId } from '../services/cache.js';
 import { Avatar, Icon, Verified } from '../ui/icons.jsx';
 import { HeaderFlames, NotificationBell } from '../components/Shell.jsx';
 import { ErrorState, LoadingState, errorMessage } from '../ui/remote.jsx';
+import { LEVEL_EMOJI } from '../components/BadeScore.jsx';
 
 const MEDALS = ['🥇', '🥈', '🥉'];
 const fmt = (n) => n.toLocaleString('fr-FR');
@@ -24,24 +26,39 @@ function demoRanking() {
   return { season: { number: 1, day: 1, length: 30 }, badeurs, me: S.get().session ? (badeurs.find((b) => b.userId === S.ME) ?? null) : undefined };
 }
 
+/** Mode démo : BadeScore fictif tiré des rires reçus. */
+function demoScores() {
+  const by = new Map();
+  S.feed().forEach((b) => by.set(b.authorId, (by.get(b.authorId) ?? 0) + 5 + (b.likes ?? 0)));
+  const badeurs = [...by.entries()].sort((a, b) => b[1] - a[1]).slice(0, 30)
+    .map(([userId, score], i) => ({ rank: i + 1, userId, score, level: 'Petit Badeur', levelIndex: 0 }));
+  return { type: 'badescore', badeurs, me: S.get().session ? (badeurs.find((b) => b.userId === S.ME) ?? null) : undefined };
+}
+
+const TYPES = [['flames', '🔥 Flammes'], ['badescore', '⭐ BadeScore']];
+const readType = () => { try { return localStorage.getItem('onbade.lbType') === 'badescore' ? 'badescore' : 'flames'; } catch { return 'flames'; } };
+
 export default function Leaderboard() {
   useStore();
   const ref = useRef(null);
+  const [type, setType] = useState(readType);
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
   const signedIn = !!S.get().session;
 
   const load = useCallback(async () => {
     setError(null);
-    if (!USE_BACKEND) { setData(demoRanking()); return; }
+    setData(null);
+    if (!USE_BACKEND) { setData(type === 'badescore' ? demoScores() : { type, ...demoRanking() }); return; }
     try {
-      const r = await api.getLeaderboard();
+      const r = await api.getLeaderboard(type);
       storeUsers(r.badeurs.map((b) => b.user));
-      setData({ season: r.season, badeurs: r.badeurs.map((b) => ({ ...b, userId: toLocalId(b.user.id) })), me: r.me });
+      setData({ type, season: r.season, badeurs: r.badeurs.map((b) => ({ ...b, userId: toLocalId(b.user.id) })), me: r.me });
     } catch (e) {
       setError(e);
     }
-  }, []);
+  }, [type]);
+  const choose = (t) => { setType(t); try { localStorage.setItem('onbade.lbType', t); } catch { /* navigation privée */ } };
   useEffect(() => { load(); }, [load]);
 
   useLayoutEffect(() => {
@@ -52,7 +69,52 @@ export default function Leaderboard() {
   let body;
   if (error) body = <ErrorState message={errorMessage(error)} onRetry={load} />;
   else if (!data) body = <LoadingState />;
-  else {
+  else if (data.type === 'badescore') {
+    const inTop = data.me && data.badeurs.some((b) => b.userId === S.ME);
+    body = (
+      <>
+        <section className="lb-season lb-bs" aria-label="BadeScore">
+          <div className="lb-season-head"><b>BadeScore</b><span>depuis l’inscription</span></div>
+          <p className="t-small muted">L’engouement autour de tes badings signés : rires, commentaires, partages, rebades. Monte de rang en rang, de 🌱 Petit Badeur à 👑 Légende du Bade.</p>
+        </section>
+        {data.me && !inTop ? (
+          <a className="lb-me" href="#/profile" data-my-rank={data.me.rank}>
+            <span className="lb-me-rank">{data.me.rank}<sup>e</sup></span>
+            <span>Ton rang · <b>{fmt(data.me.score)}</b> pts · {LEVEL_EMOJI[data.me.levelIndex]} {data.me.level}</span>
+            <span className="lb-me-hint">Fais réagir avec tes badings pour entrer dans le top 30 !</span>
+          </a>
+        ) : null}
+        {data.me === null ? <p className="lb-me lb-me-empty">Pas encore de BadeScore : publie un bading signé et fais rire la communauté ⭐</p> : null}
+        {data.badeurs.length ? (
+          <ol className="lb-list" aria-label="Les 30 Badeurs avec le plus haut BadeScore">
+            {data.badeurs.map((b) => {
+              const u = S.user(b.userId);
+              const me = b.userId === S.ME;
+              return (
+                <li key={b.userId}>
+                  <a className={`lb-row${b.rank <= 3 ? ' top' : ''}${me ? ' me' : ''}`} href={`#${S.profilePath(b.userId)}`} data-rank={b.rank}>
+                    <span className="lb-pos">{MEDALS[b.rank - 1] ?? b.rank}</span>
+                    <Avatar user={u ?? null} size={b.rank <= 3 ? 48 : 40} />
+                    <span className="lb-who">
+                      <b>@{u?.pseudo ?? 'Badeur'}{u?.verified ? <Verified /> : null}{me ? <small className="lb-you">Toi</small> : null}</b>
+                      <small>{LEVEL_EMOJI[b.levelIndex] ?? '⭐'} {b.level}</small>
+                    </span>
+                    <span className="lb-score lb-points"><b>{fmt(b.score)}</b><small>pts</small></span>
+                  </a>
+                </li>
+              );
+            })}
+          </ol>
+        ) : (
+          <div className="empty">
+            <h2 className="t-heading">Personne n’a encore de BadeScore</h2>
+            <p className="muted">Publie un bading signé et fais réagir : tu prendras la tête !</p>
+            <a className="btn btn-primary btn-sm" href={signedIn ? '#/compose' : '#/auth/signup'}>Bader maintenant</a>
+          </div>
+        )}
+      </>
+    );
+  } else {
     const { season } = data;
     const left = season.length - season.day;
     const inTop = data.me && data.badeurs.some((b) => b.userId === S.ME);
@@ -115,7 +177,12 @@ export default function Leaderboard() {
         <HeaderFlames className="only-mobile" />
         <NotificationBell />
       </header>
-      <div className="lb" ref={ref} data-leaderboard>{body}</div>
+      <div className="lb" ref={ref} data-leaderboard data-type={type}>
+        <div className="segmented lb-switch" role="tablist" aria-label="Type de classement">
+          {TYPES.map(([k, label]) => <button key={k} type="button" role="tab" aria-selected={type === k} data-lb-type={k} onClick={() => choose(k)}>{label}</button>)}
+        </div>
+        {body}
+      </div>
     </>
   );
 }

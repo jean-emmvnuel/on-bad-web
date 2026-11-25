@@ -560,6 +560,28 @@ button.c-sticker { display: block; text-align: left; border-radius: var(--r-lg);
 /* Onglet Notifications de la barre du bas (mobile) */
 .tabbar .tb-ic { position: relative; display: inline-flex; }
 .notif-bell { position: relative; color: var(--text); }
+/* BadeScore (components/BadeScore.jsx) */
+.badescore { width: 100%; max-width: 360px; margin: 14px auto 4px; display: grid; grid-template-columns: 1fr auto; gap: 6px 10px; padding: 14px 16px; border-radius: var(--r-lg); background: linear-gradient(135deg, rgba(152, 16, 230, 0.22), rgba(255, 201, 60, 0.12)); border: 1px solid rgba(183, 107, 255, 0.35); text-align: left; color: var(--text); }
+.bs-head { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; }
+.bs-emoji { font-size: 22px; line-height: 1; }
+.bs-label { font-weight: 700; font-size: 14px; letter-spacing: 0.02em; color: var(--text-2); }
+.bs-value { margin-left: auto; font-family: var(--font-display); font-weight: 800; font-size: 26px; line-height: 1; color: var(--text); }
+.bs-value b { font: inherit; }
+.bs-level { grid-column: 1 / -1; font-weight: 700; color: var(--brand-ink); }
+.bs-bar { grid-column: 1 / -1; height: 8px; border-radius: 4px; background: rgba(255, 255, 255, 0.08); overflow: hidden; }
+.bs-bar i { display: block; height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--brand), #ffc93c); transition: width 0.8s var(--ease-out); }
+.bs-next { grid-column: 1 / -1; }
+.bs-rules { list-style: none; padding: 0; margin: 12px 0; display: flex; flex-direction: column; gap: 8px; }
+.bs-rules b { display: inline-block; min-width: 32px; color: var(--brand-ink); }
+/* Cloche qui remue tant qu'il y a des notifications non lues : un petit « dring » toutes les 4 s. */
+.bell-ic { display: inline-flex; transform-origin: 50% 8%; }
+.ringing .bell-ic { animation: bell-ring 4s ease-in-out infinite; }
+@keyframes bell-ring {
+  0%, 22%, 100% { transform: rotate(0); }
+  3% { transform: rotate(18deg); } 6% { transform: rotate(-16deg); } 9% { transform: rotate(13deg); }
+  12% { transform: rotate(-10deg); } 15% { transform: rotate(6deg); } 18% { transform: rotate(-3deg); }
+}
+@media (prefers-reduced-motion: reduce) { .ringing .bell-ic { animation: none; } }
 .notif-bell .dot { position: absolute; top: 2px; left: 20px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--brand); color: #fff; font-size: 11px; font-weight: 700; line-height: 18px; text-align: center; border: 2px solid var(--bg); box-sizing: content-box; }
 .tabbar .tb-ic .dot { position: absolute; top: -5px; left: 14px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--brand); color: #fff; font-size: 11px; font-weight: 700; line-height: 18px; text-align: center; border: 2px solid var(--bg); box-sizing: content-box; }
 

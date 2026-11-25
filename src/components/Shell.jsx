@@ -33,7 +33,12 @@ export function NotificationBell() {
   if (!S.get().session) return null;
   const unread = S.unread();
   const label = unread ? `Notifications, ${unread > 99 ? 'plus de 99' : unread} non lue${unread > 1 ? 's' : ''}` : 'Notifications';
-  return <a className="icon-btn only-mobile notif-bell" href="#/notifications" aria-label={label}><Icon name="bell" /><UnreadDot count={unread} /></a>;
+  // Non lues : la cloche remue toutes les quelques secondes (et repart à chaque nouvelle notification, `key`).
+  return (
+    <a className={`icon-btn only-mobile notif-bell${unread ? ' ringing' : ''}`} href="#/notifications" aria-label={label}>
+      <span className="bell-ic" key={unread}><Icon name="bell" /></span><UnreadDot count={unread} />
+    </a>
+  );
 }
 
 export function UnreadDot({ count }) {
@@ -116,7 +121,7 @@ export function Shell({ nav, guest = false, viewRef, children }) {
               </>
             ) : (
               <>
-                <a href="#/notifications" aria-current={current(nav, 'notifications')}><Icon name="bell" /><span>Notifications</span><UnreadDot count={unread} /></a>
+                <a href="#/notifications" className={unread ? 'ringing' : undefined} aria-current={current(nav, 'notifications')}><span className="bell-ic" key={unread}><Icon name="bell" /></span><span>Notifications</span><UnreadDot count={unread} /></a>
                 <a href="#/profile" aria-current={current(nav, 'profile')}><Icon name="user" /><span>Profil</span></a>
               </>
             )}

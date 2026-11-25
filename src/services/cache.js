@@ -47,6 +47,7 @@ export function fromServerUser(u) {
   // Mon profil seulement : pseudo changé il y a moins de 48 h → date du prochain changement possible (0 = tout de suite).
   if ('email' in u) user.pseudoChangeableAt = Number(u.pseudoChangeableAt) || 0;
   if (Number.isFinite(joinedAt)) user.joinedAt = joinedAt;
+  if (u.badeScore) user.badeScore = u.badeScore; // BadeScore (profil seulement) : { score, level, next, nextLevel, days }
   return user;
 }
 

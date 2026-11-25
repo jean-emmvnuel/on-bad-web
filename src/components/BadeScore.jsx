@@ -5,14 +5,8 @@ import { CountUp } from '../pages/Profile.jsx';
 
 const LEVEL_EMOJI = ['🌱', '🏘️', '🔥', '🚀', '👑'];
 
-const RULES = [
-  ['+5', 'par bading signé publié'],
-  ['+1', 'par rire reçu'],
-  ['+2', 'par commentaire reçu'],
-  ['+3', 'par partage'],
-  ['+3', 'par rebade d’un autre Badeur'],
-  ['+1', 'par commentaire écrit (10 par jour au plus)'],
-];
+// Ce qui fait monter le BadeScore (sans le détail du calcul, qui reste côté serveur).
+const USED = ['Les rires reçus', 'Les commentaires reçus', 'Les partages', 'Les rebades', 'Les badings publiés', 'Les commentaires écrits'];
 
 function explain(score, mine) {
   openSheet(
@@ -21,11 +15,11 @@ function explain(score, mine) {
         {mine ? 'Ton' : 'Le'} BadeScore vient de l’engouement autour {mine ? 'de tes' : 'de ses'} badings : les rires, les commentaires, les partages et
         les rebades qu’ils reçoivent.
       </p>
-      <p className="muted">Calculé sur les {score.days} derniers jours : il monte quand {mine ? 'tu fais' : 'il fait'} bader, et redescend doucement en cas d’absence.</p>
-      <ul className="bs-rules">{RULES.map(([pts, what]) => <li key={what}><b>{pts}</b> {what}</li>)}</ul>
+      <ul className="bs-rules">{USED.map((what) => <li key={what}>{what}</li>)}</ul>
+      <p className="muted">Sur les {score.days} derniers jours.</p>
       <p className="muted t-small">Les badings anonymes ne comptent jamais : personne ne peut deviner qui les a écrits.</p>
     </div>,
-    { title: 'Comment marche le BadeScore ?' },
+    { title: 'Le BadeScore' },
   );
 }
 
@@ -36,7 +30,7 @@ export function BadeScore({ score, mine = false }) {
   const progress = score.next ? Math.min(1, (score.score - prev) / (score.next - prev)) : 1;
   return (
     <button type="button" className="badescore" data-badescore={score.score} onClick={() => explain(score, mine)}
-      aria-label={`BadeScore ${score.score}, niveau ${score.level}. Comment est-il calculé ?`}>
+      aria-label={`BadeScore ${score.score}, niveau ${score.level}. D’où vient-il ?`}>
       <span className="bs-head">
         <span className="bs-emoji" aria-hidden="true">{LEVEL_EMOJI[score.levelIndex] ?? '🔥'}</span>
         <span className="bs-label">BadeScore</span>

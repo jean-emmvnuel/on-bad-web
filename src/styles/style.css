@@ -573,7 +573,7 @@ button.c-sticker { display: block; text-align: left; border-radius: var(--r-lg);
 .bs-next { grid-column: 1 / -1; }
 .bs-lead { font-weight: 600; line-height: 1.45; }
 .bs-rules { list-style: none; padding: 0; margin: 12px 0; display: flex; flex-direction: column; gap: 8px; }
-.bs-rules b { display: inline-block; min-width: 32px; color: var(--brand-ink); }
+.bs-rules li::before { content: '•'; color: var(--brand-ink); font-weight: 800; margin-right: 8px; }
 /* Cloche qui remue tant qu'il y a des notifications non lues : un petit « dring » toutes les 4 s. */
 .bell-ic { display: inline-flex; transform-origin: 50% 8%; }
 .ringing .bell-ic { animation: bell-ring 4s ease-in-out infinite; }

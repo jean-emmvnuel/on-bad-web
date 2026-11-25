@@ -47,7 +47,7 @@ export function HeaderFlames({ className = '' }) {
 /** `mine` : sur mon propre profil (conseil pour garder la série). */
 export function Flames({ flames, mine = false }) {
   if (!flames) return null;
-  const { streak, today, seasonDays, record, totalDays, seasonRank, season } = flames;
+  const { streak, today, seasonDays, record, totalDays, seasonRank, season, champion } = flames;
   const left = season.length - season.day;
   return (
     <section className="flames" aria-label="Flammes" data-flames={streak}>
@@ -61,6 +61,12 @@ export function Flames({ flames, mine = false }) {
         <span className="fl-streak"><b>{fmt(streak)}</b> flamme{streak > 1 ? 's' : ''}</span>
         <span className="fl-rank">{seasonRank ? `${seasonRank}e de la saison` : 'Pas encore classé'}</span>
       </div>
+      {champion ? (
+        <p className="fl-champion" data-champion={champion.season}>
+          <span aria-hidden="true">👑</span> Champion de la saison {champion.season}
+          <small>{mine ? 'Ton badge' : 'Badge'} jusqu’au {new Date(`${champion.until}T12:00:00Z`).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}</small>
+        </p>
+      ) : null}
       <div className="fl-season">
         <span>Saison {season.number} · jour {season.day}/{season.length}</span>
         <span className="muted">{left > 0 ? `encore ${left} jour${left > 1 ? 's' : ''}` : 'dernier jour'}</span>

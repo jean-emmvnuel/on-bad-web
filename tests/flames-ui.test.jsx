@@ -23,6 +23,14 @@ describe('flammes (site)', () => {
     expect((html.match(/<i class="past"/g) ?? []).length).toBe(9);
   });
 
+  it('profil : badge 👑 Champion de la saison, avec sa date de fin', () => {
+    const html = renderToStaticMarkup(<Flames flames={{ streak: 2, today: true, seasonDays: 2, record: 30, totalDays: 40, seasonRank: 1, season: { number: 2, day: 3, length: 30 }, champion: { season: 1, until: '2026-12-25' } }} />);
+    expect(html).toContain('data-champion="1"');
+    expect(html).toContain('Champion de la saison 1');
+    expect(html).toContain('25 décembre');
+    expect(renderToStaticMarkup(<Flames flames={{ streak: 2, today: true, seasonDays: 2, record: 3, totalDays: 4, seasonRank: 1, season: { number: 2, day: 3, length: 30 }, champion: null }} />)).not.toContain('Champion');
+  });
+
   it('en-tête (HeaderFlames) : affiche l’icône animée et le nombre de flammes', () => {
     S.get().session = { email: 'test@bade.ci', user: { pseudo: 'badeur', flames: { streak: 8, today: true } } };
     S.touch();
@@ -33,5 +41,23 @@ describe('flammes (site)', () => {
     expect(html).toContain('8 flammes');
     S.get().session = null;
     S.touch();
+  });
+});
+
+describe('classement : récompense du 1er', async () => {
+  const { Prize, Champion } = await import('../src/pages/Leaderboard.jsx');
+  it('encart « À gagner » : badge 30 jours, lot surprise, temps restant', () => {
+    const html = renderToStaticMarkup(<Prize reward={{ badge: '👑 Champion', badgeDays: 30, prize: 'surprise' }} season={{ number: 2, day: 28, length: 30 }} />);
+    expect(html).toContain('À gagner : le 1er de la saison 2');
+    expect(html).toContain('le badge Champion sur son profil pendant 30 jours');
+    expect(html).toContain('un lot surprise');
+    expect(html).toContain('dans 2 jours');
+    expect(renderToStaticMarkup(<Prize reward={{ badge: '👑 Champion', badgeDays: 30, prize: 'surprise' }} season={{ number: 2, day: 30, length: 30 }} />)).toContain('Dernier jour');
+  });
+  it('champion en titre : pseudo, saison et série', () => {
+    S.get().users.uc = { id: 'uc', pseudo: 'Koffi225' };
+    const html = renderToStaticMarkup(<Champion champion={{ userId: 'uc', season: 1, streak: 30 }} />);
+    expect(html).toContain('👑 @Koffi225');
+    expect(html).toContain('Champion de la saison 1 · 30 flammes d’affilée');
   });
 });

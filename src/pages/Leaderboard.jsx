@@ -23,7 +23,7 @@ function demoRanking() {
   S.feed().forEach((b) => by.set(b.authorId, (by.get(b.authorId) ?? new Set()).add(new Date(b.createdAt).toISOString().slice(0, 10))));
   const badeurs = [...by.entries()].map(([userId, days]) => ({ userId, streak: Math.min(days.size, 30), seasonDays: Math.min(days.size, 30) }))
     .sort((a, b) => b.streak - a.streak).slice(0, 30).map((b, i) => ({ rank: i + 1, ...b }));
-  return { season: { number: 1, day: 1, length: 30 }, badeurs, me: S.get().session ? (badeurs.find((b) => b.userId === S.ME) ?? null) : undefined };
+  return { season: { number: 1, day: 1, length: 30 }, reward: { badge: '👑 Champion', badgeDays: 30, prize: 'surprise' }, champion: null, badeurs, me: S.get().session ? (badeurs.find((b) => b.userId === S.ME) ?? null) : undefined };
 }
 
 /** Mode démo : BadeScore fictif tiré des rires reçus. */
@@ -33,6 +33,37 @@ function demoScores() {
   const badeurs = [...by.entries()].sort((a, b) => b[1] - a[1]).slice(0, 30)
     .map(([userId, score], i) => ({ rank: i + 1, userId, score, level: 'Petit Badeur', levelIndex: 0 }));
   return { type: 'badescore', badeurs, me: S.get().session ? (badeurs.find((b) => b.userId === S.ME) ?? null) : undefined };
+}
+
+/** Encart « À gagner » : ce que remporte le 1er à la fin de la saison, et le temps qu'il reste pour y arriver. */
+export function Prize({ reward, season }) {
+  if (!reward) return null;
+  const left = season.length - season.day;
+  return (
+    <section className="lb-prize" aria-label="À gagner" data-prize>
+      <span className="lb-prize-trophy" aria-hidden="true">🏆</span>
+      <div className="lb-prize-txt">
+        <b>À gagner : le 1er de la saison {season.number}</b>
+        <span><span aria-hidden="true">👑</span> le badge {reward.badge.replace(/^👑\s*/, '')} sur son profil pendant {reward.badgeDays} jours</span>
+        {reward.prize === 'surprise' ? <span><span aria-hidden="true">🎁</span> un lot surprise remis par l’équipe On Bade</span> : null}
+        <small>{left > 0 ? `Fin de la saison dans ${left} jour${left > 1 ? 's' : ''} : garde ta série jusqu’au bout !` : 'Dernier jour : tout se joue aujourd’hui !'}</small>
+      </div>
+    </section>
+  );
+}
+
+/** Champion en titre (1er de la saison précédente), badge affiché 30 jours. */
+export function Champion({ champion }) {
+  const u = S.user(champion.userId);
+  return (
+    <a className="lb-champion" href={`#${S.profilePath(champion.userId)}`} data-champion={champion.season}>
+      <Avatar user={u ?? null} size={40} />
+      <span className="lb-who">
+        <b>👑 @{u?.pseudo ?? 'Badeur'}{u?.verified ? <Verified /> : null}</b>
+        <small>Champion de la saison {champion.season} · {champion.streak} flamme{champion.streak > 1 ? 's' : ''} d’affilée</small>
+      </span>
+    </a>
+  );
 }
 
 const TYPES = [['flames', '🔥 Flammes'], ['badescore', '⭐ BadeScore']];
@@ -53,7 +84,9 @@ export default function Leaderboard() {
     try {
       const r = await api.getLeaderboard(type);
       storeUsers(r.badeurs.map((b) => b.user));
-      setData({ type, season: r.season, badeurs: r.badeurs.map((b) => ({ ...b, userId: toLocalId(b.user.id) })), me: r.me });
+      if (r.champion) storeUsers([r.champion.user]);
+      setData({ type, season: r.season, reward: r.reward, champion: r.champion ? { ...r.champion, userId: toLocalId(r.champion.user.id) } : null,
+        badeurs: r.badeurs.map((b) => ({ ...b, userId: toLocalId(b.user.id) })), me: r.me });
     } catch (e) {
       setError(e);
     }
@@ -130,6 +163,8 @@ export default function Leaderboard() {
           </div>
           <p className="t-small muted">1 jour où tu publies = 1 flamme 🔥. Un jour sans bading, et la série repart de zéro. Nouvelle saison, tout le monde repart à égalité.</p>
         </section>
+        <Prize reward={data.reward} season={season} />
+        {data.champion ? <Champion champion={data.champion} /> : null}
         {data.me && !inTop ? (
           <a className="lb-me" href="#/profile" data-my-rank={data.me.rank}>
             <span className="lb-me-rank">{data.me.rank}<sup>e</sup></span>
@@ -149,7 +184,7 @@ export default function Leaderboard() {
                     <span className="lb-pos">{MEDALS[b.rank - 1] ?? b.rank}</span>
                     <Avatar user={u ?? null} size={b.rank <= 3 ? 48 : 40} />
                     <span className="lb-who">
-                      <b>@{u?.pseudo ?? 'Badeur'}{u?.verified ? <Verified /> : null}{me ? <small className="lb-you">Toi</small> : null}</b>
+                      <b>{data.champion?.userId === b.userId ? <span title="Champion de la saison précédente">👑 </span> : null}@{u?.pseudo ?? 'Badeur'}{u?.verified ? <Verified /> : null}{me ? <small className="lb-you">Toi</small> : null}</b>
                       <small>{b.seasonDays} jour{b.seasonDays > 1 ? 's' : ''} actif{b.seasonDays > 1 ? 's' : ''} cette saison</small>
                     </span>
                     <span className="lb-score lb-flames"><b>{fmt(b.streak)}</b><small>🔥 flamme{b.streak > 1 ? 's' : ''}</small></span>

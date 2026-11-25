@@ -879,3 +879,11 @@ a.hashtag { color: var(--brand-ink); font-weight: 600; text-decoration: none; }
 .lb-switch button { height: 40px; }
 .lb-bs { background: linear-gradient(160deg, rgba(152, 16, 230, 0.16), rgba(255, 201, 60, 0.08)); border-color: rgba(183, 107, 255, 0.35); }
 .lb-points b { color: var(--brand-ink); }
+.lb-prize { margin: 0 16px; padding: 14px; border-radius: var(--r-lg); display: flex; gap: 12px; align-items: flex-start; background: linear-gradient(150deg, rgba(255, 201, 60, 0.18), rgba(255, 122, 26, 0.08)); border: 1px solid rgba(255, 201, 60, 0.4); }
+.lb-prize-trophy { font-size: 34px; line-height: 1; }
+.lb-prize-txt { display: flex; flex-direction: column; gap: 4px; font-size: 14px; }
+.lb-prize-txt b { font-family: var(--font-display); font-size: 16px; color: #ffd166; }
+.lb-prize-txt small { color: var(--text-2); font-size: 12.5px; margin-top: 2px; }
+.lb-champion { margin: 0 16px; display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: var(--r-lg); background: var(--surface); border: 1px solid rgba(255, 201, 60, 0.35); color: var(--text); text-decoration: none; }
+.fl-champion { margin: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; font-weight: 700; color: #ffd166; }
+.fl-champion small { font-weight: 500; color: var(--text-2); font-size: 12.5px; }

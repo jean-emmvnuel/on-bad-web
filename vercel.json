@@ -24,6 +24,10 @@
       "dest": "/api/profile?u=$1"
     },
     {
+      "src": "/share-target/?",
+      "dest": "/api/share-target"
+    },
+    {
       "src": "/sitemap\\.xml",
       "dest": "/api/sitemap"
     },

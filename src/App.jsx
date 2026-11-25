@@ -1,5 +1,6 @@
 // Racine de l'app : routes, gardes d'accès, mise en page (coquille web ou plein écran), transitions.
 import { Suspense, lazy, useEffect, useLayoutEffect, useRef, useSyncExternalStore } from 'react';
+import { takeShareAfterLogin } from './lib/sharedImage.js';
 import { gsap } from 'gsap';
 import * as S from './lib/store.js';
 import { back, go, navKind, useLocation } from './lib/router.js';
@@ -86,7 +87,8 @@ function resolve({ path }, { session, onboarded, pendingLink }) {
     const match = path.match(route.path);
     if (!match) continue;
     if (!session && !route.public) return { redirect: entry };
-    if (session && route.bare) return { redirect: pendingLink ? `/bading/${pendingLink}` : '/' };
+    // Connecté depuis un écran d'entrée : le bading partagé attendu, sinon un partage reçu avant connexion (écran Bader), sinon le fil.
+    if (session && route.bare) return { redirect: pendingLink ? `/bading/${pendingLink}` : takeShareAfterLogin() ? '/compose' : '/' };
     const params = Object.fromEntries((route.keys ?? []).map((key, i) => [key, match[i + 1]]));
     return { route, params };
   }

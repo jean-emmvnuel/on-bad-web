@@ -16,13 +16,39 @@ self.addEventListener('install', (e) => {
 self.addEventListener('activate', (e) => {
   e.waitUntil(
     caches.keys()
-      .then((keys) => Promise.all(keys.filter((k) => k !== VERSION).map((k) => caches.delete(k))))
+      .then((keys) => Promise.all(keys.filter((k) => k !== VERSION && k !== SHARE_CACHE).map((k) => caches.delete(k))))
       .then(() => self.clients.claim()),
   );
 });
 
+// Partage vers On Bade (WhatsApp, galerie… → « Partager » → On Bade, manifest.webmanifest « share_target ») :
+// le texte part dans l'adresse (?text=…), l'image est gardée un instant dans un cache à part, puis l'écran
+// « Bader » s'ouvre déjà rempli (src/lib/pwa.js et Compose.jsx). Rien n'est publié sans que le Badeur le valide.
+const SHARE_CACHE = 'onbade-share';
+async function receiveShare(req) {
+  const root = new URL(self.registration.scope);
+  try {
+    const form = await req.formData();
+    const q = new URLSearchParams();
+    ['title', 'text', 'url'].forEach((k) => { const v = String(form.get(k) ?? '').slice(0, 4000); if (v.trim()) q.set(k, v); });
+    const image = form.getAll('image').find((f) => f && typeof f === 'object' && f.size > 0);
+    const cache = await caches.open(SHARE_CACHE);
+    await cache.delete('shared-image');
+    if (image) {
+      await cache.put('shared-image', new Response(image, { headers: { 'Content-Type': image.type || 'application/octet-stream', 'X-Name': encodeURIComponent(image.name || 'image') } }));
+      q.set('shared', 'image');
+    } else {
+      q.set('shared', 'text');
+    }
+    return Response.redirect(new URL(`?${q}`, root).href, 303);
+  } catch {
+    return Response.redirect(new URL('#/compose', root).href, 303);
+  }
+}
+
 self.addEventListener('fetch', (e) => {
   const req = e.request;
+  if (req.method === 'POST' && new URL(req.url).pathname.endsWith('/share-target')) { e.respondWith(receiveShare(req)); return; }
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
   // Appels au backend : jamais de cache, les données doivent toujours être fraîches.

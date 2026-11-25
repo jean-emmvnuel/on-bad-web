@@ -1,5 +1,6 @@
 // PWA : service worker, installation, liens dynamiques et partage vers On Bade.
 import * as S from './store.js';
+import { rememberShareForLogin } from './sharedImage.js';
 import { toast } from '../ui/toast.js';
 import { openInstallPrompt, openIosInstallSheet } from '../components/InstallSheet.jsx';
 import { refresh } from './router.js';
@@ -105,9 +106,14 @@ export function consumeLaunchParams() {
   let route = null;
   if (q.get('b')) { route = `/b/${q.get('b')}`; if (!isBot()) countOpen(q.get('b'), q.get('s')); }
   else if (page) route = page[3] ? `/${page[3]}` : `/${page[1]}/${page[2]}`;
-  else if (q.has('text') || q.has('url') || q.has('title')) {
+  else if (q.has('text') || q.has('url') || q.has('title') || q.has('shared')) {
+    // Partagé depuis une autre app (WhatsApp…) : texte dans l'adresse, image éventuelle reprise par l'écran Bader.
     const text = [q.get('title'), q.get('text'), q.get('url')].filter(Boolean).join('\n').trim();
-    if (text) { S.setDraft({ ...S.get().draft, text }); route = '/compose'; }
+    if (text) S.setDraft({ ...S.get().draft, text });
+    if (text || q.get('shared') === 'image') {
+      route = '/compose';
+      if (!S.get().session) rememberShareForLogin();
+    }
   }
   // Page /b/… ou /u/… : retour à la racine du site, pour que les liens internes en « #/… » restent sur la même page.
   const root = page ? location.pathname.slice(0, page.index + 1) : location.pathname;

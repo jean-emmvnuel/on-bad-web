@@ -8,6 +8,7 @@ import { back, go } from '../../lib/router.js';
 import * as badings from '../../services/badings.js';
 import { ACCEPT, IMAGE_RATIO, openCropper, readImageFile } from '../../ui/cropper.js';
 import { celebrateFlame } from '../../ui/flameCelebration.js';
+import { takeSharedImage } from '../../lib/sharedImage.js';
 import { Avatar, Icon, Verified } from '../../ui/icons.jsx';
 import { toast } from '../../ui/toast.js';
 import { MentionList, useMentions } from '../../ui/mentions.jsx';
@@ -121,9 +122,7 @@ export default function Compose() {
     setError('');
   };
 
-  const onFile = async (e) => {
-    const file = e.target.files?.[0];
-    e.target.value = '';
+  const takeImage = async (file) => {
     try {
       original.current = await readImageFile(file);
       cropSettings.current = {};
@@ -132,6 +131,18 @@ export default function Compose() {
       if (err.message !== 'none') setError(err.message);
     }
   };
+  const onFile = (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    takeImage(file);
+  };
+
+  // Image partagée depuis une autre app (WhatsApp → Partager → On Bade) : recadrage proposé tout de suite.
+  useEffect(() => {
+    let alive = true;
+    takeSharedImage().then((file) => { if (file && alive) takeImage(file); });
+    return () => { alive = false; };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ─── Publication ───
 

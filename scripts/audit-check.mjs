@@ -9,7 +9,9 @@ const accepted = new Map(readFileSync('.trivyignore', 'utf8').split('\n')
   .map((l) => l.trim()).filter((l) => l && !l.startsWith('#'))
   .map((l) => { const [id, exp] = l.split(/\s+/); return [id, exp?.replace(/^exp:/, '') ?? null]; }));
 const today = new Date().toISOString().slice(0, 10);
-const report = JSON.parse(readFileSync(0, 'utf8') || '{}');
+let input = '';
+for await (const chunk of process.stdin) input += chunk; // lecture asynchrone : readFileSync(0) échoue (EAGAIN) sur un tuyau
+const report = JSON.parse(input || '{}');
 const problems = [];
 for (const [name, v] of Object.entries(report.vulnerabilities ?? {})) {
   for (const via of v.via ?? []) {

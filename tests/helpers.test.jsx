@@ -72,3 +72,19 @@ describe('Pastille des notifications non lues', () => {
     delete S.get().unreadCount;
   });
 });
+
+describe('erreurs du serveur', () => {
+  it('une page d’erreur HTML n’est jamais affichée telle quelle', async () => {
+    const { request } = await import('../src/lib/api.js');
+    const { errorMessage } = await import('../src/ui/remote.jsx');
+    const html = '<!DOCTYPE html><html><head><title>404: This page could not be found.</title></head><body>…</body></html>';
+    const saved = globalThis.fetch;
+    globalThis.fetch = async () => new Response(html, { status: 404, headers: { 'content-type': 'text/html' } });
+    let err;
+    try { await request('/route-introuvable-test'); } catch (e) { err = e; }
+    globalThis.fetch = saved;
+    expect(err?.status).toBe(404);
+    expect(errorMessage(err)).not.toContain('<');
+    expect(errorMessage(err)).not.toContain('DOCTYPE');
+  });
+});

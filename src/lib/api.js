@@ -82,7 +82,12 @@ export class ApiError extends Error {
 async function readJson(response) {
   const text = await response.text();
   if (!text) return {};
-  try { return JSON.parse(text); } catch { return { message: text }; }
+  try { return JSON.parse(text); } catch {
+    // Pas du JSON (page d'erreur HTML d'un serveur ou d'un proxy, ex. 404 pendant un déploiement) : jamais affichée telle
+    // quelle. Un texte court et lisible est gardé ; sinon le message par défaut de l'écran s'affiche.
+    const plain = text.trim();
+    return plain.length <= 200 && !/[<>{}]/.test(plain) ? { message: plain } : {};
+  }
 }
 
 // Lectures (GET) déjà en route : un second appel identique réutilise la même réponse au lieu de

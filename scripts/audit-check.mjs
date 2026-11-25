@@ -11,7 +11,9 @@ const accepted = new Map(readFileSync('.trivyignore', 'utf8').split('\n')
 const today = new Date().toISOString().slice(0, 10);
 let input = '';
 for await (const chunk of process.stdin) input += chunk; // lecture asynchrone : readFileSync(0) échoue (EAGAIN) sur un tuyau
-const report = JSON.parse(input || '{}');
+let report = null;
+try { report = JSON.parse(input); } catch { /* rapport illisible */ }
+if (!report?.metadata?.vulnerabilities) { console.error('npm audit n\'a pas répondu (réseau, registre…) : rapport absent, vérification impossible.'); process.exit(1); }
 const problems = [];
 for (const [name, v] of Object.entries(report.vulnerabilities ?? {})) {
   for (const via of v.via ?? []) {

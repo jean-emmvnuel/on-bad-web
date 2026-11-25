@@ -9,6 +9,9 @@ import { Avatar, Icon, Logo } from '../ui/icons.jsx';
 import { refreshUnread } from '../services/notifications.js';
 import { PTR_PAGE_LABELS, PullToRefresh } from '../ui/PullToRefresh.jsx';
 import { refreshVisible } from '../ui/remote.jsx';
+import { HeaderFlames } from './Flames.jsx';
+
+export { HeaderFlames } from './Flames.jsx';
 
 // Tirer pour rafraîchir sur les autres pages (le fil a le sien) : données de l'écran + pastille des notifications.
 // Pas sur l'écran d'écriture (formulaire en cours). Au doigt seulement : sur ordinateur, la page se recharge autrement.
@@ -127,6 +130,7 @@ export function Shell({ nav, guest = false, viewRef, children }) {
             )}
           </nav>
           <div className="webbar-actions">
+            {!guest ? <HeaderFlames /> : null}
             <a className="webbar-search" href="#/search" aria-label="Rechercher" data-search-link><Icon name="search" /><span>Rechercher</span></a>
             {guest
               ? <a className="btn btn-primary btn-sm" href="#/auth/signup"><Icon name="plus" /> S'inscrire</a>

@@ -10,7 +10,7 @@ import * as badings from '../services/badings.js';
 import { BadingCard } from '../components/BadingCard.jsx';
 import { Icon, tagPath } from '../ui/icons.jsx';
 import * as api from '../lib/api.js';
-import { NotificationBell } from '../components/Shell.jsx';
+import { HeaderFlames, NotificationBell } from '../components/Shell.jsx';
 import { ErrorState, LoadingState, errorMessage, useRemote } from '../ui/remote.jsx';
 
 const LIMIT = 20;
@@ -20,6 +20,7 @@ const Header = () => (
     <span style={{ display: 'flex', color: 'var(--brand-ink)', paddingLeft: 4 }}><Icon name="flame" /></span>
     <h1 className="t-heading" style={{ flex: 1 }}>Badings du moment</h1>
     <a className="icon-btn only-mobile" href="#/search" aria-label="Rechercher"><Icon name="search" /></a>
+    <HeaderFlames className="only-mobile" />
     <NotificationBell />
   </header>
 );

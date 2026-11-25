@@ -9,7 +9,7 @@ import * as api from '../lib/api.js';
 import { USE_BACKEND } from '../services/mode.js';
 import { storeUsers, toLocalId } from '../services/cache.js';
 import { Avatar, Icon, Verified } from '../ui/icons.jsx';
-import { NotificationBell } from '../components/Shell.jsx';
+import { HeaderFlames, NotificationBell } from '../components/Shell.jsx';
 import { ErrorState, LoadingState, errorMessage } from '../ui/remote.jsx';
 
 const MEDALS = ['🥇', '🥈', '🥉'];
@@ -112,6 +112,7 @@ export default function Leaderboard() {
       <header className="topbar">
         <span style={{ display: 'flex', color: '#FFC93C', paddingLeft: 4 }}><Icon name="trophy" /></span>
         <h1 className="t-heading" style={{ flex: 1 }}>Classement</h1>
+        <HeaderFlames className="only-mobile" />
         <NotificationBell />
       </header>
       <div className="lb" ref={ref} data-leaderboard>{body}</div>

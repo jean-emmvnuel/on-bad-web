@@ -1,8 +1,48 @@
 // Flammes sur le profil : série en cours 🔥, jours actifs de la saison, record, jours actifs au total, rang de la saison,
 // et la progression de la saison (30 jours). Tout vient du serveur (lib/flames.ts) : 1 jour d'activité = 1 flamme.
+import { useEffect } from 'react';
+import * as S from '../lib/store.js';
+import { useStore } from '../lib/useStore.js';
+import { USE_BACKEND } from '../services/mode.js';
+import { loadProfile } from '../services/account.js';
+
 const fmt = (n) => n.toLocaleString('fr-FR');
 /** Flamme animée (Noto Animated Emoji de Google, CC BY 4.0), hébergée sur le site : aucune requête vers Google. */
 export const FIRE_GIF = '/assets/emoji/fire.webp';
+
+/**
+ * Flamme animée avec le nombre de flammes consécutives dans l'en-tête (mobile et web).
+ * Clic pour ouvrir son profil avec les détails de la série.
+ */
+export function HeaderFlames({ className = '' }) {
+  useStore();
+  const me = S.me();
+  const signedIn = !!S.get().session;
+
+  useEffect(() => {
+    if (signedIn && !me?.flames && USE_BACKEND) {
+      loadProfile().catch(() => {});
+    }
+  }, [signedIn, me?.flames]);
+
+  if (!signedIn) return null;
+  const streak = me?.flames?.streak ?? 0;
+  const today = !!me?.flames?.today;
+  const label = `${fmt(streak)} flamme${streak > 1 ? 's' : ''}`;
+
+  return (
+    <a
+      className={`header-flame${className ? ` ${className}` : ''}`}
+      href="#/profile"
+      aria-label={label}
+      title={label}
+      data-active={today || streak > 0 ? 'true' : 'false'}
+    >
+      <img className="fl-anim" src={FIRE_GIF} alt="" width="22" height="22" decoding="async" />
+      <span className="fl-count">{fmt(streak)}</span>
+    </a>
+  );
+}
 
 /** `mine` : sur mon propre profil (conseil pour garder la série). */
 export function Flames({ flames, mine = false }) {

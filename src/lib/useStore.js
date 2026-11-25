@@ -5,4 +5,4 @@ import { useSyncExternalStore } from 'react';
 import * as S from './store.js';
 
 /** Redessine le composant à chaque modification du store ; renvoie la version courante. */
-export const useStore = () => useSyncExternalStore(S.subscribe, S.getVersion);
+export const useStore = () => useSyncExternalStore(S.subscribe, S.getVersion, S.getVersion);

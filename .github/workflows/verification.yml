@@ -46,7 +46,7 @@ jobs:
           node-version: 22
       - name: Dépendances vulnérables (npm audit, production)
         if: ${{ !cancelled() }} # chaque outil tourne même si le précédent a trouvé quelque chose
-        run: npm audit --omit=dev --audit-level=high
+        run: npm audit --omit=dev --json | node scripts/audit-check.mjs # risques acceptés (avec expiration) : .trivyignore
       - name: Dépendances, secrets et configuration (Trivy)
         if: ${{ !cancelled() }} # chaque outil tourne même si le précédent a trouvé quelque chose
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0

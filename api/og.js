@@ -5,7 +5,7 @@ import { ImageResponse } from '@vercel/og';
 import { loadBading } from './_lib/bading.js';
 import { AVATAR_SIZE, SITE_URL, hueFrom, loadUserPage } from './_lib/seo.js';
 
-// Fonction Node (comme les autres de api/) : @vercel/og 1.x ne se déploie plus en « edge » sur ce projet.
+export const config = { runtime: 'edge' };
 
 const W = 1080, H = 1350;
 const LOGO_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="#fff"><path d="M40 46a22 22 0 0 1 44 0V214a22 22 0 0 1-44 0Z"/><path fill-rule="evenodd" d="M68 158A78 78 0 1 0 224 158A78 78 0 1 0 68 158Z M104 146H188A42 42 0 0 1 104 146Z"/></svg>';
@@ -109,7 +109,7 @@ async function avatar(pseudo) {
   });
 }
 
-export async function GET(request) {
+export default async function handler(request) {
   const params = new URL(request.url).searchParams;
   if (params.get('avatar')) return avatar(params.get('avatar'));
   const id = params.get('id');

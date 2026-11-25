@@ -1,0 +1,17 @@
+# Risques acceptés, à revoir avant la date d'expiration (exp:) — Trivy les signale de nouveau ensuite.
+# @vercel/og 0.11.1 (images d'aperçu des liens partagés, api/og.js) embarque sharp et satori vulnérables. La version
+# corrigée (1.0.3) est cassée pour ce projet : déploiement refusé en « edge », plantage en Node (« Dynamic require of fs »),
+# vérifié sur un aperçu Vercel le 25/11/2026. En attendant :
+# - sharp (libvips, libheif, librsvg) : jamais chargé par la fonction edge, qui dessine avec resvg (WebAssembly) ;
+# - satori (échappement SVG) : le SVG reste interne au moteur d'image, seul un PNG sort.
+CVE-2026-33327 exp:2026-12-31
+CVE-2026-33328 exp:2026-12-31
+CVE-2026-35590 exp:2026-12-31
+CVE-2026-35591 exp:2026-12-31
+CVE-2026-96889 exp:2026-12-31
+GHSA-f88m-g3jw-g9cj exp:2026-12-31
+GHSA-rgj7-g3m4-5g8c exp:2026-12-31
+GHSA-wq5f-xc86-pv6w exp:2026-12-31
+GHSA-g89c-p67h-r497 exp:2026-12-31
+GHSA-2jg2-4ch7-h545 exp:2026-12-31
+GHSA-wx4j-mvgx-mqwp exp:2026-12-31

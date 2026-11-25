@@ -57,8 +57,13 @@ jobs:
           ignore-unfixed: true
           exit-code: "1"
           skip-dirs: node_modules
+          hide-progress: true
+      - uses: actions/setup-python@v5
+        if: ${{ !cancelled() }}
+        with:
+          python-version: "3.12" # Semgrep ne fonctionne pas encore avec Python 3.14
       - name: Code dangereux (Semgrep)
         if: ${{ !cancelled() }} # chaque outil tourne même si le précédent a trouvé quelque chose
         run: |
-          python3 -m pip install --quiet semgrep==1.97.0
+          python -m pip install --quiet semgrep==1.97.0
           semgrep scan --config p/default --error --metrics=off --quiet --exclude node_modules

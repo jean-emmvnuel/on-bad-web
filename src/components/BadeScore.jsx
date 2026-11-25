@@ -21,6 +21,20 @@ function explain(score, mine) {
           ? `${mine ? 'Encore' : 'Plus que'} ${score.next - score.score} point${score.next - score.score > 1 ? 's' : ''} pour ${score.nextLevel}`
           : 'Niveau maximum atteint 👑'}
       </p>
+      {score.levels?.length ? (
+        <ol className="bs-ranks" aria-label="Les rangs du BadeScore">
+          {score.levels.map((l, i) => {
+            const state = i < score.levelIndex ? 'done' : i === score.levelIndex ? 'now' : 'next';
+            return (
+              <li key={l.name} data-state={state}>
+                <span className="bs-rank-emoji" aria-hidden="true">{LEVEL_EMOJI[i] ?? '🔥'}</span>
+                <span className="bs-rank-name">{l.name}{state === 'now' ? <small>{mine ? 'Ton rang' : 'Son rang'}</small> : null}</span>
+                <span className="bs-rank-min">{state === 'done' ? '✓' : l.min ? `${l.min.toLocaleString('fr-FR')} pts` : 'Au départ'}</span>
+              </li>
+            );
+          })}
+        </ol>
+      ) : null}
       <p className="bs-lead">
         {mine ? 'Ton' : 'Le'} BadeScore vient de l’engouement autour {mine ? 'de tes' : 'de ses'} badings : les rires, les commentaires, les partages et
         les rebades qu’ils reçoivent.

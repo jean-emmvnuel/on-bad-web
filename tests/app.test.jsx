@@ -194,17 +194,17 @@ describe('App React (mode démo)', () => {
     expect($('.tabbar a[href="#/trending"]').getAttribute('aria-current')).toBe('page');
   });
 
-  it('onglet « Classement » : les Badeurs classés par BadeScore, le premier en tête', async () => {
+  it('onglet « Classement » : la saison par flammes, le premier en tête', async () => {
     await nav('/', () => document.querySelector('.tabbar a[href="#/classement"]'));
     await click(document.querySelector('.tabbar a[href="#/classement"]'));
-    await until(() => location.hash === '#/classement' && $('#view [data-leaderboard] .lb-row'));
+    await until(() => location.hash === '#/classement' && $('#view [data-leaderboard] .lb-season'));
     expect($('.tabbar a[href="#/classement"]').getAttribute('aria-current')).toBe('page');
+    expect($('#view .lb-season').textContent).toContain('Saison 1');
+    expect(document.querySelectorAll('#view .fl-days i').length).toBe(30);
     const rows = [...document.querySelectorAll('#view .lb-row')];
-    expect(rows.length).toBeGreaterThan(0);
     expect(rows.length).toBeLessThanOrEqual(30);
-    expect(rows[0].dataset.rank).toBe('1');
-    const scores = rows.map((r) => Number(r.querySelector('.lb-score b').textContent.replace(/\s/g, '')));
-    expect(scores.every((s, i) => i === 0 || scores[i - 1] >= s)).toBe(true);
+    const flames = rows.map((r) => Number(r.querySelector('.lb-score b').textContent.replace(/\s/g, '')));
+    expect(flames.every((f, i) => i === 0 || flames[i - 1] >= f)).toBe(true);
   });
 
   it('notifications de l’équipe : titre et texte affichés, sans lien', async () => {

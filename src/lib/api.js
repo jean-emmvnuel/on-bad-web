@@ -194,7 +194,7 @@ export const getHashtag = (tag, before) => get(`/hashtags/${encodeURIComponent(t
 /** Hashtags les plus utilisés ces 7 derniers jours : { hashtags: [{ tag, uses, badings, laughs, authors }] }. */
 export const getTrendingHashtags = () => get('/hashtags/trending', { days: 7, limit: 10 });
 /** Recherche : { q, type, accounts, badings, origins, users, hasMore, nextBefore }. `type` all | badings | users. */
-/** Classement public par BadeScore : { badeurs: [{ rank, user, score, level, levelIndex }], me, total } (30 premiers). */
+/** Classement de la saison par flammes : { season, badeurs: [{ rank, user, streak, seasonDays }], me, total } (30 premiers). */
 export const getLeaderboard = () => get('/leaderboard');
 export const search = (q, type = 'all', before) => get('/search', { q, ...(type !== 'all' ? { type } : {}), before });
 export const getBading = (badingId) => get(`/badings/${id(badingId)}`); // → { bading, origins, users, comments, rebades, stickers }

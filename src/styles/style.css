@@ -560,6 +560,27 @@ button.c-sticker { display: block; text-align: left; border-radius: var(--r-lg);
 /* Onglet Notifications de la barre du bas (mobile) */
 .tabbar .tb-ic { position: relative; display: inline-flex; }
 .notif-bell { position: relative; color: var(--text); }
+/* Flammes (components/Flames.jsx) */
+.flames { width: 100%; max-width: 380px; margin: 14px auto 0; padding: 14px 16px; border-radius: var(--r-lg); background: linear-gradient(160deg, rgba(255, 122, 26, 0.16), rgba(152, 16, 230, 0.10)); border: 1px solid rgba(255, 140, 50, 0.35); display: flex; flex-direction: column; gap: 10px; text-align: left; }
+.fl-head { display: flex; align-items: center; gap: 10px; }
+.fl-fire { font-size: 28px; line-height: 1; filter: grayscale(1); opacity: 0.5; }
+.fl-fire.on { filter: none; opacity: 1; animation: fl-flicker 2.4s ease-in-out infinite; transform-origin: 50% 90%; }
+@keyframes fl-flicker { 0%, 100% { transform: scale(1) rotate(0); } 30% { transform: scale(1.08) rotate(-3deg); } 60% { transform: scale(0.97) rotate(2deg); } }
+@media (prefers-reduced-motion: reduce) { .fl-fire.on { animation: none; } }
+.fl-streak { font-size: 15px; color: var(--text-2); }
+.fl-streak b { font-family: var(--font-display); font-size: 26px; color: var(--text); margin-right: 2px; }
+.fl-rank { margin-left: auto; font-size: 13px; font-weight: 700; color: #ffb066; }
+.fl-season { display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; }
+.fl-days { display: grid; grid-template-columns: repeat(30, 1fr); gap: 3px; }
+.fl-days i { height: 8px; border-radius: 2px; background: rgba(255, 255, 255, 0.08); }
+.fl-days i.past { background: rgba(255, 140, 50, 0.55); }
+.fl-days i.now { background: #ff8c32; box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.5); }
+.fl-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 0; }
+.fl-stats div { display: flex; flex-direction: column; gap: 2px; padding: 8px 10px; border-radius: var(--r-md); background: rgba(0, 0, 0, 0.18); }
+.fl-stats dt { font-size: 12px; color: var(--text-3); }
+.fl-stats dd { margin: 0; font-family: var(--font-display); font-size: 18px; }
+.fl-stats dd small { font-family: var(--font-body, inherit); font-size: 12px; color: var(--text-3); }
+.fl-hint { margin: 0; color: var(--text-2); }
 /* BadeScore (components/BadeScore.jsx) : pastille discrète sous les statistiques, détail dans la fiche */
 .badescore { display: inline-flex; align-items: center; gap: 6px; margin: 10px auto 2px; padding: 4px 12px; border-radius: var(--r-pill); background: var(--surface-2); border: 1px solid var(--line); color: var(--text-2); font-size: 13px; }
 .badescore .bs-label { font-weight: 600; }
@@ -769,7 +790,11 @@ a.hashtag { color: var(--brand-ink); font-weight: 600; text-decoration: none; }
 
 /* Classement « bientôt » (#/classement), comme l'onglet de l'app mobile */
 .lb { display: flex; flex-direction: column; gap: 14px; padding: 16px 0 48px; }
-.lb-intro { padding: 0 16px; margin: 0; }
+.lb-season { margin: 0 16px; padding: 12px 14px; border-radius: var(--r-lg); background: linear-gradient(160deg, rgba(255, 122, 26, 0.14), rgba(152, 16, 230, 0.08)); border: 1px solid rgba(255, 140, 50, 0.3); display: flex; flex-direction: column; gap: 8px; }
+.lb-season-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 13px; color: var(--text-2); }
+.lb-season-head b { font-family: var(--font-display); font-size: 18px; color: var(--text); }
+.lb-season p { margin: 0; }
+.lb-flames b { color: #ff9a4a; }
 .lb-list { list-style: none; margin: 0; padding: 0 8px; display: flex; flex-direction: column; gap: 4px; }
 .lb-row { display: flex; align-items: center; gap: 12px; padding: 10px 10px; border-radius: var(--r-lg); color: var(--text); text-decoration: none; }
 .lb-row.top { background: var(--surface); border: 1px solid var(--line); }

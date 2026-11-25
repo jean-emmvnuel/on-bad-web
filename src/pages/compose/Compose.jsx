@@ -56,6 +56,13 @@ function Media({ image, onRecrop, onRemove }) {
   );
 }
 
+/** Message quand la flamme du jour est gagnée. */
+export function flameMessage({ streak, seasonDays }) {
+  if (streak > 1) return `🔥 Félicitations ! Tu as conservé ta série. Tu possèdes maintenant ${streak} flammes consécutives !`;
+  if (seasonDays <= 1) return '🔥 Première flamme de la saison ! Reviens demain pour la garder.';
+  return '🔥 Nouvelle flamme ! Ta série repart : reviens demain pour la faire grandir.';
+}
+
 export default function Compose() {
   useStore();
   const me = S.me();
@@ -128,8 +135,9 @@ export default function Compose() {
   // ─── Publication ───
 
   const publish = () => run(async () => {
+    let flame = null;
     try {
-      await badings.publish(text, anonymous, image);
+      ({ flame } = await badings.publish(text, anonymous, image));
     } catch (err) {
       // Refus des règles (PUBLISH_ERRORS) ou souci réseau : le texte reste là, on peut réessayer.
       setError(errorMessage(err, PUBLISH_ERRORS));
@@ -138,6 +146,8 @@ export default function Compose() {
     }
     published.current = true;
     toast(anonymous ? 'Publié en Badeur anonyme' : 'Ton bading est en ligne');
+    // Flamme du jour gagnée (une seule par jour, décidée par le serveur) : on félicite.
+    if (flame?.gained) setTimeout(() => toast(flameMessage(flame)), 1600);
     go('/', { replace: true });
   });
 

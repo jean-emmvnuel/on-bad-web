@@ -109,16 +109,17 @@ export function recordView(badingId) {
  * pour répondre tout de suite ; le serveur les revérifie de toute façon.
  * Renvoie l'identifiant du bading. Lève un code de PUBLISH_ERRORS en cas de refus.
  */
+/** Publie un bading. Renvoie { id, flame } — flame : { gained, streak, seasonDays, record } (null en mode démo). */
 export async function publish(text, anonymous, image) {
   const error = S.validate(text, !!image);
   if (error) fail(error);
 
   if (!USE_BACKEND) {
     const { id } = S.publish(text, anonymous, image);
-    return id;
+    return { id, flame: null };
   }
 
-  const { bading } = await api.createBading({
+  const { bading, flame = null } = await api.createBading({
     text: text.trim(),
     anonymous,
     image: image ? { dataUrl: image.src, ratio: image.ratio } : null,
@@ -127,8 +128,11 @@ export async function publish(text, anonymous, image) {
   const state = S.get();
   state.postedToday += 1;
   state.draft = { text: '', anonymous: false, image: null };
+  // Flamme du jour gagnée : mon profil en tient compte tout de suite (le serveur reste la source de vérité).
+  const me = state.users[S.ME];
+  if (flame && me?.flames) me.flames = { ...me.flames, streak: flame.streak, seasonDays: flame.seasonDays, record: flame.record, today: true };
   save();
-  return bading.id;
+  return { id: bading.id, flame };
 }
 
 // ─── Actions sur un bading (cartes du fil, page d'un bading) ───

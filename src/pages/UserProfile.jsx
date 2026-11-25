@@ -21,6 +21,7 @@ import { profileUrl, shareProfile } from '../lib/pwa.js';
 import { useProgressive } from '../ui/progressive.js';
 import { openLightbox } from '../ui/Lightbox.jsx';
 import { BadeScore } from '../components/BadeScore.jsx';
+import { Flames } from '../components/Flames.jsx';
 
 const goBack = () => back('/');
 
@@ -111,6 +112,7 @@ function UserContent({ id }) {
             {statsOf(signed).map(([value, label]) => <div key={label}><CountUp value={value} /><span>{label}</span></div>)}
           </div>
         )}
+        {blocked ? null : <Flames flames={user.flames} />}
         {blocked ? null : <BadeScore score={user.badeScore} />}
         {blocked ? null : (
           <button className="btn btn-secondary btn-sm pf-btn" data-share-profile onClick={() => shareProfile(user.pseudo)}><Icon name="share" /> Partager le profil</button>

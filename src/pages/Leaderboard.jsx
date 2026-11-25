@@ -1,89 +1,114 @@
-// Classement (#/classement) — « bientôt », comme l'onglet Classement de l'app mobile :
-// « À bientôt, on verra qui sera le meilleur Badeur ». Le vrai classement viendra dans une prochaine version ;
-// cette page l'annonce avec un aperçu flouté du podium (pas de vraies données).
-import { useLayoutEffect, useRef, useState } from 'react';
+// Classement (#/classement) : les 30 Badeurs au plus gros BadeScore (GET /api/leaderboard), et mon rang si je suis connecté.
+// Le BadeScore vient de l'engouement autour des badings signés (jamais les anonymes) ; toucher un Badeur ouvre son profil.
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 import * as S from '../lib/store.js';
+import { useStore } from '../lib/useStore.js';
 import { reduceMotion } from '../lib/motion.js';
-import { toast } from '../ui/toast.js';
-import { Icon } from '../ui/icons.jsx';
+import * as api from '../lib/api.js';
+import { USE_BACKEND } from '../services/mode.js';
+import { storeUsers, toLocalId } from '../services/cache.js';
+import { Avatar, Icon, Verified } from '../ui/icons.jsx';
 import { NotificationBell } from '../components/Shell.jsx';
+import { LEVEL_EMOJI } from '../components/BadeScore.jsx';
+import { ErrorState, LoadingState, errorMessage } from '../ui/remote.jsx';
 
-const PREVIEW = [
-  { rank: 1, w: '78%', laughs: '12,4 k', medal: '#FFC93C' },
-  { rank: 2, w: '64%', laughs: '9,8 k', medal: '#C9C4C4' },
-  { rank: 3, w: '70%', laughs: '7,1 k', medal: '#D08A4E' },
-  { rank: 4, w: '56%', laughs: '5,3 k', medal: null },
-  { rank: 5, w: '61%', laughs: '4,9 k', medal: null },
-];
+const MEDALS = ['🥇', '🥈', '🥉'];
+const fmt = (n) => n.toLocaleString('fr-FR');
 
-const RULES = [
-  ['😂', 'Classé aux rires', 'Plus ton bading fait rire, plus il monte.'],
-  ['🗓️', 'Remis à zéro chaque semaine', 'Tout le monde a sa chance, même les nouveaux Badeurs.'],
-  ['🎭', 'Les anonymes aussi', 'Un bading anonyme peut gagner sans dévoiler son auteur.'],
-];
-
-// « Préviens-moi » : retenu dans ce navigateur seulement (comme l'app, rien n'est envoyé au serveur).
-const NOTIFY_KEY = 'onbade.leaderboard.notify';
-const readNotify = () => { try { return localStorage.getItem(NOTIFY_KEY) === '1'; } catch { return false; } };
-const saveNotify = (on) => { try { if (on) localStorage.setItem(NOTIFY_KEY, '1'); else localStorage.removeItem(NOTIFY_KEY); } catch { /* stockage indisponible */ } };
+/** Mode démo : classement calculé sur les badings du navigateur (rires reçus + 5 par bading signé). */
+function demoRanking() {
+  const by = new Map();
+  S.feed().filter((b) => !b.anonymous).forEach((b) => {
+    by.set(b.authorId, (by.get(b.authorId) ?? 0) + 5 + (b.likes ?? 0) + 3 * (b.shares ?? 0) + 3 * (b.rebades ?? 0));
+  });
+  const badeurs = [...by.entries()].sort((a, b) => b[1] - a[1]).slice(0, 30)
+    .map(([id, score], i) => ({ rank: i + 1, userId: id, score, level: score >= 300 ? 'Badeur du quartier' : 'Petit Badeur', levelIndex: score >= 300 ? 1 : 0 }));
+  const mine = badeurs.find((b) => b.userId === S.ME);
+  return { badeurs, me: S.get().session ? (mine ?? null) : undefined };
+}
 
 export default function Leaderboard() {
+  useStore();
   const ref = useRef(null);
-  const [notify, setNotify] = useState(readNotify);
+  const [data, setData] = useState(null);
+  const [error, setError] = useState(null);
   const signedIn = !!S.get().session;
 
-  useLayoutEffect(() => {
-    if (!reduceMotion() && ref.current) gsap.from(ref.current.querySelectorAll('.lb-in'), { y: 14, opacity: 0, duration: 0.38, stagger: 0.1, ease: 'expo.out', clearProps: 'transform,opacity' });
+  const load = useCallback(async () => {
+    setError(null);
+    if (!USE_BACKEND) { setData(demoRanking()); return; }
+    try {
+      const r = await api.getLeaderboard();
+      storeUsers(r.badeurs.map((b) => b.user));
+      setData({ badeurs: r.badeurs.map((b) => ({ ...b, userId: toLocalId(b.user.id) })), me: r.me });
+    } catch (e) {
+      setError(e);
+    }
   }, []);
+  useEffect(() => { load(); }, [load]);
 
-  const toggle = () => {
-    if (!notify) toast('Noté ! Tu seras prévenu au lancement du classement.');
-    saveNotify(!notify);
-    setNotify(!notify);
-  };
+  useLayoutEffect(() => {
+    if (!data || reduceMotion() || !ref.current) return;
+    gsap.from([...ref.current.querySelectorAll('.lb-row')].slice(0, 8), { y: 12, opacity: 0, duration: 0.35, stagger: 0.05, ease: 'expo.out', clearProps: 'transform,opacity' });
+  }, [data]);
+
+  let body;
+  if (error) body = <ErrorState message={errorMessage(error)} onRetry={load} />;
+  else if (!data) body = <LoadingState />;
+  else if (!data.badeurs.length) {
+    body = (
+      <div className="empty">
+        <h2 className="t-heading">Le classement est encore vide</h2>
+        <p className="muted">Les premiers Badeurs qui font rire prendront la tête. À toi de jouer !</p>
+        <a className="btn btn-primary btn-sm" href={signedIn ? '#/compose' : '#/auth/signup'}>Bader maintenant</a>
+      </div>
+    );
+  } else {
+    const inTop = data.me && data.badeurs.some((b) => b.userId === S.ME);
+    body = (
+      <>
+        {data.me && !inTop ? (
+          <a className="lb-me" href="#/profile" data-my-rank={data.me.rank}>
+            <span className="lb-me-rank">{data.me.rank}<sup>e</sup></span>
+            <span>Ton rang · <b>{fmt(data.me.score)}</b> BadeScore</span>
+            <span className="lb-me-hint">Fais bader pour entrer dans le top 30 !</span>
+          </a>
+        ) : null}
+        {data.me === null ? <p className="lb-me lb-me-empty">Tu n’es pas encore classé : publie un bading signé pour entrer dans la course.</p> : null}
+        <ol className="lb-list" aria-label="Les 30 meilleurs Badeurs">
+          {data.badeurs.map((b) => {
+            const u = S.user(b.userId);
+            const me = b.userId === S.ME;
+            return (
+              <li key={b.userId}>
+                <a className={`lb-row${b.rank <= 3 ? ' top' : ''}${me ? ' me' : ''}`} href={`#${S.profilePath(b.userId)}`} data-rank={b.rank}>
+                  <span className="lb-pos">{MEDALS[b.rank - 1] ?? b.rank}</span>
+                  <Avatar user={u ?? null} size={b.rank <= 3 ? 48 : 40} />
+                  <span className="lb-who">
+                    <b>@{u?.pseudo ?? 'Badeur'}{u?.verified ? <Verified /> : null}{me ? <small className="lb-you">Toi</small> : null}</b>
+                    <small>{LEVEL_EMOJI[b.levelIndex] ?? '🌱'} {b.level}</small>
+                  </span>
+                  <span className="lb-score"><b>{fmt(b.score)}</b><small>BadeScore</small></span>
+                </a>
+              </li>
+            );
+          })}
+        </ol>
+      </>
+    );
+  }
 
   return (
     <>
       <header className="topbar">
         <span style={{ display: 'flex', color: '#FFC93C', paddingLeft: 4 }}><Icon name="trophy" /></span>
-        <h1 className="t-heading" style={{ flex: 'none' }}>Classement</h1>
-        <span className="lb-soon">Bientôt</span>
-        <span style={{ flex: 1 }} />
+        <h1 className="t-heading" style={{ flex: 1 }}>Classement</h1>
         <NotificationBell />
       </header>
       <div className="lb" ref={ref} data-leaderboard>
-        <div className="lb-hero lb-in">
-          <div className="lb-trophy"><Icon name="trophy" /></div>
-          <h2 className="t-title">À bientôt !</h2>
-          <p className="t-heading">On verra qui sera le meilleur Badeur 👑</p>
-          <p className="muted">Le classement arrive bientôt : les badings qui font rire le plus de monde en Côte d’Ivoire. Commence à bader dès maintenant pour prendre de l’avance.</p>
-        </div>
-
-        <ol className="lb-preview lb-in" aria-label="Aperçu du futur classement">
-          {PREVIEW.map((p) => (
-            <li key={p.rank} className={p.rank === 1 ? 'first' : undefined}>
-              <span className="lb-rank" style={p.medal ? { background: p.medal, color: 'var(--bg)' } : undefined}>
-                {p.rank === 1 ? <Icon name="crown" /> : p.rank}
-              </span>
-              <span className="lb-lines" aria-hidden="true"><i style={{ width: '40%' }} /><i style={{ width: p.w }} /></span>
-              <span className="lb-laughs"><Icon name="laugh" />{p.laughs}</span>
-            </li>
-          ))}
-        </ol>
-
-        <ul className="lb-rules lb-in">
-          {RULES.map(([emoji, title, text]) => (
-            <li key={title}><span aria-hidden="true">{emoji}</span><div><b>{title}</b><p className="t-meta">{text}</p></div></li>
-          ))}
-        </ul>
-
-        <div className="lb-actions lb-in">
-          <a className="btn btn-primary btn-block" href={signedIn ? '#/compose' : '#/auth/signup'}>Bader maintenant</a>
-          <button type="button" className="btn btn-secondary btn-block" aria-pressed={notify} onClick={toggle}>
-            {notify ? 'On te prévient dès que c’est prêt ✓' : 'Préviens-moi au lancement'}
-          </button>
-        </div>
+        <p className="muted lb-intro">Les 30 Badeurs au plus gros BadeScore : l’engouement autour de leurs badings.</p>
+        {body}
       </div>
     </>
   );

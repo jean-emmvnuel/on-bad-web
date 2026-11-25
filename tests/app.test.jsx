@@ -194,19 +194,17 @@ describe('App React (mode démo)', () => {
     expect($('.tabbar a[href="#/trending"]').getAttribute('aria-current')).toBe('page');
   });
 
-  it('onglet « Classement » : page « bientôt » comme sur l’app, « Préviens-moi » retenu', async () => {
+  it('onglet « Classement » : les Badeurs classés par BadeScore, le premier en tête', async () => {
     await nav('/', () => document.querySelector('.tabbar a[href="#/classement"]'));
     await click(document.querySelector('.tabbar a[href="#/classement"]'));
-    await until(() => location.hash === '#/classement' && $('#view [data-leaderboard]'));
+    await until(() => location.hash === '#/classement' && $('#view [data-leaderboard] .lb-row'));
     expect($('.tabbar a[href="#/classement"]').getAttribute('aria-current')).toBe('page');
-    expect($('#view').textContent).toContain('On verra qui sera le meilleur Badeur');
-    expect(document.querySelectorAll('#view .lb-preview li').length).toBe(5);
-    const btn = $('#view .lb-actions button');
-    await click(btn);
-    expect(btn.getAttribute('aria-pressed')).toBe('true');
-    expect(localStorage.getItem('onbade.leaderboard.notify')).toBe('1');
-    await click(btn);
-    expect(localStorage.getItem('onbade.leaderboard.notify')).toBeNull();
+    const rows = [...document.querySelectorAll('#view .lb-row')];
+    expect(rows.length).toBeGreaterThan(0);
+    expect(rows.length).toBeLessThanOrEqual(30);
+    expect(rows[0].dataset.rank).toBe('1');
+    const scores = rows.map((r) => Number(r.querySelector('.lb-score b').textContent.replace(/\s/g, '')));
+    expect(scores.every((s, i) => i === 0 || scores[i - 1] >= s)).toBe(true);
   });
 
   it('notifications de l’équipe : titre et texte affichés, sans lien', async () => {

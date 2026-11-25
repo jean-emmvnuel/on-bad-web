@@ -12,7 +12,9 @@ import { Icon } from '../ui/icons.jsx';
 import { NotificationBell } from '../components/Shell.jsx';
 import { ErrorState, LoadingState, errorMessage } from '../ui/remote.jsx';
 
-const hasTag = (text, tag) => new RegExp(`(^|[^\\p{L}\\p{N}_&/])#${tag}(?![\\p{L}\\p{N}_])`, 'iu').test(text ?? '');
+// Le hashtag vient de l'adresse (#/tag/…) : ses caractères spéciaux sont échappés avant d'entrer dans l'expression régulière.
+const escapeRegExp = (s) => s.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&'); // caractères spéciaux (mode « u » : pas le tiret)
+export const hasTag = (text, tag) => new RegExp(`(^|[^\\p{L}\\p{N}_&/])#${escapeRegExp(tag)}(?![\\p{L}\\p{N}_])`, 'iu').test(text ?? ''); // nosemgrep: javascript.lang.security.audit.detect-non-literal-regexp.detect-non-literal-regexp -- tag échappé juste au-dessus
 
 export default function Hashtag({ params }) {
   useStore();

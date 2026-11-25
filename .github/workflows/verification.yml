@@ -65,5 +65,5 @@ jobs:
       - name: Code dangereux (Semgrep)
         if: ${{ !cancelled() }} # chaque outil tourne même si le précédent a trouvé quelque chose
         run: |
-          python -m pip install --quiet semgrep==1.97.0
+          python -m pip install --quiet semgrep==1.186.0
           semgrep scan --config p/default --error --metrics=off --quiet --exclude node_modules

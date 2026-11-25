@@ -641,6 +641,27 @@ body.scrolled .topbar { border-bottom-color: rgba(255, 255, 255, 0.06); box-shad
 .feed-spinner { flex: none; width: 22px; height: 22px; border-radius: 50%; border: 3px solid var(--line); border-top-color: var(--brand-ink); animation: feed-spin 0.8s linear infinite; }
 @keyframes feed-spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .feed-spinner { animation-duration: 2.4s; } }
+/* Recherche (pages/Search.jsx) */
+.search-bar { gap: 6px; padding-right: 12px; }
+.search-input { flex: 1; display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 6px 0 12px; border-radius: var(--r-pill); background: var(--surface); border: 1px solid var(--line); color: var(--text-2); }
+.search-input:focus-within { border-color: var(--brand-ink); }
+.search-input input { flex: 1; min-width: 0; height: 100%; background: none; border: 0; outline: none; color: var(--text); font-size: 16px; }
+.search-input input::-webkit-search-cancel-button { display: none; }
+.search-clear { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 50%; color: var(--text-2); }
+.search-tabs { display: flex; gap: 4px; padding: 8px 16px; border-bottom: 1px solid var(--line); }
+.search-tabs button { height: 34px; padding: 0 14px; border-radius: var(--r-pill); font-weight: 600; font-size: 14px; color: var(--text-2); }
+.search-tabs button[aria-selected="true"] { background: var(--brand-soft); color: var(--brand-ink); }
+.search-hint { padding: 20px 16px; }
+.search-section { display: flex; flex-direction: column; }
+.search-section > h2 { padding: 14px 16px 6px; color: var(--text-2); }
+.search-user { display: flex; align-items: center; gap: 12px; padding: 10px 16px; color: var(--text); text-decoration: none; }
+.search-user > .search-name { flex: 1; display: inline-flex; align-items: center; gap: 4px; }
+.search-user > .avatar { flex: none; }
+.search-user > .i { color: var(--text-3); }
+@media (hover: hover) { .search-user:hover { background: var(--surface); } }
+.search-tag { align-items: center; gap: 10px; padding: 14px 16px; color: var(--brand-ink); text-decoration: none; }
+.webbar-search { display: inline-flex; align-items: center; gap: 8px; height: 38px; padding: 0 14px; border-radius: var(--r-pill); background: var(--surface); border: 1px solid var(--line); color: var(--text-2); text-decoration: none; font-weight: 500; }
+@media (hover: hover) { .webbar-search:hover { color: var(--text); } }
 /* Hashtags : liens dans le texte, pastilles des tendances, titre de la page d'un hashtag */
 a.hashtag { color: var(--brand-ink); font-weight: 600; text-decoration: none; }
 @media (hover: hover) { a.hashtag:hover { text-decoration: underline; } }

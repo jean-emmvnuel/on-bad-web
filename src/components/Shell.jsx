@@ -122,6 +122,7 @@ export function Shell({ nav, guest = false, viewRef, children }) {
             )}
           </nav>
           <div className="webbar-actions">
+            <a className="webbar-search" href="#/search" aria-label="Rechercher" data-search-link><Icon name="search" /><span>Rechercher</span></a>
             {guest
               ? <a className="btn btn-primary btn-sm" href="#/auth/signup"><Icon name="plus" /> S'inscrire</a>
               : <a className="btn btn-primary btn-sm" href="#/compose"><Icon name="plus" /> Bader</a>}

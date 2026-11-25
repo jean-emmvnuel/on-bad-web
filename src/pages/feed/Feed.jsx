@@ -144,6 +144,7 @@ export default function Feed() {
         <div className="logo only-mobile"><Logo size={28} /><span>On Bade</span></div>
         <h1 className="t-heading" style={{ flex: 1 }} hidden={!desktop}>Fil d'actualité</h1>
         <button className="icon-btn only-mobile" aria-label="Installer l'app" hidden={!showInstall} onClick={install}><Icon name="download" /></button>
+        <a className="icon-btn only-mobile" href="#/search" aria-label="Rechercher" data-search-link><Icon name="search" /></a>
         {S.get().session ? <NotificationBell /> : null}
       </header>
       <a className="prompt-card desk-only" href={S.get().session ? '#/compose' : '#/auth/login'}>

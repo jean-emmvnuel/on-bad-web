@@ -19,6 +19,7 @@ const Header = () => (
   <header className="topbar">
     <span style={{ display: 'flex', color: 'var(--brand-ink)', paddingLeft: 4 }}><Icon name="flame" /></span>
     <h1 className="t-heading" style={{ flex: 1 }}>Badings du moment</h1>
+    <a className="icon-btn only-mobile" href="#/search" aria-label="Rechercher"><Icon name="search" /></a>
     <NotificationBell />
   </header>
 );

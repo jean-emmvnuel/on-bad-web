@@ -193,6 +193,8 @@ export const getFeedPage = (before) => get('/feed', { before, limit: FEED_PAGE_S
 export const getHashtag = (tag, before) => get(`/hashtags/${encodeURIComponent(tag)}`, { before, limit: FEED_PAGE_SIZE });
 /** Hashtags les plus utilisés ces 7 derniers jours : { hashtags: [{ tag, uses, badings, laughs, authors }] }. */
 export const getTrendingHashtags = () => get('/hashtags/trending', { days: 7, limit: 10 });
+/** Recherche : { q, type, accounts, badings, origins, users, hasMore, nextBefore }. `type` all | badings | users. */
+export const search = (q, type = 'all', before) => get('/search', { q, ...(type !== 'all' ? { type } : {}), before });
 export const getBading = (badingId) => get(`/badings/${id(badingId)}`); // → { bading, origins, users, comments, rebades, stickers }
 export const createBading = (payload) => post('/badings', payload); // { text, anonymous, image } → { bading }
 export const addBadingView = (badingId) => post(`/badings/${id(badingId)}/views`);

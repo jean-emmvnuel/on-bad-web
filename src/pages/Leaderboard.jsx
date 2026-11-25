@@ -13,6 +13,7 @@ import { Avatar, Icon, Verified } from '../ui/icons.jsx';
 import { HeaderFlames, NotificationBell } from '../components/Shell.jsx';
 import { ErrorState, LoadingState, errorMessage } from '../ui/remote.jsx';
 import { LEVEL_EMOJI } from '../components/BadeScore.jsx';
+import { SeasonCountdown } from '../components/SeasonCountdown.jsx';
 
 const MEDALS = ['🥇', '🥈', '🥉'];
 const fmt = (n) => n.toLocaleString('fr-FR');
@@ -46,7 +47,8 @@ export function Prize({ reward, season }) {
         <b>À gagner : le 1er de la saison {season.number}</b>
         <span><span aria-hidden="true">👑</span> le badge {reward.badge.replace(/^👑\s*/, '')} sur son profil pendant {reward.badgeDays} jours</span>
         {reward.prize === 'surprise' ? <span><span aria-hidden="true">🎁</span> un lot surprise remis par l’équipe On Bade</span> : null}
-        <small>{left > 0 ? `Fin de la saison dans ${left} jour${left > 1 ? 's' : ''} : garde ta série jusqu’au bout !` : 'Dernier jour : tout se joue aujourd’hui !'}</small>
+        <small className="lb-prize-cd-label">{left > 0 ? 'Fin de la saison dans' : 'Dernier jour : tout se joue avant minuit !'}</small>
+        <SeasonCountdown season={season} />
       </div>
     </section>
   );

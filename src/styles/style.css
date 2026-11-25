@@ -887,3 +887,11 @@ a.hashtag { color: var(--brand-ink); font-weight: 600; text-decoration: none; }
 .lb-champion { margin: 0 16px; display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: var(--r-lg); background: var(--surface); border: 1px solid rgba(255, 201, 60, 0.35); color: var(--text); text-decoration: none; }
 .fl-champion { margin: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; font-weight: 700; color: #ffd166; }
 .fl-champion small { font-weight: 500; color: var(--text-2); font-size: 12.5px; }
+.season-cd { display: flex; gap: 6px; margin-top: 2px; }
+.cd-box { min-width: 50px; padding: 6px 6px 4px; border-radius: 10px; background: rgba(0, 0, 0, 0.28); border: 1px solid rgba(255, 201, 60, 0.3); display: flex; flex-direction: column; align-items: center; line-height: 1; }
+.cd-box b { font-family: var(--font-display); font-size: 22px; color: #fff; font-variant-numeric: tabular-nums; }
+.cd-box small { font-size: 10.5px; color: var(--text-2); margin-top: 3px; text-transform: lowercase; }
+.season-cd.urgent .cd-box { border-color: rgba(255, 90, 95, 0.6); }
+.season-cd.urgent .cd-box b { color: #ff8a8d; }
+.cd-done { font-weight: 700; color: #ffd166; }
+.lb-prize-cd-label { margin-top: 6px; }

@@ -571,6 +571,7 @@ button.c-sticker { display: block; text-align: left; border-radius: var(--r-lg);
 .bs-bar { grid-column: 1 / -1; height: 8px; border-radius: 4px; background: rgba(255, 255, 255, 0.08); overflow: hidden; }
 .bs-bar i { display: block; height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--brand), #ffc93c); transition: width 0.8s var(--ease-out); }
 .bs-next { grid-column: 1 / -1; }
+.bs-lead { font-weight: 600; line-height: 1.45; }
 .bs-rules { list-style: none; padding: 0; margin: 12px 0; display: flex; flex-direction: column; gap: 8px; }
 .bs-rules b { display: inline-block; min-width: 32px; color: var(--brand-ink); }
 /* Cloche qui remue tant qu'il y a des notifications non lues : un petit « dring » toutes les 4 s. */

@@ -17,10 +17,11 @@ const RULES = [
 function explain(score, mine) {
   openSheet(
     <div className="pad bs-sheet">
-      <p className="muted">
-        Le BadeScore mesure l’activité {mine ? 'de ton compte' : 'de ce Badeur'} sur les {score.days} derniers jours. Il monte quand tu fais bader,
-        et redescend doucement quand tu te fais rare.
+      <p className="bs-lead">
+        {mine ? 'Ton' : 'Le'} BadeScore vient de l’engouement autour {mine ? 'de tes' : 'de ses'} badings : les rires, les commentaires, les partages et
+        les rebades qu’ils reçoivent.
       </p>
+      <p className="muted">Calculé sur les {score.days} derniers jours : il monte quand {mine ? 'tu fais' : 'il fait'} bader, et redescend doucement en cas d’absence.</p>
       <ul className="bs-rules">{RULES.map(([pts, what]) => <li key={what}><b>{pts}</b> {what}</li>)}</ul>
       <p className="muted t-small">Les badings anonymes ne comptent jamais : personne ne peut deviner qui les a écrits.</p>
     </div>,

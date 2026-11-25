@@ -7,6 +7,7 @@ import { reduceMotion } from '../../lib/motion.js';
 import { back, go } from '../../lib/router.js';
 import * as badings from '../../services/badings.js';
 import { ACCEPT, IMAGE_RATIO, openCropper, readImageFile } from '../../ui/cropper.js';
+import { celebrateFlame } from '../../ui/flameCelebration.js';
 import { Avatar, Icon, Verified } from '../../ui/icons.jsx';
 import { toast } from '../../ui/toast.js';
 import { MentionList, useMentions } from '../../ui/mentions.jsx';
@@ -147,7 +148,7 @@ export default function Compose() {
     published.current = true;
     toast(anonymous ? 'Publié en Badeur anonyme' : 'Ton bading est en ligne');
     // Flamme du jour gagnée (une seule par jour, décidée par le serveur) : on félicite.
-    if (flame?.gained) setTimeout(() => toast(flameMessage(flame)), 1600);
+    if (flame?.gained) setTimeout(() => celebrateFlame({ streak: flame.streak, message: flameMessage(flame) }), 700);
     go('/', { replace: true });
   });
 

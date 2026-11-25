@@ -1,6 +1,8 @@
 // Flammes sur le profil : série en cours 🔥, jours actifs de la saison, record, jours actifs au total, rang de la saison,
 // et la progression de la saison (30 jours). Tout vient du serveur (lib/flames.ts) : 1 jour d'activité = 1 flamme.
 const fmt = (n) => n.toLocaleString('fr-FR');
+/** Flamme animée (Noto Animated Emoji de Google, CC BY 4.0), hébergée sur le site : aucune requête vers Google. */
+export const FIRE_GIF = '/assets/emoji/fire.webp';
 
 /** `mine` : sur mon propre profil (conseil pour garder la série). */
 export function Flames({ flames, mine = false }) {
@@ -10,7 +12,12 @@ export function Flames({ flames, mine = false }) {
   return (
     <section className="flames" aria-label="Flammes" data-flames={streak}>
       <div className="fl-head">
-        <span className={`fl-fire${streak ? ' on' : ''}`} aria-hidden="true">🔥</span>
+        {/* Flamme vivante : elle ondule, avec un halo et des braises qui montent (éteinte sans série). */}
+        <span className={`fl-fire${streak ? ' on' : ''}`} aria-hidden="true">
+          <span className="fl-glow" />
+          {streak ? <img className="fl-anim" src={FIRE_GIF} alt="" width="36" height="36" decoding="async" /> : <span className="fl-emoji">🔥</span>}
+          {streak ? <><i className="fl-ember" /><i className="fl-ember" /><i className="fl-ember" /></> : null}
+        </span>
         <span className="fl-streak"><b>{fmt(streak)}</b> flamme{streak > 1 ? 's' : ''}</span>
         <span className="fl-rank">{seasonRank ? `${seasonRank}e de la saison` : 'Pas encore classé'}</span>
       </div>

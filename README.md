@@ -134,3 +134,7 @@ npm run test:watch  # en continu
 - **Brouillon** et **fin de l'onboarding** : restent volontairement dans le navigateur.
 - Les actions des cartes (rire, rebade, partage, favori, signalement, blocage, suppression) passent par le serveur : l'écran
   change tout de suite, puis revient en arrière si le serveur refuse.
+
+## Crédits
+
+- Flamme animée 🔥 (`public/assets/emoji/fire.webp`, encart Flammes et célébration) : [Noto Animated Emoji](https://googlefonts.github.io/noto-emoji-animation/) de Google, sous licence [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Hébergée sur le site : aucune requête vers Google.

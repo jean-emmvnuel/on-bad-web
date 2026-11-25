@@ -40,13 +40,15 @@ jobs:
           curl -sSfLO "$base/gitleaks_8.21.2_checksums.txt"
           sha256sum -c --ignore-missing gitleaks_8.21.2_checksums.txt # empreinte officielle de la version
           tar -xzf gitleaks_8.21.2_linux_x64.tar.gz gitleaks && rm gitleaks_8.21.2_*
-          ./gitleaks git . --redact --no-banner --exit-code 1
+          ./gitleaks git . --redact --no-banner --verbose --exit-code 1 # fichiers et commits affichés, valeurs masquées
       - uses: actions/setup-node@v4
         with:
           node-version: 22
       - name: Dépendances vulnérables (npm audit, production)
+        if: ${{ !cancelled() }} # chaque outil tourne même si le précédent a trouvé quelque chose
         run: npm audit --omit=dev --audit-level=high
       - name: Dépendances, secrets et configuration (Trivy)
+        if: ${{ !cancelled() }} # chaque outil tourne même si le précédent a trouvé quelque chose
         uses: aquasecurity/trivy-action@v0.36.0 # version figée (release immuable)
         with:
           scan-type: fs
@@ -56,6 +58,7 @@ jobs:
           exit-code: "1"
           skip-dirs: node_modules
       - name: Code dangereux (Semgrep)
+        if: ${{ !cancelled() }} # chaque outil tourne même si le précédent a trouvé quelque chose
         run: |
           python3 -m pip install --quiet semgrep==1.97.0
           semgrep scan --config p/default --error --metrics=off --quiet --exclude node_modules

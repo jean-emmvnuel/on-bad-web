@@ -63,10 +63,11 @@ export async function loadExport() {
 /** Charge les réglages : mentions, comptes bloqués, badge, suppression en cours. */
 export async function loadSettings() {
   if (!USE_BACKEND) return;
-  const { mentionPolicy, blocked, badge, deletion } = await api.getSettings();
+  const { mentionPolicy, emailNudges = true, blocked, badge, deletion } = await api.getSettings();
   storeUsers(blocked);
   Object.assign(S.get(), {
     mentionPolicy,
+    emailNudges,
     blocked: blocked.map((u) => toLocalId(u.id)),
     badge,
     deletion,
@@ -77,6 +78,13 @@ export async function loadSettings() {
 export async function setMentionPolicy(policy) {
   if (USE_BACKEND) await api.updateSettings({ mentionPolicy: policy });
   S.setMentionPolicy(policy);
+}
+
+/** E-mails de relance (inactivité, premier bading) : activés par défaut, coupables ici ou par le lien de l'e-mail. */
+export async function setEmailNudges(on) {
+  if (USE_BACKEND) await api.updateSettings({ emailNudges: on });
+  S.get().emailNudges = on;
+  save();
 }
 
 export async function unblock(userId) {

@@ -236,8 +236,8 @@ export const getExport = () => get('/me/export'); // → { user, badings, liked,
 export const updateMe = (changes) => patch('/me', changes); // { pseudo } → { user }
 // image = petite photo (256 px, data URL) ou null ; large = la même en grand (720 px) pour la vue plein écran → { user }
 export const updatePhoto = (image, large) => put('/me/photo', image ? { image, ...(large ? { large } : {}) } : { image: null });
-export const getSettings = () => get('/me/settings'); // → { mentionPolicy, blocked, badge, deletion }
-export const updateSettings = (changes) => patch('/me/settings', changes); // { mentionPolicy? }
+export const getSettings = () => get('/me/settings'); // → { mentionPolicy, emailNudges, blocked, badge, deletion }
+export const updateSettings = (changes) => patch('/me/settings', changes); // { mentionPolicy?, emailNudges? }
 
 // Notifications push (app fermée)
 export const getPushKey = () => get('/push/key'); // → { publicKey | null }

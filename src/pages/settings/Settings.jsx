@@ -167,6 +167,10 @@ function SettingsContent() {
 
         <Section title="Notifications">
           <SettingRow icon="bell" label="Notifications sur ce téléphone" detail={NOTIFICATION_LABELS[notificationStatus](state.notifEnabled)} onClick={toggleNotifications} />
+          <SettingRow icon="message" label="E-mails « tu nous manques »"
+            detail={state.emailNudges === false ? 'Coupés · touche pour les réactiver' : 'Activés · au plus 1 par semaine quand tu ne viens plus'}
+            right={state.emailNudges === false ? null : <CheckMark />} disabled={busy === 'email-nudges'}
+            onClick={() => runAction('email-nudges', () => account.setEmailNudges(state.emailNudges === false), state.emailNudges === false ? 'E-mails réactivés' : 'E-mails coupés')} />
         </Section>
 
         <Section title="Mes données">

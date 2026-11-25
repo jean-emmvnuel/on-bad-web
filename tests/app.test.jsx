@@ -164,6 +164,11 @@ describe('App React (mode démo)', () => {
     // Plus de notifications par e-mail : les actions arrivent en push, l'e-mail sert au compte.
     expect($('[data-email-notif]')).toBeNull();
     expect(text()).not.toContain('Notifications par e-mail');
+    // E-mails de relance (« tu nous manques ») : activés par défaut, coupables d'un toucher.
+    expect(text()).toContain('Activés · au plus 1 par semaine');
+    await click(byText('E-mails « tu nous manques »'));
+    await until(() => S.get().emailNudges === false);
+    expect(text()).toContain('Coupés · touche pour les réactiver');
     await nav('/privacy', () => text().includes('Paragraphe'));
   });
 

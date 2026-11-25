@@ -560,18 +560,18 @@ button.c-sticker { display: block; text-align: left; border-radius: var(--r-lg);
 /* Onglet Notifications de la barre du bas (mobile) */
 .tabbar .tb-ic { position: relative; display: inline-flex; }
 .notif-bell { position: relative; color: var(--text); }
-/* BadeScore (components/BadeScore.jsx) */
-.badescore { width: 100%; max-width: 360px; margin: 14px auto 4px; display: grid; grid-template-columns: 1fr auto; gap: 6px 10px; padding: 14px 16px; border-radius: var(--r-lg); background: linear-gradient(135deg, rgba(152, 16, 230, 0.22), rgba(255, 201, 60, 0.12)); border: 1px solid rgba(183, 107, 255, 0.35); text-align: left; color: var(--text); }
-.bs-head { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; }
+/* BadeScore (components/BadeScore.jsx) : pastille discrète sous les statistiques, détail dans la fiche */
+.badescore { display: inline-flex; align-items: center; gap: 6px; margin: 10px auto 2px; padding: 4px 12px; border-radius: var(--r-pill); background: var(--surface-2); border: 1px solid var(--line); color: var(--text-2); font-size: 13px; }
+.badescore .bs-label { font-weight: 600; }
+.badescore .bs-value { color: var(--text); font-variant-numeric: tabular-nums; }
+.badescore .bs-level { color: var(--text-3); }
+@media (hover: hover) { .badescore:hover { border-color: var(--brand-ink); } }
+.bs-now { display: flex; align-items: center; gap: 10px; font-size: 16px; }
+.bs-now b { font-family: var(--font-display); font-size: 22px; }
 .bs-emoji { font-size: 22px; line-height: 1; }
-.bs-label { font-weight: 700; font-size: 14px; letter-spacing: 0.02em; color: var(--text-2); }
-.bs-value { margin-left: auto; font-family: var(--font-display); font-weight: 800; font-size: 26px; line-height: 1; color: var(--text); }
-.bs-value b { font: inherit; }
-.bs-level { grid-column: 1 / -1; font-weight: 700; color: var(--brand-ink); }
-.bs-bar { grid-column: 1 / -1; height: 8px; border-radius: 4px; background: rgba(255, 255, 255, 0.08); overflow: hidden; }
-.bs-bar i { display: block; height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--brand), #ffc93c); transition: width 0.8s var(--ease-out); }
-.bs-next { grid-column: 1 / -1; }
-.bs-lead { font-weight: 600; line-height: 1.45; }
+.bs-bar { display: block; height: 6px; margin: 10px 0 6px; border-radius: 3px; background: rgba(255, 255, 255, 0.08); overflow: hidden; }
+.bs-bar i { display: block; height: 100%; border-radius: 3px; background: var(--brand-ink); }
+.bs-lead { font-weight: 600; line-height: 1.45; margin-top: 12px; }
 .bs-rules { list-style: none; padding: 0; margin: 12px 0; display: flex; flex-direction: column; gap: 8px; }
 .bs-rules li::before { content: '•'; color: var(--brand-ink); font-weight: 800; margin-right: 8px; }
 /* Cloche qui remue tant qu'il y a des notifications non lues : un petit « dring » toutes les 4 s. */

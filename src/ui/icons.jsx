@@ -5,8 +5,8 @@ import * as S from '../lib/store.js';
 /** Icône Lucide (tracés statiques de icons-data.js). */
 export function Icon({ name, className = '', style }) {
   return (
-    <svg className={`i ${className}`} viewBox="0 0 24 24" aria-hidden="true" style={style}
-      dangerouslySetInnerHTML={{ __html: ICONS[name] ?? '' }} />
+    // nosemgrep: typescript.react.security.audit.react-dangerouslysetinnerhtml.react-dangerouslysetinnerhtml -- tracés fixes de icons-data.js, jamais de texte d'utilisateur
+    <svg className={`i ${className}`} viewBox="0 0 24 24" aria-hidden="true" style={style} dangerouslySetInnerHTML={{ __html: ICONS[name] ?? '' }} />
   );
 }
 

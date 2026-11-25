@@ -33,5 +33,6 @@ export async function servePage(request, load, render) {
 
 /** Identifiant pris dans `?<param>=` ou dans le chemin `/<prefix>/<id>`. */
 export function idFrom(url, param, prefix) {
-  return url.searchParams.get(param) || url.pathname.match(new RegExp(`^/${prefix}/([^/]+)/?$`))?.[1] || null;
+  const parts = url.pathname.split('/').filter(Boolean); // « /b/abc/ » → ['b', 'abc'] (sans expression régulière construite)
+  return url.searchParams.get(param) || (parts.length === 2 && parts[0] === prefix ? parts[1] : null);
 }

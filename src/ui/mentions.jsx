@@ -2,7 +2,7 @@
 // Taper « @ko » propose les Badeurs dont le pseudo commence par « ko » ; un clic insère « @Koffi225 ».
 import { useEffect, useState } from 'react';
 import * as badings from '../services/badings.js';
-import { Avatar, Verified } from './icons.jsx';
+import { Avatar, Verified, Legend } from './icons.jsx';
 
 export const MENTION_AT_CURSOR = /@([\w.]*)$/;
 const MENTION_SEARCH_DELAY = 150; // on attend une courte pause dans la frappe avant d'interroger le serveur
@@ -61,7 +61,7 @@ export function MentionList({ users, onPick, compact = false }) {
       {users.map((u) => (
         // onMouseDown : garde le focus dans la zone de texte (sinon le clavier se ferme sur téléphone)
         <button key={u.id} type="button" role="option" className="srow" onMouseDown={(e) => e.preventDefault()} onClick={() => onPick(u.pseudo)}>
-          <Avatar user={u} size={compact ? 26 : 32} /><b>{u.pseudo}</b>{u.verified ? <Verified /> : null}
+          <Avatar user={u} size={compact ? 26 : 32} /><b>{u.pseudo}</b>{u.verified ? <Verified /> : null}{u.legend ? <Legend /> : null}
         </button>
       ))}
     </div>

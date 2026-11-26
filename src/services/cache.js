@@ -39,6 +39,9 @@ export function fromServerUser(u) {
     verified: !!u.verified,
     hue: u.hue ?? hueFrom(u.id),
   };
+  // Badge « Légende du Bade » (BadeScore ≥ 25 000) : envoyé avec chaque pseudo ; date d'arrivée pour l'encart du profil.
+  if (u.legend) user.legend = true;
+  if (u.legendSince) user.legendSince = u.legendSince;
   const photo = u.photo ?? u.avatarUrl;
   if (photo) user.photo = photo;
   user.photoLarge = u.photoLarge || undefined; // photo en grand (vue plein écran), absente pour les anciennes photos

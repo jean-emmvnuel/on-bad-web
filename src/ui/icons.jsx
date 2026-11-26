@@ -39,6 +39,18 @@ export function LaughingMark({ size = 44 }) {
   );
 }
 
+/** Badge « Légende du Bade » : sceau doré étoilé, à côté du pseudo (BadeScore ≥ 25 000). */
+export function Legend() {
+  return (
+    <svg className="legend-badge" viewBox="0 0 24 24" role="img" aria-label="Légende du Bade">
+      <title>Légende du Bade</title>
+      <path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z" fill="url(#legend-gold)" />
+      <defs><linearGradient id="legend-gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#FFE08A" /><stop offset="1" stopColor="#E9A400" /></linearGradient></defs>
+      <path d="m12 7.2 1.4 2.9 3.2.4-2.3 2.2.6 3.2L12 14.4l-2.9 1.5.6-3.2-2.3-2.2 3.2-.4Z" fill="#5a3a00" />
+    </svg>
+  );
+}
+
 export function Verified() {
   return (
     <svg className="verified" viewBox="0 0 24 24" aria-label="Compte vérifié">

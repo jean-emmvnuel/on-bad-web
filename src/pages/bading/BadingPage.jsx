@@ -10,7 +10,7 @@ import { requireSession } from '../../lib/access.js';
 import * as badings from '../../services/badings.js';
 import { ActionsRow, BadingCard, BadingImage } from '../../components/BadingCard.jsx';
 import { openMore } from '../../components/badingSheets.jsx';
-import { Avatar, Icon, Rich, Verified } from '../../ui/icons.jsx';
+import { Avatar, Icon, Rich, Verified, Legend } from '../../ui/icons.jsx';
 import { NotificationBell } from '../../components/Shell.jsx';
 import { openLightbox } from '../../ui/Lightbox.jsx';
 import { ErrorState, LoadingState, errorMessage, useRemote } from '../../ui/remote.jsx';
@@ -60,7 +60,7 @@ function Hero({ b, onComment }) {
         <Avatar user={b.anonymous ? null : user} size={48} />
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <b style={b.anonymous ? { color: 'var(--text-2)' } : undefined}>{name}</b>{user?.verified && !b.anonymous ? <Verified /> : null}
+            <b style={b.anonymous ? { color: 'var(--text-2)' } : undefined}>{name}</b>{user?.verified && !b.anonymous ? <Verified /> : null}{user?.legend && !b.anonymous ? <Legend /> : null}
           </div>
           {handle ? <span className="t-meta">{handle}</span> : null}
         </div>

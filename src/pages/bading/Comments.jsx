@@ -6,7 +6,7 @@ import { requireSession } from '../../lib/access.js';
 import * as S from '../../lib/store.js';
 import { reduceMotion } from '../../lib/motion.js';
 import * as comments from '../../services/comments.js';
-import { Avatar, Icon, Rich, Verified } from '../../ui/icons.jsx';
+import { Avatar, Icon, Rich, Verified, Legend } from '../../ui/icons.jsx';
 import { Sticker } from '../../ui/Sticker.jsx';
 import { VoiceNote } from '../../ui/VoiceNote.jsx';
 import { SheetItem, closeSheet, confirmSheet, openSheet } from '../../ui/sheet.jsx';
@@ -101,7 +101,7 @@ function Comment({ c, isReply, stem, showReplyTo, replyCount = 0, collapsed = fa
       </div>
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 3 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-          {author ? <a className="user-link" href={`#${S.profilePath(c.authorId)}`}><b style={{ fontSize: 14 }}>{author.pseudo}</b></a> : <b style={{ fontSize: 14 }}>Badeur</b>}{author?.verified ? <Verified /> : null}
+          {author ? <a className="user-link" href={`#${S.profilePath(c.authorId)}`}><b style={{ fontSize: 14 }}>{author.pseudo}</b></a> : <b style={{ fontSize: 14 }}>Badeur</b>}{author?.verified ? <Verified /> : null}{author?.legend ? <Legend /> : null}
           <span className="t-small" style={{ color: 'var(--text-3)' }}>· {S.timeAgo(c.createdAt)}</span>
           {first ? <span className="c-first" title="Premier à avoir commenté ce bading">🥇 Premier commentaire</span> : null}
         </div>

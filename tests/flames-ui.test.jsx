@@ -61,3 +61,18 @@ describe('classement : récompense du 1er', async () => {
     expect(html).toContain('Champion de la saison 1 · 30 flammes d’affilée');
   });
 });
+
+describe('badge Légende du Bade', async () => {
+  const { LegendCard } = await import('../src/components/BadeScore.jsx');
+  const { Legend } = await import('../src/ui/icons.jsx');
+  it('encart du profil seulement pour une Légende, avec la date', () => {
+    expect(renderToStaticMarkup(<LegendCard user={{ legend: false }} />)).toBe('');
+    const html = renderToStaticMarkup(<LegendCard user={{ legend: true, legendSince: Date.parse('2026-11-26T12:00:00Z') }} mine />);
+    expect(html).toContain('Légende du Bade');
+    expect(html).toContain('Tes badings font vibrer On Bade');
+    expect(html).toContain('26 novembre 2026');
+  });
+  it('sceau doré lisible par les lecteurs d’écran', () => {
+    expect(renderToStaticMarkup(<Legend />)).toContain('aria-label="Légende du Bade"');
+  });
+});

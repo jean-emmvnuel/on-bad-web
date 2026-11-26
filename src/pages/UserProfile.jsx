@@ -11,7 +11,7 @@ import * as badings from '../services/badings.js';
 import * as account from '../services/account.js';
 import { toLocalId } from '../services/cache.js';
 import { BadingCard } from '../components/BadingCard.jsx';
-import { Avatar, Icon, Verified } from '../ui/icons.jsx';
+import { Avatar, Icon, Verified, Legend } from '../ui/icons.jsx';
 import { NotificationBell } from '../components/Shell.jsx';
 import { SheetItem, confirmSheet, openSheet } from '../ui/sheet.jsx';
 import { toast } from '../ui/toast.js';
@@ -20,7 +20,7 @@ import { CountUp, statsOf } from './Profile.jsx';
 import { profileUrl, shareProfile } from '../lib/pwa.js';
 import { useProgressive } from '../ui/progressive.js';
 import { openLightbox } from '../ui/Lightbox.jsx';
-import { BadeScore } from '../components/BadeScore.jsx';
+import { BadeScore, LegendCard } from '../components/BadeScore.jsx';
 import { Flames } from '../components/Flames.jsx';
 
 const goBack = () => back('/');
@@ -105,13 +105,14 @@ function UserContent({ id }) {
         {user.photo
           ? <button className="pf-avatar" aria-label={`Voir la photo de profil de @${user.pseudo} en grand`} data-view-photo onClick={() => openLightbox(user.photoLarge || user.photo)}><Avatar user={user} size={96} /></button>
           : <div className="pf-avatar"><Avatar user={user} size={96} /></div>}
-        <div className="pf-name"><span className="t-title">{user.pseudo}</span>{user.verified ? <Verified /> : null}</div>
+        <div className="pf-name"><span className="t-title">{user.pseudo}</span>{user.verified ? <Verified /> : null}{user.legend ? <Legend /> : null}</div>
         <span className="t-meta">@{user.pseudo}{joined ? ` · Badeur depuis ${joined}` : ''}</span>
         {blocked ? null : (
           <div className="pf-stats">
             {statsOf(signed).map(([value, label]) => <div key={label}><CountUp value={value} /><span>{label}</span></div>)}
           </div>
         )}
+        {blocked ? null : <LegendCard user={user} />}
         {blocked ? null : <Flames flames={user.flames} />}
         {blocked ? null : <BadeScore score={user.badeScore} />}
         {blocked ? null : (

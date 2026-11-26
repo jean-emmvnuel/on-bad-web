@@ -8,7 +8,7 @@ import { USE_BACKEND } from '../services/mode.js';
 import * as account from '../services/account.js';
 import { BadingCard } from '../components/BadingCard.jsx';
 import { ACCEPT, openCropper, readImageFile } from '../ui/cropper.js';
-import { Avatar, Icon, Verified } from '../ui/icons.jsx';
+import { Avatar, Icon, Verified, Legend } from '../ui/icons.jsx';
 import { HeaderFlames, NotificationBell } from '../components/Shell.jsx';
 import { countUp } from '../ui/effects.js';
 import { SheetItem, closeSheet, openSheet } from '../ui/sheet.jsx';
@@ -18,7 +18,7 @@ import { shareProfile } from '../lib/pwa.js';
 import { nextChange, openNameSheet, openPseudoSheet } from './settings/sheets.jsx';
 import { useProgressive } from '../ui/progressive.js';
 import { openLightbox } from '../ui/Lightbox.jsx';
-import { BadeScore } from '../components/BadeScore.jsx';
+import { BadeScore, LegendCard } from '../components/BadeScore.jsx';
 import { Flames } from '../components/Flames.jsx';
 
 const TABS = [
@@ -202,11 +202,12 @@ function ProfileContent() {
           <Avatar user={me} size={96} />
           <span className="pf-edit"><Icon name="pencil" /></span>
         </button>
-        <div className="pf-name"><span className="t-title">{me.pseudo}</span>{me.verified ? <Verified /> : null}</div>
+        <div className="pf-name"><span className="t-title">{me.pseudo}</span>{me.verified ? <Verified /> : null}{me.legend ? <Legend /> : null}</div>
         <span className="t-meta">@{me.pseudo} · Badeur depuis {joined}</span>
         <div className="pf-stats">
           {statsOf(mySignedBadings()).map(([value, label]) => <div key={label}><CountUp value={value} /><span>{label}</span></div>)}
         </div>
+        <LegendCard user={me} mine />
         <Flames flames={me.flames} mine />
         <BadeScore score={me.badeScore} mine />
         <div className="pf-actions">

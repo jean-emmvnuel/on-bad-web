@@ -9,7 +9,7 @@ import * as badings from '../../services/badings.js';
 import { ACCEPT, IMAGE_RATIO, openCropper, readImageFile } from '../../ui/cropper.js';
 import { celebrateFlame } from '../../ui/flameCelebration.js';
 import { takeSharedImage } from '../../lib/sharedImage.js';
-import { Avatar, Icon, Verified } from '../../ui/icons.jsx';
+import { Avatar, Icon, Verified, Legend } from '../../ui/icons.jsx';
 import { toast } from '../../ui/toast.js';
 import { MentionList, useMentions } from '../../ui/mentions.jsx';
 import { errorMessage, usePending } from '../../ui/remote.jsx';
@@ -177,7 +177,7 @@ export default function Compose() {
           <span data-av=""><Avatar user={anonymous ? null : me} size={44} /></span>
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
             <b data-who="">
-              {anonymous ? <span style={{ color: 'var(--text-2)' }}>Badeur anonyme</span> : <>{me.pseudo} {me.verified ? <Verified /> : null}</>}
+              {anonymous ? <span style={{ color: 'var(--text-2)' }}>Badeur anonyme</span> : <>{me.pseudo} {me.verified ? <Verified /> : null}{me.legend ? <Legend /> : null}</>}
             </b>
             <textarea ref={textareaRef} className="plain" rows={6} maxLength={1200} aria-label="Ton bading"
               placeholder={image ? 'Ajoute une légende (facultatif)…' : "Qu'est-ce qui t'est arrivé ?"}

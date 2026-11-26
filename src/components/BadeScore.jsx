@@ -60,3 +60,18 @@ export function BadeScore({ score, mine = false }) {
     </button>
   );
 }
+
+/** Encart doré du profil : « Légende du Bade », tant que le BadeScore reste ≥ 25 000. */
+export function LegendCard({ user, mine = false }) {
+  if (!user?.legend) return null;
+  const since = user.legendSince ? new Date(user.legendSince).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : null;
+  return (
+    <section className="legend-card" aria-label="Légende du Bade" data-legend>
+      <span className="legend-card-trophy" aria-hidden="true">🏆</span>
+      <span className="legend-card-txt">
+        <b>Légende du Bade</b>
+        <small>{mine ? 'Tes badings font' : 'Ses badings font'} vibrer On Bade : 25 000 de BadeScore et plus{since ? ` · depuis le ${since}` : ''}</small>
+      </span>
+    </section>
+  );
+}

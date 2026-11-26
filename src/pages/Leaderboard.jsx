@@ -9,7 +9,7 @@ import { reduceMotion } from '../lib/motion.js';
 import * as api from '../lib/api.js';
 import { USE_BACKEND } from '../services/mode.js';
 import { storeUsers, toLocalId } from '../services/cache.js';
-import { Avatar, Icon, Verified } from '../ui/icons.jsx';
+import { Avatar, Icon, Verified, Legend } from '../ui/icons.jsx';
 import { HeaderFlames, NotificationBell } from '../components/Shell.jsx';
 import { ErrorState, LoadingState, errorMessage } from '../ui/remote.jsx';
 import { LEVEL_EMOJI } from '../components/BadeScore.jsx';
@@ -61,7 +61,7 @@ export function Champion({ champion }) {
     <a className="lb-champion" href={`#${S.profilePath(champion.userId)}`} data-champion={champion.season}>
       <Avatar user={u ?? null} size={40} />
       <span className="lb-who">
-        <b>👑 @{u?.pseudo ?? 'Badeur'}{u?.verified ? <Verified /> : null}</b>
+        <b>👑 @{u?.pseudo ?? 'Badeur'}{u?.verified ? <Verified /> : null}{u?.legend ? <Legend /> : null}</b>
         <small>Champion de la saison {champion.season} · {champion.streak} flamme{champion.streak > 1 ? 's' : ''} d’affilée</small>
       </span>
     </a>
@@ -131,7 +131,7 @@ export default function Leaderboard() {
                     <span className="lb-pos">{MEDALS[b.rank - 1] ?? b.rank}</span>
                     <Avatar user={u ?? null} size={b.rank <= 3 ? 48 : 40} />
                     <span className="lb-who">
-                      <b>@{u?.pseudo ?? 'Badeur'}{u?.verified ? <Verified /> : null}{me ? <small className="lb-you">Toi</small> : null}</b>
+                      <b>@{u?.pseudo ?? 'Badeur'}{u?.verified ? <Verified /> : null}{u?.legend ? <Legend /> : null}{me ? <small className="lb-you">Toi</small> : null}</b>
                       <small>{LEVEL_EMOJI[b.levelIndex] ?? '⭐'} {b.level}</small>
                     </span>
                     <span className="lb-score lb-points"><b>{fmt(b.score)}</b><small>pts</small></span>
@@ -186,7 +186,7 @@ export default function Leaderboard() {
                     <span className="lb-pos">{MEDALS[b.rank - 1] ?? b.rank}</span>
                     <Avatar user={u ?? null} size={b.rank <= 3 ? 48 : 40} />
                     <span className="lb-who">
-                      <b>{data.champion?.userId === b.userId ? <span title="Champion de la saison précédente">👑 </span> : null}@{u?.pseudo ?? 'Badeur'}{u?.verified ? <Verified /> : null}{me ? <small className="lb-you">Toi</small> : null}</b>
+                      <b>{data.champion?.userId === b.userId ? <span title="Champion de la saison précédente">👑 </span> : null}@{u?.pseudo ?? 'Badeur'}{u?.verified ? <Verified /> : null}{u?.legend ? <Legend /> : null}{me ? <small className="lb-you">Toi</small> : null}</b>
                       <small>{b.seasonDays} jour{b.seasonDays > 1 ? 's' : ''} actif{b.seasonDays > 1 ? 's' : ''} cette saison</small>
                     </span>
                     <span className="lb-score lb-flames"><b>{fmt(b.streak)}</b><small>🔥 flamme{b.streak > 1 ? 's' : ''}</small></span>

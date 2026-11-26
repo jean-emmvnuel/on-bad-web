@@ -9,7 +9,7 @@ import * as api from '../lib/api.js';
 import { USE_BACKEND } from '../services/mode.js';
 import { save, storeBadings, storeUsers, toLocalId } from '../services/cache.js';
 import { BadingCard } from '../components/BadingCard.jsx';
-import { Avatar, Icon, Verified, tagPath } from '../ui/icons.jsx';
+import { Avatar, Icon, Verified, tagPath, Legend } from '../ui/icons.jsx';
 import { ErrorState, errorMessage } from '../ui/remote.jsx';
 
 const TABS = [['all', 'Tout'], ['badings', 'Badings'], ['users', 'Comptes']];
@@ -98,7 +98,7 @@ export default function Search({ query }) {
             {accounts.map((u) => (
               <a key={u.id} className="search-user" href={`#${S.profilePath(u.id)}`} data-account={u.pseudo}>
                 <Avatar user={u} size={44} />
-                <span className="search-name"><b>@{u.pseudo}</b>{u.verified ? <Verified /> : null}</span>
+                <span className="search-name"><b>@{u.pseudo}</b>{u.verified ? <Verified /> : null}{u.legend ? <Legend /> : null}</span>
                 <Icon name="chevronRight" />
               </a>
             ))}

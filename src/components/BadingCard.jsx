@@ -6,7 +6,7 @@ import { haptic, reduceMotion } from '../lib/motion.js';
 import { go, goOnClick, goOnEnter } from '../lib/router.js';
 import { requireSession } from '../lib/access.js';
 import * as badings from '../services/badings.js';
-import { Avatar, Icon, Rich, Verified } from '../ui/icons.jsx';
+import { Avatar, Icon, Rich, Verified, Legend } from '../ui/icons.jsx';
 import { confetti } from '../ui/effects.js';
 import { toast } from '../ui/toast.js';
 import { toastError } from '../ui/remote.jsx';
@@ -29,7 +29,7 @@ function SmallAuthor({ b }) {
     <div className="head">
       <Avatar user={b.anonymous ? null : user} size={22} />
       <span className="name" style={b.anonymous ? { color: 'var(--text-2)' } : undefined}>{name}</span>
-      {user?.verified && !b.anonymous ? <Verified /> : null}
+      {user?.verified && !b.anonymous ? <Verified /> : null}{user?.legend && !b.anonymous ? <Legend /> : null}
       <span className="t-meta">· {S.timeAgo(b.createdAt)}</span>
     </div>
   );
@@ -170,7 +170,7 @@ function Card(props) {
         <div className="bub-who">
           {author ? (
             <a className="name user-link" href={`#${S.profilePath(t.authorId)}`}>
-              {n.name}{author.verified ? <Verified /> : null}
+              {n.name}{author.verified ? <Verified /> : null}{author.legend ? <Legend /> : null}
             </a>
           ) : (
             <span className="name" style={t.anonymous ? { color: 'var(--text-2)' } : undefined}>{n.name}</span>
